@@ -1,0 +1,40 @@
+# Node.js / JavaScript / TypeScript
+**/node_modules/
+**/dist/
+**/build/
+**/*.log
+**/.env*
+**/coverage/
+**/package-lock.json
+**/yarn.lock
+**/pnpm-lock.yaml
+
+# Python
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/venv/
+**/*.egg-info/
+**/build/
+**/dist/
+
+# Rust / Tauri
+**/target/
+**/src-tauri/target/
+**/*.rs.bk
+**/*.rlib
+**/*.prof*
+
+# Application / Database
+**/*.db
+**/*.sqlite3
+**/*.msi
+**/*.exe
+
+# Universal / IDE / OS
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/

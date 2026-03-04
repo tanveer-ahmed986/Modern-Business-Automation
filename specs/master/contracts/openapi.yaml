@@ -1,0 +1,76 @@
+openapi: 3.1.0
+info:
+  title: MBAS API
+  version: 1.0.0
+  description: Backend API for Modern Business Automation System (Offline)
+
+paths:
+  /auth/login:
+    post:
+      summary: User login
+      responses:
+        200:
+          description: OK with JWT token and user info
+
+  /dashboard/metrics:
+    get:
+      summary: Get role-based dashboard metrics
+      responses:
+        200:
+          description: Success
+
+  /inventory/products:
+    get:
+      summary: List products with FTS5 search
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of products
+    post:
+      summary: Create new product (Admin/Manager)
+      responses:
+        201:
+          description: Created
+
+  /billing/invoices:
+    post:
+      summary: Record a new sale
+      description: Deducts stock, records sale, updates balances in one transaction.
+      responses:
+        201:
+          description: Sale recorded
+
+  /suppliers/purchases:
+    post:
+      summary: Record a new purchase (Standard/Premium)
+      responses:
+        201:
+          description: Purchase recorded
+
+  /ai/predict:
+    get:
+      summary: Get sales predictions (Premium)
+      responses:
+        200:
+          description: AI insights
+
+  /ai/query:
+    post:
+      summary: Natural language query (Premium)
+      description: "Example: 'Show me total sales for last week'"
+      responses:
+        200:
+          description: SQL result or insight
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []

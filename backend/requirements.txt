@@ -1,0 +1,11 @@
+fastapi==0.110.0
+uvicorn==0.27.1
+sqlmodel==0.0.16
+pydantic-settings==2.2.1
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+pandas==2.2.1
+numpy==1.26.4
+scikit-learn==1.4.1.post1
+# llama-cpp-python # Will be added later to avoid heavy build during setup
