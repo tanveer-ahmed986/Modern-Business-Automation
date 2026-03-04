@@ -27,6 +27,8 @@
 
 # Application / Database
 **/*.db
+**/*.db-shm
+**/*.db-wal
 **/*.sqlite3
 **/*.msi
 **/*.exe

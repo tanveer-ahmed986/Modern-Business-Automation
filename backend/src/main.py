@@ -1,7 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from backend.src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases
+from backend.src.core.db import init_db
 
-app = FastAPI(title="MBAS API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database tables on startup
+    init_db()
+    yield
+
+app = FastAPI(title="MBAS API", version="1.0.0", lifespan=lifespan)
 
 # CORS configuration for Tauri (React frontend)
 app.add_middleware(
@@ -11,6 +20,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(settings.router)
+app.include_router(inventory.router)
+app.include_router(billing.router)
+app.include_router(dashboard.router)
+app.include_router(suppliers.router)
+app.include_router(purchases.router)
 
 @app.get("/")
 async def root():

@@ -12,9 +12,21 @@ Built for **2026** with a focus on speed, data privacy, and a modern "Quiet UI" 
 - **Role-Based Access Control (RBAC)**: Secure access for Admin, Manager, and Sales User roles.
 - **High-Performance Billing**: POS-style interface with real-time tax/discount calculation and atomic stock updates.
 - **Inventory & FTS5 Search**: Sub-millisecond global search across 100k+ products using SQLite's Full-Text Search.
+- **Supplier & Purchase Management**: Track supplier balances, manage ledger history, and record purchases with automatic stock updates.
 - **Modular Tiering**: Built-in feature gating for Basic, Standard, and Premium packages.
 - **Local AI (Premium)**: Sales forecasting (scikit-learn) and natural language data queries (Local LLM/Phi-3) powered by your own CPU.
 - **Professional Packaging**: Single-binary Windows installer (.msi) with high security (Nuitka-compiled sidecars).
+
+## 📊 Project Status (Phase-Based Progress)
+
+- [X] **Phase 1-2**: Project Scaffolding & Database Infrastructure.
+- [X] **Phase 3**: Authentication & Role-Based Access Control (RBAC).
+- [X] **Phase 4**: System Settings & Dynamic Rebranding.
+- [X] **Phase 5**: Inventory & Stock Management (FTS5 Search).
+- [X] **Phase 6**: Billing & Invoicing (Atomic Transactions).
+- [X] **Phase 7**: Dashboard & Business Metrics.
+- [X] **Phase 8**: Supplier & Purchase Module (Ledgers & Stock-In).
+- [ ] **Phase 9-12**: Reports, Backup/Restore, AI Assistant, and Packaging.
 
 ## 🛠️ Tech Stack
 
