@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import settingsService from "../../services/settings.service";
 import type { Settings } from "../../services/settings.service";
 import authService from "../../services/auth.service";
+import BackupSection from "./BackupSection";
 
 const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -140,6 +141,13 @@ const SettingsPage: React.FC = () => {
           </div>
         )}
       </form>
+
+      {isAdmin && (
+        <>
+          <Separator />
+          <BackupSection />
+        </>
+      )}
     </div>
   );
 };

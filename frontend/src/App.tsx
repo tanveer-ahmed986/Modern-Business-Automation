@@ -7,14 +7,18 @@ import ProductList from './features/inventory/ProductList';
 import { BillingPage } from './features/billing/BillingPage';
 import SupplierLedger from './features/suppliers/SupplierLedger';
 import PurchasePage from './features/purchases/PurchasePage';
+import ReportsPage from './features/reports/ReportsPage';
+import AIChatPanel from './features/ai/AIChatPanel';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import { Toaster } from './components/ui/sonner';
+import CommandPalette from './components/layout/CommandPalette';
 
 const App: React.FC = () => {
   return (
     <Router>
       <Toaster position="top-right" closeButton richColors />
+      <CommandPalette />
       <Routes>
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -24,16 +28,16 @@ const App: React.FC = () => {
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            
+
             {/* Placeholder routes for other modules */}
             <Route path="/inventory" element={<ProductList />} />
             <Route path="/billing" element={<BillingPage />} />
             <Route path="/suppliers" element={<SupplierLedger />} />
             <Route path="/purchases/new" element={<PurchasePage />} />
-            <Route path="/reports" element={<div>Reports (Coming Soon)</div>} />
+            <Route path="/reports" element={<ReportsPage />} />
             <Route path="/users" element={<div>Users Management (Coming Soon)</div>} />
             <Route path="/backup" element={<div>System Backup (Coming Soon)</div>} />
-            <Route path="/ai" element={<div>AI Assistant (Coming Soon)</div>} />
+            <Route path="/ai" element={<AIChatPanel />} />
           </Route>
         </Route>
 

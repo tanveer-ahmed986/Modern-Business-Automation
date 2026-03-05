@@ -5,60 +5,67 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
+    --foreground: 222.2 84% 4.9%;
 
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 20% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+ 
+    --radius: 0.5rem;
+  }
+ 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 20% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 20% 98%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 20% 98%;
+ 
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.4% 19.8%;
+    --secondary-foreground: 210 20% 98%;
+ 
+    --muted: 217.2 32.4% 19.8%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --accent: 217.2 32.4% 19.8%;
+    --accent-foreground: 210 20% 98%;
+ 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --destructive-foreground: 210 20% 98%;
+ 
+    --border: 217.2 32.4% 19.8%;
+    --input: 217.2 32.4% 19.8%;
+    --ring: 217.2 91.2% 59.8%;
   }
 }
-
+ 
 @layer base {
   * {
     @apply border-border;
@@ -66,4 +73,119 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom Glassmorphism styles */
+.glassmorphism-card {
+  background-color: rgba(255, 255, 255, 0.05); /* Lighter for dark mode, darker for light */
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glassmorphism-card {
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Quiet UI - more subtle inputs/buttons */
+.input, .select-trigger, .textarea {
+  @apply bg-transparent border-slate-200 dark:border-slate-800 focus-visible:ring-offset-0 focus-visible:ring-2 focus-visible:ring-blue-500;
+}
+
+.dark .input, .dark .select-trigger, .dark .textarea {
+  @apply border-slate-700;
+}
+
+.button {
+  @apply rounded-md;
+}
+
+.button.ghost {
+  @apply hover:bg-slate-100 dark:hover:bg-slate-800;
+}
+
+/* Custom scrollbar for ScrollArea */
+.scroll-area > div[data-radix-scroll-area-viewport] {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) transparent;
+}
+
+.scroll-area > div[data-radix-scroll-area-viewport]::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-area > div[data-radix-scroll-area-viewport]::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-area > div[data-radix-scroll-area-viewport]::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--muted-foreground) / 0.5);
+  border-radius: 10px;
+  border: 2px solid transparent;
+}
+
+/* Adjustments for Command Menu */
+.cmdk-dialog .cmdk-input {
+  @apply border-b border-gray-200 dark:border-gray-800 focus:outline-none focus:ring-0;
+}
+
+.cmdk-dialog .cmdk-list {
+  @apply max-h-[calc(100vh-150px)] overflow-y-auto;
+}
+
+.cmdk-dialog .cmdk-item {
+  @apply px-4 py-2 flex items-center gap-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer;
+}
+
+.cmdk-dialog .cmdk-item[aria-selected="true"] {
+  @apply bg-primary text-primary-foreground;
+}
+
+/* Ensure command palette is above other content */
+[cmdk-dialog] {
+  z-index: 50; /* Adjust as needed */
+}
+[cmdk-input] {
+  height: 48px;
+  padding: 0 16px;
+  font-size: 16px;
+  border-bottom: 1px solid var(--border);
+  outline: none;
+}
+[cmdk-list] {
+  height: min(300px, calc(var(--cmdk-list-height)));
+  max-height: 400px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  transition: 100ms ease;
+  transition-property: height;
+}
+[cmdk-item] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  height: 48px;
+  padding: 0 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  user-select: none;
+  transition: all 100ms ease;
+}
+[cmdk-item][aria-selected="true"] {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+[cmdk-group] {
+  padding: 8px;
+}
+[cmdk-group] [cmdk-group-heading] {
+  user-select: none;
+  font-size: 12px;
+  color: var(--muted-foreground);
+  padding: 0 8px;
+  height: 32px;
+  display: flex;
+  align-items: center;
 }

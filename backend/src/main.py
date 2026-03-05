@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from backend.src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases
+from backend.src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases, reports, system, ai
 from backend.src.core.db import init_db
 
 @asynccontextmanager
@@ -29,6 +29,9 @@ app.include_router(billing.router)
 app.include_router(dashboard.router)
 app.include_router(suppliers.router)
 app.include_router(purchases.router)
+app.include_router(reports.router)
+app.include_router(system.router)
+app.include_router(ai.router)
 
 @app.get("/")
 async def root():

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 from jose import jwt, JWTError
 import os
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from backend.src.core.db import get_session
@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "mbas_offline_secure_secret_2026")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 480 # 8 hours for desktop sessions
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Generate a JWT token for user sessions."""
@@ -35,16 +35,24 @@ def verify_token(token: str) -> Optional[str]:
         return None
 
 def get_current_user(
-    token: str = Depends(oauth2_scheme),
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme),
     session: Session = Depends(get_session)
 ) -> User:
-    """Dependency to retrieve the current authenticated user from a token."""
+    """Dependency to retrieve the current authenticated user from a token (header or query)."""
+    # Fallback to query parameter if header is missing (useful for download links)
+    if not token:
+        token = request.query_params.get("token")
+        
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
     
+    if not token:
+        raise credentials_exception
+        
     username = verify_token(token)
     if username is None:
         raise credentials_exception

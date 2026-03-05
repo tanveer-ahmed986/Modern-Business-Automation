@@ -82,34 +82,34 @@
 ## Phase 9: User Story 7 - Reports Module (P2)
 *Story Goal: Exportable sales and financial reports with tiered depth.*
 
-- [ ] T044 [US7] Implement `/reports/sales` with date filtering in `backend/src/api/reports.py`
-- [ ] T045 [US7] Implement Profit & Loss report logic (Premium only) in `backend/src/services/report_service.py`
-- [ ] T046 [US7] Create CSV/PDF export utility in `backend/src/core/export.py`
-- [ ] T047 [US7] Design Reports dashboard in `frontend/src/features/reports/ReportsPage.tsx`
+- [X] T044 [US7] Implement `/reports/sales` with date filtering in `backend/src/api/reports.py`
+- [X] T045 [US7] Implement Profit & Loss report logic (Premium only) in `backend/src/services/report_service.py`
+- [X] T046 [US7] Create CSV/PDF export utility in `backend/src/core/export.py`
+- [X] T047 [US7] Design Reports dashboard in `frontend/src/features/reports/ReportsPage.tsx`
 
 ## Phase 10: User Story 8 - Backup & Restore (P2 - Standard/Premium)
 *Story Goal: Ensure data safety via offline SQLite file exports.*
 
-- [ ] T048 [US8] Implement backup utility (SQLite vacuum into file) in `backend/src/core/backup.py`
-- [ ] T049 [US8] Implement `/system/backup` and `/system/restore` endpoints in `backend/src/api/system.py`
-- [ ] T050 [US8] Design Backup management UI in `frontend/src/features/settings/BackupSection.tsx`
+- [X] T048 [US8] Implement backup utility (SQLite vacuum into file) in `backend/src/core/backup.py`
+- [X] T049 [US8] Implement `/system/backup` and `/system/restore` endpoints in `backend/src/api/system.py`
+- [X] T050 [US8] Design Backup management UI in `frontend/src/features/settings/BackupSection.tsx`
 
 ## Phase 11: User Story 9 - AI Assistant (P3 - Premium)
 *Story Goal: Local sales forecasting and natural language SQL queries.*
 
-- [ ] T051 [US9] Set up `scikit-learn` forecasting pipeline in `backend/src/ai/forecasting.py`
-- [ ] T052 [US9] Integrate `llama-cpp-python` with Phi-3 GGUF model in `backend/src/ai/llm.py`
-- [ ] T053 [US9] Implement `/ai/predict` and `/ai/query` endpoints in `backend/src/api/ai.py`
-- [ ] T054 [US9] Design AI Chat sidebar in `frontend/src/features/ai/AIChatPanel.tsx`
+- [X] T051 [US9] Set up `scikit-learn` forecasting pipeline in `backend/src/ai/forecasting.py`
+- [X] T052 [US9] Integrate `llama-cpp-python` with Phi-3 GGUF model in `backend/src/ai/llm.py`
+- [X] T053 [US9] Implement `/ai/predict` and `/ai/query` endpoints in `backend/src/api/ai.py`
+- [X] T054 [US9] Design AI Chat sidebar in `frontend/src/features/ai/AIChatPanel.tsx`
 
 ## Phase 12: Polish & Packaging
 *Goal: Final aesthetics, optimizations, and professional installer generation.*
 
-- [ ] T055 Implement "Command Palette" (Ctrl+K) for global search in `frontend/src/components/layout/CommandPalette.tsx`
-- [ ] T056 Apply "Quiet UI" glassmorphism styles in `frontend/src/index.css`
-- [ ] T057 Configure Nuitka build script for backend in `backend/scripts/build.py`
-- [ ] T058 Run full E2E test suite in `tauri-app/tests/`
-- [ ] T059 Generate professional MSI installer using `npm run tauri build`
+- [X] T055 Implement "Command Palette" (Ctrl+K) for global search in `frontend/src/components/layout/CommandPalette.tsx`
+- [X] T056 Apply "Quiet UI" glassmorphism styles in `frontend/src/index.css`
+- [X] T057 Configure Nuitka build script for backend in `backend/scripts/build.py`
+- [X] T058 Run full E2E test suite in `tauri-app/tests/`
+- [X] T059 Generate professional MSI installer using `npm run tauri build`
 
 ## Dependencies & Parallel Execution
 
