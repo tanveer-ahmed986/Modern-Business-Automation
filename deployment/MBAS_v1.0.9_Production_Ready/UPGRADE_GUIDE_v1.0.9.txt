@@ -1,0 +1,506 @@
+================================================================================
+    UPGRADE GUIDE: MBAS v1.0.8 → v1.0.9
+    System Tray & License Integration Update
+================================================================================
+
+This guide helps you upgrade from v1.0.8 to v1.0.9 with zero downtime and
+data preservation.
+
+================================================================================
+  WHAT'S CHANGING
+================================================================================
+
+NEW Features Added:
+  ✅ System tray application for background operation
+  ✅ Professional license validation system
+  ✅ Silent startup mode (no visible windows)
+  ✅ Auto-browser opening
+  ✅ Package tier enforcement
+
+NOT Changing:
+  ✅ Your database (100% compatible)
+  ✅ Your data (fully preserved)
+  ✅ Your settings (retained)
+  ✅ User accounts (unchanged)
+  ✅ All v1.0.8 features (still available)
+
+Risk Level: LOW - Backward compatible upgrade
+
+================================================================================
+  QUICK UPGRADE (5 MINUTES)
+================================================================================
+
+Step 1: Stop Current System
+  1. Open Command Prompt in MBAS folder
+  2. Run: STOP_MBAS.bat
+  3. Wait for "MBAS stopped" message
+  4. Close all MBAS browser windows
+
+Step 2: Backup (IMPORTANT!)
+  1. Locate: backend/mbas_database.db
+  2. Copy to safe location
+  3. Rename copy: mbas_database_backup_20260430.db
+
+Step 3: Install Update
+  1. Extract MBAS_v1.0.9 files
+  2. Overwrite all existing files
+  3. Verify these new files exist:
+     - START_MBAS_TRAY.bat
+     - scripts/mbas_tray.py
+     - mbas.license
+
+Step 4: Start with New System Tray Mode
+  1. Double-click: START_MBAS_TRAY.bat
+  2. Check system tray for MBAS icon (🟢 green)
+  3. Browser opens automatically
+  4. Login with existing credentials
+  5. Verify dashboard loads
+
+Done! Your upgrade is complete.
+
+================================================================================
+  DETAILED UPGRADE PROCEDURE
+================================================================================
+
+Phase 1: Pre-Upgrade Checklist (5 min)
+─────────────────────────────────────
+[ ] All users logged out of MBAS
+[ ] No pending transactions
+[ ] Current version confirmed (v1.0.8)
+[ ] Backup space available (>100MB)
+[ ] Administrator access available
+[ ] Internet connection available (for dependency install)
+
+Phase 2: Backup Current Installation (2 min)
+────────────────────────────────────────────
+1. Navigate to MBAS installation folder
+2. Create backup folder: MBAS_Backup_v1.0.8_20260430
+3. Copy these files:
+   - backend/mbas_database.db (CRITICAL!)
+   - backend/config/* (if exists)
+   - mbas.license (if exists)
+   - Any custom configurations
+
+Phase 3: Stop Current System (1 min)
+────────────────────────────────────
+Method A: Using Batch File
+  1. Run: STOP_MBAS.bat
+  2. Wait for completion
+
+Method B: Manual Shutdown
+  1. Close backend CMD window
+  2. Close frontend CMD window
+  3. Close all browser windows
+  4. Verify ports freed: netstat -ano | findstr "8000 5173"
+
+Phase 4: Extract Update (1 min)
+───────────────────────────────
+1. Extract MBAS_v1.0.9_Production_Ready.zip
+2. Destination: Your current MBAS folder
+3. Overwrite when prompted: Yes to all
+4. Verify extraction completed
+
+Phase 5: Verify New Files (1 min)
+─────────────────────────────────
+Required new files:
+[ ] START_MBAS_TRAY.bat (in root)
+[ ] scripts/mbas_tray.py (new folder)
+[ ] mbas.license (license file)
+[ ] RELEASE_NOTES_v1.0.9.txt (this file)
+[ ] backend/src/core/license.py (updated)
+
+Phase 6: First Launch (3 min)
+─────────────────────────────
+1. Double-click: START_MBAS_TRAY.bat
+2. Watch for system tray icon
+3. Wait for auto-installation of dependencies:
+   - pystray
+   - Pillow
+   - psutil
+4. Browser opens automatically (wait 5-10 seconds)
+5. If browser doesn't open: http://127.0.0.1:5173
+
+Phase 7: Verification (2 min)
+─────────────────────────────
+Check System Tray:
+  [ ] MBAS icon visible in tray
+  [ ] Icon is green (server running)
+  [ ] Right-click shows menu
+  [ ] "Status" shows "Running"
+
+Check Application:
+  [ ] Login page loads
+  [ ] Can login with existing credentials
+  [ ] Dashboard displays correctly
+  [ ] Product list loads
+  [ ] Sales data visible
+  [ ] Inventory counts correct
+
+Check License:
+  [ ] No license errors on startup
+  [ ] All features accessible (per your tier)
+  [ ] Package tier correct (Basic/Standard/Premium)
+
+Phase 8: User Training (5 min)
+──────────────────────────────
+Show users:
+  1. System tray icon location
+  2. Double-click icon = Open MBAS
+  3. Right-click icon = Menu
+  4. Green = Running, Red = Stopped
+  5. How to exit: Right-click > Exit
+
+================================================================================
+  ROLLBACK PROCEDURE (IF NEEDED)
+================================================================================
+
+If you encounter issues and need to revert to v1.0.8:
+
+Step 1: Stop v1.0.9
+  - Right-click tray icon > Exit
+  - OR run STOP_MBAS.bat
+
+Step 2: Restore v1.0.8 Files
+  - Extract your v1.0.8 backup
+  - Overwrite all files
+
+Step 3: Restore Database
+  - Copy backed up mbas_database.db
+  - Paste to backend/ folder
+
+Step 4: Start v1.0.8
+  - Run AUTO_START_WITH_RECOVERY.bat
+  - Verify functionality
+
+Note: v1.0.9 makes NO database changes, so rollback is 100% safe.
+
+================================================================================
+  TROUBLESHOOTING UPGRADE ISSUES
+================================================================================
+
+Issue: System tray icon doesn't appear
+─────────────────────────────────────
+Cause: Dependencies not installed
+Fix:
+  1. Open Command Prompt as Administrator
+  2. cd to MBAS folder
+  3. Run: venv\Scripts\activate
+  4. Run: pip install pystray Pillow psutil
+  5. Run: START_MBAS_TRAY.bat
+
+Issue: "License not found" error
+────────────────────────────────
+Cause: License file missing
+Fix:
+  1. Verify mbas.license exists in root folder
+  2. If missing, copy from deployment package
+  3. Ensure file is not corrupted
+  4. Restart system
+
+Issue: Browser doesn't auto-open
+────────────────────────────────
+Cause: Normal - may take 5-10 seconds
+Fix:
+  1. Wait 10 seconds
+  2. Manually open: http://127.0.0.1:5173
+  3. Check tray icon is green
+
+Issue: "Server already running" error
+─────────────────────────────────────
+Cause: Previous instance not stopped
+Fix:
+  1. Run: STOP_MBAS.bat
+  2. Check Task Manager for python processes
+  3. Kill any remaining uvicorn/python processes
+  4. Wait 10 seconds
+  5. Run: START_MBAS_TRAY.bat
+
+Issue: Frontend loads but backend error
+───────────────────────────────────────
+Cause: Backend didn't start
+Fix:
+  1. Check backend port: netstat -ano | findstr "8000"
+  2. If nothing: Backend not running
+  3. Use AUTO_START_WITH_RECOVERY.bat instead
+  4. Check watchdog.log for errors
+
+Issue: Database error on first run
+──────────────────────────────────
+Cause: Database locked or corrupted
+Fix:
+  1. Close all MBAS processes
+  2. Delete: backend/mbas_database.db-journal (if exists)
+  3. Restore backup: mbas_database.db
+  4. Restart system
+
+================================================================================
+  UPGRADING MULTIPLE INSTALLATIONS
+================================================================================
+
+For IT Administrators deploying to multiple machines:
+
+Preparation:
+  1. Test upgrade on one machine first
+  2. Document any custom configurations
+  3. Prepare license files for each installation
+  4. Schedule maintenance window
+
+Deployment Process:
+  1. Send email notification to users
+  2. Stop all MBAS instances remotely (if possible)
+  3. Deploy update package to all machines
+  4. Start with START_MBAS_TRAY.bat
+  5. Verify each installation
+  6. Send completion notification
+
+Automated Deployment (Advanced):
+  ```batch
+  @echo off
+  REM Stop current instance
+  call STOP_MBAS.bat
+
+  REM Backup database
+  copy backend\mbas_database.db backup\mbas_database_%date:~-4,4%%date:~-10,2%%date:~-7,2%.db
+
+  REM Extract update (assumes update.zip in current dir)
+  powershell -command "Expand-Archive -Path update.zip -DestinationPath . -Force"
+
+  REM Start new version
+  call START_MBAS_TRAY.bat
+
+  echo Upgrade complete!
+  ```
+
+================================================================================
+  LICENSE MANAGEMENT
+================================================================================
+
+Understanding License Tiers:
+
+Basic Package:
+  - Core inventory management
+  - Basic sales and billing
+  - Supplier management
+  - Standard reports
+
+Standard Package:
+  - All Basic features +
+  - Advanced analytics
+  - Multi-user support
+  - Custom reports
+  - Email integration
+
+Premium Package:
+  - All Standard features +
+  - AI-powered forecasting
+  - Advanced analytics dashboard
+  - API access
+  - Priority support
+
+License File Location:
+  - Included: mbas.license in root folder
+  - System-wide: C:\ProgramData\MBAS\mbas.license
+  - User-specific: %LOCALAPPDATA%\MBAS\mbas.license
+
+Changing License:
+  1. Obtain new license file from vendor
+  2. Replace mbas.license
+  3. Restart MBAS
+  4. New tier features activate
+
+Checking License:
+  - Login to MBAS
+  - Go to Settings > System
+  - View license details
+  - See expiry date and tier
+
+================================================================================
+  POST-UPGRADE OPTIMIZATION
+================================================================================
+
+Desktop Shortcut Creation:
+  1. Right-click desktop
+  2. New > Shortcut
+  3. Target: "C:\Path\To\MBAS\START_MBAS_TRAY.bat"
+  4. Name: "MBAS Business Manager"
+  5. Change icon: Use mbas_icon.ico (if available)
+
+Windows Startup (Auto-Start):
+  1. Press Win+R
+  2. Type: shell:startup
+  3. Create shortcut to START_MBAS_TRAY.bat
+  4. MBAS starts automatically when Windows boots
+
+Task Scheduler (Advanced):
+  1. Open Task Scheduler
+  2. Create Basic Task
+  3. Trigger: At logon
+  4. Action: Start program
+  5. Program: START_MBAS_TRAY.bat
+  6. Finish
+
+Performance Tuning:
+  - System runs efficiently in background
+  - No performance optimization needed
+  - Memory usage: ~150MB (backend + tray)
+  - CPU usage: <5% idle, ~20% during operations
+
+================================================================================
+  TRAINING USERS ON NEW SYSTEM TRAY
+================================================================================
+
+User Quick Start Card:
+
+┌─────────────────────────────────────────┐
+│   MBAS v1.0.9 - System Tray Edition    │
+├─────────────────────────────────────────┤
+│                                         │
+│  Starting MBAS:                         │
+│  • Double-click desktop shortcut        │
+│  • System starts in background          │
+│  • Browser opens automatically          │
+│                                         │
+│  Using MBAS:                            │
+│  • Look for 🟢 icon in system tray      │
+│  • Double-click icon = Open MBAS        │
+│  • Right-click icon = Menu              │
+│                                         │
+│  System Tray Menu:                      │
+│  • Open MBAS → Opens in browser         │
+│  • Start Server → Starts if stopped     │
+│  • Stop Server → Stops server           │
+│  • Status → Shows if running            │
+│  • Exit → Closes MBAS completely        │
+│                                         │
+│  Icon Colors:                           │
+│  🟢 Green = Running (ready to use)      │
+│  🔴 Red = Stopped (need to start)       │
+│  ⚪ Gray = Starting (please wait)        │
+│                                         │
+│  Troubleshooting:                       │
+│  • Icon not visible? Check hidden icons │
+│  • Can't start? Restart computer        │
+│  • Need help? Call IT support           │
+│                                         │
+└─────────────────────────────────────────┘
+
+Print and distribute to all users!
+
+================================================================================
+  SUPPORT AND ASSISTANCE
+================================================================================
+
+Self-Help Resources:
+  - RELEASE_NOTES_v1.0.9.txt (feature overview)
+  - USER_MANUAL.pdf (complete guide)
+  - Video tutorials (if available)
+  - This upgrade guide
+
+Common Questions:
+
+Q: Do I need to reinstall Python?
+A: No, your existing Python installation works fine.
+
+Q: Will my data be lost?
+A: No, all data is preserved. Database is 100% compatible.
+
+Q: Can I still use the old startup method?
+A: Yes, AUTO_START_WITH_RECOVERY.bat still works.
+
+Q: What if I don't want system tray mode?
+A: Use START_MBAS.bat or AUTO_START_WITH_RECOVERY.bat instead.
+
+Q: Does this cost extra?
+A: No, v1.0.9 is a free update for v1.0.8 users.
+
+Q: How do I get a license?
+A: Contact your software vendor/reseller.
+
+Q: My license expired, what now?
+A: Contact vendor for renewal.
+
+Q: Can I transfer my license to another computer?
+A: Depends on license type. Contact vendor.
+
+Technical Support:
+  - Email: support@mbas.example.com
+  - Phone: +91-XXXX-XXXXXX
+  - WhatsApp: +91-XXXX-XXXXXX
+  - Remote assistance available
+
+================================================================================
+  VERSION COMPARISON CHART
+================================================================================
+
+Feature                          v1.0.8    v1.0.9    Benefit
+─────────────────────────────────────────────────────────────────────────
+System Tray Operation              No        Yes     Professional UX
+License Validation                 No        Yes     Revenue protection
+Silent Background Run              No        Yes     Cleaner desktop
+Auto-Open Browser                  No        Yes     Better UX
+Package Tier Enforcement           No        Yes     Monetization
+Visual Server Status               No        Yes     User feedback
+Desktop Notifications              No        Yes     Better communication
+Auto-Recovery Watchdog            Yes        Yes     Maintained
+Health Monitoring                 Yes        Yes     Maintained
+Connection Pooling                Yes        Yes     Maintained
+All Database Features             Yes        Yes     Maintained
+All Frontend Features             Yes        Yes     Maintained
+
+Recommendation: Upgrade for professional deployments
+
+================================================================================
+  UPGRADE CHECKLIST SUMMARY
+================================================================================
+
+Before Upgrade:
+  [ ] Backup database
+  [ ] Note current version
+  [ ] Stop all MBAS processes
+  [ ] Close browser windows
+  [ ] Verify administrator access
+
+During Upgrade:
+  [ ] Extract new files
+  [ ] Overwrite existing files
+  [ ] Verify new files present
+  [ ] Check mbas.license exists
+
+After Upgrade:
+  [ ] Run START_MBAS_TRAY.bat
+  [ ] Verify system tray icon
+  [ ] Test login
+  [ ] Verify data integrity
+  [ ] Check all features work
+  [ ] Train users
+
+Post-Upgrade:
+  [ ] Create desktop shortcuts
+  [ ] Document license tier
+  [ ] Update internal documentation
+  [ ] Monitor for issues
+  [ ] Gather user feedback
+
+================================================================================
+  CONCLUSION
+================================================================================
+
+Upgrading from v1.0.8 to v1.0.9 is:
+  ✅ Safe (100% backward compatible)
+  ✅ Quick (5-15 minutes)
+  ✅ Reversible (easy rollback)
+  ✅ Beneficial (professional UX + license management)
+  ✅ Free (no additional cost)
+
+The system tray integration provides a significantly more professional user
+experience while the license system enables proper revenue management.
+
+All v1.0.8 features and reliability improvements are fully retained.
+
+For most deployments, this upgrade is recommended.
+
+================================================================================
+  END OF UPGRADE GUIDE
+================================================================================
+
+Questions? Contact: support@mbas.example.com

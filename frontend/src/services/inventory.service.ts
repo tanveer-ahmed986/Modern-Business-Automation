@@ -10,8 +10,8 @@ export interface Product {
   name: string;
   category_id?: number;
   barcode: string;
-  cost_price?: number; // Only for Admin/Manager
-  selling_price: number;
+  cost_price?: number | string; // Only for Admin/Manager - can be string from backend
+  selling_price: number | string; // Can be string (Decimal) from backend
   stock_quantity: number;
   low_stock_threshold: number;
   is_active: boolean;

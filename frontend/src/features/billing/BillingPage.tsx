@@ -93,7 +93,7 @@ export const BillingPage: React.FC = () => {
     addItem({
       id: product.id,
       name: product.name,
-      price: product.selling_price,
+      price: typeof product.selling_price === 'string' ? parseFloat(product.selling_price) : product.selling_price,
       quantity: 1
     });
     setSearchQuery("");
@@ -127,10 +127,6 @@ export const BillingPage: React.FC = () => {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   if (completedSale) {
     return (
       <div className="container mx-auto py-6 max-w-4xl space-y-6">
@@ -141,18 +137,18 @@ export const BillingPage: React.FC = () => {
             </div>
             <CardTitle className="text-2xl">Sale Completed!</CardTitle>
             <CardDescription>Invoice #{completedSale.id} has been generated.</CardDescription>
+            <p className="text-sm text-muted-foreground mt-2">
+              Choose your preferred print format below
+            </p>
           </CardHeader>
           <CardFooter className="flex justify-center gap-4">
             <Button variant="outline" onClick={() => setCompletedSale(null)}>
               New Sale
             </Button>
-            <Button onClick={handlePrint}>
-              <Receipt className="mr-2 h-4 w-4" /> Print Invoice
-            </Button>
           </CardFooter>
         </Card>
 
-        {/* Printable Section */}
+        {/* Printable Section with Format Selector */}
         <div className="bg-white p-8 border rounded-lg shadow-sm">
            <InvoiceTemplate sale={completedSale} />
         </div>
@@ -195,7 +191,7 @@ export const BillingPage: React.FC = () => {
                           <p className="text-xs text-muted-foreground">{product.barcode}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-primary">{currency} {product.selling_price.toFixed(2)}</p>
+                          <p className="font-bold text-primary">{currency} {(typeof product.selling_price === 'string' ? parseFloat(product.selling_price) : product.selling_price).toFixed(2)}</p>
                           <p className={`text-xs ${product.stock_quantity <= product.low_stock_threshold ? 'text-orange-500 font-medium' : 'text-muted-foreground'}`}>
                             Stock: {product.stock_quantity}
                           </p>
@@ -290,7 +286,7 @@ export const BillingPage: React.FC = () => {
         </div>
 
         {/* Right Side: Checkout Details */}
-        <div className="w-96 flex flex-col gap-6 shrink-0">
+        <div className="w-96 flex flex-col gap-6 shrink-0 overflow-y-auto">
           {/* Customer Selection */}
           <Card>
             <CardHeader className="py-4">
@@ -362,11 +358,11 @@ export const BillingPage: React.FC = () => {
           </Card>
 
           {/* Payment and Totals */}
-          <Card className="flex-1 flex flex-col">
-            <CardHeader className="py-4">
+          <Card className="flex-1 flex flex-col min-h-0">
+            <CardHeader className="py-4 shrink-0">
               <CardTitle className="text-md">Payment & Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1">
+            <CardContent className="space-y-4 flex-1 overflow-y-auto">
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground uppercase">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2">
@@ -433,9 +429,9 @@ export const BillingPage: React.FC = () => {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="p-4 pt-0">
-              <Button 
-                className="w-full h-14 text-lg font-bold" 
+            <CardFooter className="p-4 pt-0 shrink-0 border-t bg-background">
+              <Button
+                className="w-full h-14 text-lg font-bold"
                 size="lg"
                 disabled={items.length === 0 || isProcessing}
                 onClick={handleCompleteSale}

@@ -1,6 +1,6 @@
 # Modern Business Automation System (MBAS)
 
-**MBAS** is a 100% offline, professional-grade Windows desktop application designed to empower small and medium businesses with high-performance inventory management, billing, and AI-driven insights.
+**MBAS v2.0.2** is a 100% offline, professional-grade Windows desktop application designed to empower small and medium businesses with high-performance inventory management, billing, and AI-driven insights.
 
 Built for **2026** with a focus on speed, data privacy, and a modern "Quiet UI" aesthetic.
 
@@ -8,14 +8,14 @@ Built for **2026** with a focus on speed, data privacy, and a modern "Quiet UI" 
 
 ## 🚀 Key Features
 
-- **100% Offline-First**: Zero external API dependencies. Your data stays on your machine.
+- **100% Offline-First**: Zero external API dependencies. Your data stays on your machine. Fully offline installer with bundled Python wheels.
 - **Role-Based Access Control (RBAC)**: Secure access for Admin, Manager, and Sales User roles.
 - **High-Performance Billing**: POS-style interface with real-time tax/discount calculation and atomic stock updates.
 - **Inventory & FTS5 Search**: Sub-millisecond global search across 100k+ products using SQLite's Full-Text Search.
 - **Supplier & Purchase Management**: Track supplier balances, manage ledger history, and record purchases with automatic stock updates.
 - **Modular Tiering**: Built-in feature gating for Basic, Standard, and Premium packages.
 - **Local AI (Premium)**: Sales forecasting (scikit-learn) and natural language data queries (Local LLM/Phi-3) powered by your own CPU.
-- **Professional Packaging**: Single-binary Windows installer (.msi) with high security (Nuitka-compiled sidecars).
+- **Professional Packaging**: Professional Inno Setup installer with offline installation support and automatic startup configuration.
 
 ## 📊 Project Status (Phase-Based Progress)
 
@@ -26,7 +26,24 @@ Built for **2026** with a focus on speed, data privacy, and a modern "Quiet UI" 
 - [X] **Phase 6**: Billing & Invoicing (Atomic Transactions).
 - [X] **Phase 7**: Dashboard & Business Metrics.
 - [X] **Phase 8**: Supplier & Purchase Module (Ledgers & Stock-In).
-- [ ] **Phase 9-12**: Reports, Backup/Restore, AI Assistant, and Packaging.
+- [X] **Phase 9-12**: Reports, Backup/Restore, AI Assistant, and Professional Packaging.
+
+## 🎯 What's New in v2.0.2
+
+### Critical Fixes & Improvements
+- ✅ **Offline Installer**: Bundled all Python dependencies as wheels for 100% offline installation
+- ✅ **Batch Script Fixes**: Resolved installer hang issues caused by `pause` commands in background scripts
+- ✅ **Database Path Handling**: Fixed SQLite database write issues with proper working directory management
+- ✅ **Installer Optimization**: Improved file exclusion patterns (*.db, *.log, backups, config\secret.key)
+- ✅ **Startup Automation**: Enhanced auto-start scripts with recovery mechanisms
+- ✅ **Currency Synchronization**: Fixed currency display issues across Dashboard, Suppliers, and Purchases
+- ✅ **Settings Integration**: Resolved billing settings and backup configuration issues
+
+### Deployment Package
+- Professional Inno Setup 6 installer (`MBAS_Installer_Professional_ZT.iss`)
+- Complete client package ready for distribution (`MBAS_v2.0_CLIENT_PACKAGE/`)
+- Comprehensive installation and troubleshooting guides
+- Automated build and deployment scripts
 
 ## 🛠️ Tech Stack
 

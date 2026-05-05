@@ -1,0 +1,83 @@
+================================================================================
+    EMAIL ADDRESS UPDATED - Z&T Technologies
+================================================================================
+
+All contact email addresses have been simplified to a single email:
+
+    zttechnologies12@gmail.com
+
+================================================================================
+    FILES UPDATED
+================================================================================
+
+✅ Backend API (backend/src/main.py)
+   - API contact email updated
+   - Now shows: zttechnologies12@gmail.com in /docs
+
+✅ Installer Script (deployment/build_installer/MBAS_Installer_Professional_ZT.iss)
+   - Company info file updated
+   - Installation wizard contact info
+
+✅ About Page (deployment/PROFESSIONAL_PACKAGE/docs/About.html)
+   - Contact section simplified
+   - Single email instead of separate support/sales
+
+✅ Installation Guide (deployment/PROFESSIONAL_PACKAGE/docs/Installation_Guide.md)
+   - All references updated
+   - Support section uses new email
+
+✅ Build Documentation (BUILD_PROFESSIONAL_INSTALLER_README.md)
+   - Support contact info updated
+
+✅ Quick Start Guide (START_HERE_BUILD_PROFESSIONAL_PACKAGE.txt)
+   - Contact information simplified
+
+================================================================================
+    WHAT CHANGED
+================================================================================
+
+Before:
+  - Support: support@zttechnologies.org
+  - Sales: sales@zttechnologies.org
+  - General: info@zttechnologies.org
+
+After:
+  - Email: zttechnologies12@gmail.com
+
+================================================================================
+    WHERE IT APPEARS
+================================================================================
+
+The email zttechnologies12@gmail.com now appears in:
+
+✓ API Documentation (FastAPI /docs)
+✓ Installer company information
+✓ About page
+✓ User guide
+✓ Build documentation
+✓ Quick start guide
+✓ Health check endpoint (future)
+
+================================================================================
+    NEXT STEPS
+================================================================================
+
+1. Rebuild the installer to apply changes:
+
+   BUILD_PROFESSIONAL_INSTALLER.bat
+
+2. The new installer will include the updated email everywhere
+
+3. Distribute to customers
+
+All customer communications will show:
+   Email: zttechnologies12@gmail.com
+
+================================================================================
+
+A Product of Z&T Technologies
+State-of-the-Art Business Solutions
+www.zttechnologies.org
+Email: zttechnologies12@gmail.com
+
+================================================================================

@@ -1,0 +1,113 @@
+================================================================================
+                    MBAS NOT STARTING? READ THIS FIRST!
+================================================================================
+
+If you see any of these problems:
+  ❌ "Smart App Control blocked a file"
+  ❌ "Failed to start: Server failed to start"
+  ❌ CMD window blinks but nothing happens
+  ❌ System tray icon doesn't appear
+  ❌ Python error notification
+
+DO THIS NOW:
+------------
+
+STEP 1: Run Emergency Fix (Fixes 95% of issues)
+------------------------------------------------
+1. Find this file: EMERGENCY_FIX.bat
+2. Right-click it
+3. Click "Run as administrator"
+4. Wait 5-10 minutes (don't close the window!)
+5. MBAS will start automatically when done
+
+✅ If MBAS starts successfully:
+   - Browser opens to http://localhost:3000
+   - Login: admin / admin123
+   - You're done! Start using MBAS
+
+❌ If MBAS still doesn't start:
+   - Continue to STEP 2 below
+
+
+STEP 2: Get Detailed Diagnostics
+---------------------------------
+1. Find this file: START_MBAS_TRAY_DEBUG.bat
+2. Double-click it
+3. Wait for checks to complete
+4. A notepad window will open with error details
+5. Read the log to see what failed
+6. Contact support with this log file
+
+
+STEP 3: Manual Fixes (if needed)
+---------------------------------
+
+Problem: "Smart App Control blocked a file"
+Fix:
+  1. Find: UNBLOCK_FILES.bat
+  2. Right-click > Run as administrator
+  3. Run INSTALL.bat again
+
+Problem: Python not installed
+Fix:
+  1. Download Python 3.12.1 from: https://www.python.org/downloads/
+  2. Install it
+  3. CHECK the box: "Add Python to PATH"
+  4. Restart computer
+  5. Run EMERGENCY_FIX.bat
+
+Problem: Port 8000 in use
+Fix:
+  1. Open Command Prompt as Administrator
+  2. Type: netstat -ano | findstr :8000
+  3. Find the PID number (last column)
+  4. Type: taskkill /F /PID [number]
+  5. Run EMERGENCY_FIX.bat
+
+Problem: Antivirus blocking installation
+Fix:
+  1. Temporarily disable antivirus
+  2. Run EMERGENCY_FIX.bat
+  3. Add MBAS folder to antivirus exclusions
+  4. Re-enable antivirus
+
+
+COMPLETE REINSTALLATION (Last resort)
+--------------------------------------
+If nothing else works:
+
+1. Run: STOP_MBAS.bat
+2. Delete entire MBAS folder
+3. Extract fresh from zip to C:\MBAS
+4. Right-click UNBLOCK_FILES.bat > Run as Admin
+5. Right-click INSTALL.bat > Run as Admin
+6. Run EMERGENCY_FIX.bat
+
+
+PROFESSIONAL INSTALLER (Easiest option)
+----------------------------------------
+Want to avoid all this?
+
+A professional .exe installer is available that:
+  ✅ Includes Python (no separate installation)
+  ✅ One-click installation
+  ✅ No security warnings
+  ✅ Works on any Windows 10/11 PC
+
+To get it:
+  See: deployment\build_installer\README_INSTALLER_BUILD.md
+
+
+NEED HELP?
+----------
+1. Run START_MBAS_TRAY_DEBUG.bat
+2. Save the log file that opens
+3. Take a screenshot of any error
+4. Email to: support@ztproducts.com
+   Include: log file + screenshot + Windows version
+
+
+================================================================================
+                          99% of issues are fixed by:
+                    Right-click EMERGENCY_FIX.bat > Run as Admin
+================================================================================

@@ -16,14 +16,13 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { 
-  Database, 
-  Download, 
-  RefreshCw, 
-  History, 
+  Database,
+  RefreshCw,
+  History,
   AlertTriangle,
   HardDrive
 } from "lucide-react";
-import systemService, { BackupRecord } from "@/services/system.service";
+import systemService, { type BackupRecord } from "@/services/system.service";
 import { toast } from "sonner";
 import { 
   Dialog, 

@@ -19,10 +19,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Download, Calendar, TrendingUp, DollarSign, Package, ShoppingCart } from "lucide-react";
-import reportsService, { SalesReport, ProfitLossReport } from "@/services/reports.service";
+import reportsService, { type SalesReport, type ProfitLossReport } from "@/services/reports.service";
 import { toast } from "sonner";
+import { useBranding } from "@/hooks/useBranding";
 
 const ReportsPage: React.FC = () => {
+  const branding = useBranding();
   const [startDate, setStartDate] = useState<string>(
     new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]
   );
@@ -123,7 +125,7 @@ const ReportsPage: React.FC = () => {
                     <DollarSign className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">${salesReport.summary.total_revenue.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">{branding.currency}{salesReport.summary.total_revenue.toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -142,7 +144,7 @@ const ReportsPage: React.FC = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      ${(salesReport.summary.total_revenue / (salesReport.summary.sale_count || 1)).toFixed(2)}
+                      {branding.currency}{(salesReport.summary.total_revenue / (salesReport.summary.sale_count || 1)).toFixed(2)}
                     </div>
                   </CardContent>
                 </Card>
@@ -152,7 +154,7 @@ const ReportsPage: React.FC = () => {
                     <Package className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">${salesReport.summary.total_tax.toLocaleString()}</div>
+                    <div className="text-2xl font-bold">{branding.currency}{salesReport.summary.total_tax.toLocaleString()}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -177,7 +179,7 @@ const ReportsPage: React.FC = () => {
                           <TableRow key={i}>
                             <TableCell className="font-medium">{product.name}</TableCell>
                             <TableCell className="text-right">{product.quantity}</TableCell>
-                            <TableCell className="text-right">${product.revenue.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{branding.currency}{product.revenue.toLocaleString()}</TableCell>
                           </TableRow>
                         ))}
                         {salesReport.top_products.length === 0 && (
@@ -207,7 +209,7 @@ const ReportsPage: React.FC = () => {
                         {Object.entries(salesReport.payment_methods).map(([method, amount], i) => (
                           <TableRow key={i}>
                             <TableCell className="capitalize">{method}</TableCell>
-                            <TableCell className="text-right">${amount.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{branding.currency}{amount.toLocaleString()}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -232,7 +234,7 @@ const ReportsPage: React.FC = () => {
                         {salesReport.category_sales.map((cat, i) => (
                           <TableRow key={i}>
                             <TableCell className="font-medium">{cat.name}</TableCell>
-                            <TableCell className="text-right">${cat.revenue.toLocaleString()}</TableCell>
+                            <TableCell className="text-right">{branding.currency}{cat.revenue.toLocaleString()}</TableCell>
                           </TableRow>
                         ))}
                         {salesReport.category_sales.length === 0 && (
@@ -270,7 +272,7 @@ const ReportsPage: React.FC = () => {
                     <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-600">${plReport.revenue.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-green-600">{branding.currency}{plReport.revenue.toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -278,7 +280,7 @@ const ReportsPage: React.FC = () => {
                     <CardTitle className="text-sm font-medium">COGS (Cost of Goods Sold)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-red-600">-${plReport.cogs.toLocaleString()}</div>
+                    <div className="text-2xl font-bold text-red-600">-{branding.currency}{plReport.cogs.toLocaleString()}</div>
                   </CardContent>
                 </Card>
                 <Card className="bg-slate-50 dark:bg-slate-900 border-2">
@@ -286,8 +288,8 @@ const ReportsPage: React.FC = () => {
                     <CardTitle className="text-sm font-medium">Gross Profit</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className={`text-2xl font-bold ${plReport.gross_profit >= 0 ? "text-green-600" : "text-red-600"}`}>
-                      ${plReport.gross_profit.toLocaleString()}
+                    <div className={`text-2xl font-bold {branding.currency}{plReport.gross_profit >= 0 ? "text-green-600" : "text-red-600"}`}>
+                      {branding.currency}{plReport.gross_profit.toLocaleString()}
                     </div>
                   </CardContent>
                 </Card>
@@ -302,16 +304,16 @@ const ReportsPage: React.FC = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center border-b pb-2">
                       <span>Total Sales (Income)</span>
-                      <span className="font-semibold text-green-600">+${plReport.revenue.toLocaleString()}</span>
+                      <span className="font-semibold text-green-600">+{branding.currency}{plReport.revenue.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center border-b pb-2">
                       <span>Total Purchases (Expense)</span>
-                      <span className="font-semibold text-red-600">-${plReport.total_purchases.toLocaleString()}</span>
+                      <span className="font-semibold text-red-600">-{branding.currency}{plReport.total_purchases.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2">
                       <span className="font-bold">Net Cash Flow</span>
-                      <span className={`font-bold ${(plReport.revenue - plReport.total_purchases) >= 0 ? "text-green-600" : "text-red-600"}`}>
-                        ${(plReport.revenue - plReport.total_purchases).toLocaleString()}
+                      <span className={`font-bold {branding.currency}{(plReport.revenue - plReport.total_purchases) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {branding.currency}{(plReport.revenue - plReport.total_purchases).toLocaleString()}
                       </span>
                     </div>
                   </div>

@@ -1,0 +1,142 @@
+================================================================
+   DASHBOARD CURRENCY FIX - BACKEND ISSUE ✅
+================================================================
+
+PROBLEM: Dashboard "Today's Revenue" card still showing "$"
+
+ROOT CAUSE: Backend API hardcoded "$" in metric card value
+
+LOCATION: backend/src/api/dashboard.py line 114
+
+FIX: Backend now reads currency from Settings table
+
+================================================================
+   THE ISSUE
+================================================================
+
+Backend dashboard.py line 114:
+  value=f"${total_sales_today:,.2f}"  ❌ Hardcoded $
+
+This meant no matter what currency you set in Settings,
+the "Today's Revenue" card always showed "$"
+
+Frontend was correct - backend was wrong!
+
+================================================================
+   THE FIX
+================================================================
+
+1. Import Settings model
+2. Get currency from Settings table
+3. Use dynamic currency in card value
+
+BEFORE:
+  value=f"${total_sales_today:,.2f}"
+
+AFTER:
+  settings = session.get(Settings, 1)
+  currency = settings.currency if settings else "USD"
+  value=f"{currency} {total_sales_today:,.2f}"
+
+================================================================
+   HOW TO UPDATE YOUR INSTALLATION (1 MINUTE)
+================================================================
+
+1. STOP MBAS
+   - Close console window or Ctrl+C
+
+2. COPY FIXED FILE
+
+   FROM: D:\gemini_modern_business_automation_system\backend\src\api\
+   TO: F:\MBAS_v1.0.3...\MBAS_Package_V2\backend\src\api\
+
+   File to copy:
+   ✓ dashboard.py
+
+3. START MBAS
+   - Double-click START_MBAS.bat
+
+4. REFRESH BROWSER
+   - Press F5 or Ctrl+R
+
+5. TEST
+   - Go to Dashboard
+   - "Today's Revenue" card should show correct currency
+   - If Settings.currency = "PKR" → Shows "PKR X,XXX.XX"
+   - If Settings.currency = "USD" → Shows "USD X,XXX.XX"
+
+================================================================
+   VERIFICATION
+================================================================
+
+Test Dashboard Cards:
+
+1. Settings → Currency: PKR → Save
+2. Go to Dashboard
+3. Check "Today's Revenue" card:
+   [ ] Shows "PKR 1,234.56" ✅
+   [ ] NOT showing "$ 1,234.56" ❌
+
+4. Check "Recent Sales" table:
+   [ ] Amount column shows "PKR XX.XX" ✅
+
+5. Check "Top Products" widget:
+   [ ] Revenue shows "PKR XX.XX" ✅
+
+All 3 sections should show PKR!
+
+================================================================
+   COMPLETE FIX STATUS
+================================================================
+
+Dashboard Components:
+✓ Today's Revenue card (BACKEND) - NOW FIXED
+✓ Recent Sales table (FRONTEND) - Already fixed v1.0.4
+✓ Top Products widget (FRONTEND) - Already fixed v1.0.4
+
+Result: Dashboard now 100% synchronized!
+
+================================================================
+   FILES CHANGED
+================================================================
+
+Backend:
+  backend/src/api/dashboard.py
+  - Added Settings import
+  - Get currency from database
+  - Use dynamic currency in card value
+
+Frontend: (No changes needed - already fixed in v1.0.4)
+  frontend/src/features/dashboard/DashboardPage.tsx
+  - Already using branding.currency
+
+================================================================
+   WHY THIS HAPPENED
+================================================================
+
+The issue was split between frontend and backend:
+
+Frontend Issues (Fixed in v1.0.4):
+  - Recent Sales table: Hardcoded "$" → Fixed ✓
+  - Top Products widget: Hardcoded "$" → Fixed ✓
+
+Backend Issue (Fixed now):
+  - Today's Revenue card: Hardcoded "$" → Fixed ✓
+
+Now ALL parts are synchronized!
+
+================================================================
+   VERSION HISTORY
+================================================================
+
+v1.0.1 - Virtual environment isolation
+v1.0.2 - Billing Decimal fix
+v1.0.3 - Settings save fix
+v1.0.4 - Frontend currency sync (Inventory, Billing, Dashboard tables)
+v1.0.5 - Backend currency sync (Dashboard metrics cards) ← CURRENT
+
+================================================================
+
+Copy the ONE file (dashboard.py) and restart MBAS!
+
+Your Dashboard will be fully synchronized! 🎉

@@ -1,0 +1,155 @@
+================================================================
+   MBAS v1.0.7 - IT Administrator Deployment Guide
+================================================================
+
+OVERVIEW:
+--------
+This guide provides detailed deployment instructions for IT
+administrators deploying MBAS in enterprise environments.
+
+DEPLOYMENT ARCHITECTURE:
+-----------------------
+MBAS uses a virtual environment-based deployment model:
+  - Isolated Python environment (no global package pollution)
+  - Reproducible installations via locked dependencies
+  - Portable deployment (can be moved to different locations)
+  - Single-user desktop application (not multi-tenant)
+
+PRE-DEPLOYMENT CHECKLIST:
+------------------------
+[ ] Python 3.11.x or 3.12.x installed on target systems
+[ ] Python added to system PATH
+[ ] 500 MB free disk space available
+[ ] Internet connection (for initial dependency download only)
+[ ] User has write permissions to installation directory
+[ ] Port 8000 available (or configure custom port)
+[ ] No existing Python 3.13+ (causes bcrypt compatibility issues)
+
+INSTALLATION METHODS:
+--------------------
+1. INTERACTIVE INSTALLATION (Recommended for single deployments):
+   - User double-clicks INSTALL.bat
+   - Follows on-screen prompts
+   - Desktop shortcut created automatically
+
+2. SILENT INSTALLATION (For mass deployment via GPO/SCCM):
+   Create deployment script:
+
+   @echo off
+   cd /d "%~dp0"
+   python -m venv venv
+   call venv\Scripts\activate.bat
+   python -m pip install --no-cache-dir -r backend\requirements.txt
+   cd backend
+   python -c "from src.scripts.init_db import bootstrap; bootstrap()"
+
+   Deploy via Group Policy or SCCM task sequence.
+
+3. NETWORK SHARE DEPLOYMENT:
+   - Install MBAS to network share (\\server\MBAS)
+   - Users run START_MBAS.bat from network
+   - Each user gets own database in %APPDATA%\MBAS\
+
+SECURITY CONSIDERATIONS:
+-----------------------
+  ✓ All traffic is local (127.0.0.1 only)
+  ✓ No external network connections after installation
+  ✓ SQLite database with file-level permissions
+  ✓ bcrypt password hashing (cost factor 12)
+  ✓ JWT tokens for session management
+  ✓ CORS restricted to localhost
+  ✓ No telemetry or external data transmission
+
+POST-INSTALLATION VERIFICATION:
+------------------------------
+1. Run HEALTH_CHECK.bat on each deployed system
+2. Verify all checks pass
+3. Test login with admin/admin123
+4. Force password change on first login
+5. Create user accounts as needed
+6. Configure backup settings
+
+BACKUP STRATEGY:
+---------------
+Database Location: [INSTALL_DIR]\backend\mbas_database.db
+
+Recommended backup approach:
+  1. Stop MBAS (STOP_MBAS.bat)
+  2. Copy mbas_database.db to backup location
+  3. Restart MBAS (START_MBAS.bat)
+
+Automated backups can be configured in Settings > Backup.
+
+UPGRADE PROCEDURE:
+-----------------
+To upgrade to a new version:
+  1. STOP_MBAS.bat
+  2. Backup mbas_database.db
+  3. Copy mbas.license to safe location
+  4. Extract new version to different folder
+  5. Copy old mbas_database.db to new backend folder
+  6. Copy mbas.license to new folder
+  7. Run INSTALL.bat in new folder
+  8. Verify with HEALTH_CHECK.bat
+  9. START_MBAS.bat
+
+FIREWALL CONFIGURATION:
+----------------------
+MBAS only listens on 127.0.0.1:8000 (localhost).
+No inbound firewall rules needed.
+
+For remote access (NOT RECOMMENDED without SSL):
+  - Modify backend\src\main.py: Change --host to 0.0.0.0
+  - Add firewall rule allowing port 8000
+  - IMPORTANT: Use reverse proxy with SSL in production
+
+TROUBLESHOOTING:
+---------------
+Issue: Virtual environment creation fails
+Fix: Verify Python installation, check disk space, run as admin
+
+Issue: Dependencies fail to install
+Fix: Check internet, verify Python 3.11/3.12, disable antivirus temp
+
+Issue: Database locked errors
+Fix: Ensure only one instance running, check file permissions
+
+Issue: Port 8000 in use
+Fix: Run STOP_MBAS.bat, check for other services on port 8000
+
+PERFORMANCE TUNING:
+------------------
+For optimal performance:
+  - Install on SSD if possible
+  - Ensure 8 GB RAM for databases >10,000 records
+  - Consider uvicorn workers for multi-core systems:
+    Modify START_MBAS.bat: --workers 2
+
+LICENSE MANAGEMENT:
+------------------
+License file: mbas.license
+  - Must be in same directory as INSTALL.bat
+  - Validated on each startup
+  - Tier determines available features:
+    * Basic: Core POS and inventory
+    * Standard: + Reports and analytics
+    * Premium: + AI forecasting and advanced features
+
+To deploy new license:
+  1. STOP_MBAS.bat
+  2. Replace mbas.license
+  3. START_MBAS.bat
+  4. Verify tier in Settings > System Info
+
+TECHNICAL SUPPORT:
+-----------------
+For enterprise support, escalate to software vendor with:
+  - HEALTH_CHECK.bat output
+  - Python version (python --version)
+  - Windows version
+  - Error messages from console
+  - Steps to reproduce issue
+
+================================================================
+   Deployment Package Built: 2026-04-27
+================================================================

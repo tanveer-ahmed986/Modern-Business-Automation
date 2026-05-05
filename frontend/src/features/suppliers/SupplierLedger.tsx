@@ -11,14 +11,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { 
-  Plus, 
-  Search, 
+import {
+  Plus,
+  Search,
   History,
   Edit
 } from "lucide-react";
 import suppliersService from "@/services/suppliers.service";
 import type { Supplier } from "@/services/suppliers.service";
+import settingsService from "@/services/settings.service";
+import type { Settings } from "@/services/settings.service";
 import {
   Dialog,
   DialogContent,
@@ -36,6 +38,7 @@ export default function SupplierLedger() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -46,9 +49,21 @@ export default function SupplierLedger() {
     address: "",
   });
 
+  const currency = settings?.currency || "USD";
+
   useEffect(() => {
     loadSuppliers();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    try {
+      const data = await settingsService.getSettings();
+      setSettings(data);
+    } catch (error) {
+      console.error("Failed to load settings");
+    }
+  };
 
   const loadSuppliers = async () => {
     try {
@@ -229,7 +244,7 @@ export default function SupplierLedger() {
                     <TableCell>{supplier.phone || "—"}</TableCell>
                     <TableCell>
                       <span className={supplier.balance > 0 ? "text-destructive font-bold" : "text-green-600"}>
-                        ${supplier.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {currency} {supplier.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">

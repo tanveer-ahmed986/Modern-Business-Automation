@@ -1,0 +1,59 @@
+================================================================================
+    Z&T TECHNOLOGIES BRANDING FILES
+================================================================================
+
+This folder contains branding assets for MBAS installer and application.
+
+Files:
+------
+✓ zt_logo.png          - Z&T Technologies logo (1366x1366 PNG)
+✓ mbas_icon.ico        - Application icon for Windows
+✓ company_logo.png     - Copy of Z&T logo for app use
+
+Usage:
+------
+These files are used in:
+- Windows installer wizard
+- Application icon
+- About page
+- Desktop shortcuts
+- Start Menu entries
+
+To Update Logo:
+----------------
+1. Replace zt_logo.png with your new logo (PNG format recommended)
+2. For best results, use square images (e.g., 512x512 or larger)
+3. Icon file (.ico) should be 256x256 or smaller
+4. Rebuild installer to apply changes
+
+Installer Branding:
+-------------------
+The installer shows:
+- Company name: Z&T Technologies
+- Tagline: State-of-the-Art Business Solutions
+- Website: www.zttechnologies.org
+- Email: zttechnologies12@gmail.com
+- Logo: zt_logo.png (in About page and documentation)
+
+Application Icon:
+-----------------
+Windows .ico format is required for:
+- Desktop shortcuts
+- Taskbar icon
+- Start Menu
+- System tray
+
+If you need to convert PNG to ICO:
+- Use online tools like: https://convertio.co/png-ico/
+- Or use: https://www.icoconverter.com/
+
+Recommended sizes for ICO:
+- 16x16, 32x32, 48x48, 256x256 pixels
+
+================================================================================
+
+A Product of Z&T Technologies
+State-of-the-Art Business Solutions
+www.zttechnologies.org
+
+================================================================================

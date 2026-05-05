@@ -1,0 +1,181 @@
+================================================================================
+    MBAS STARTUP ERROR - QUICK FIX GUIDE
+================================================================================
+
+ERROR SEEN:
+  "MBAS Server - Failed to start: Server failed to start"
+
+CAUSE:
+  The virtual environment was not created properly.
+  INSTALL.bat may have failed or was not run completely.
+
+================================================================================
+  QUICK FIX (2 MINUTES)
+================================================================================
+
+OPTION 1: AUTOMATIC FIX (RECOMMENDED)
+  1. Go to MBAS folder
+  2. Double-click: DIAGNOSE_AND_FIX.bat
+  3. Wait for it to complete
+  4. Then double-click: START_MBAS_TRAY.bat
+
+OPTION 2: MANUAL FIX
+  1. Go to MBAS folder
+  2. Double-click: INSTALL.bat
+  3. Wait for "Installation Complete!"
+  4. Then double-click: START_MBAS_TRAY.bat
+
+================================================================================
+  DETAILED STEPS
+================================================================================
+
+STEP 1: Run the Fix Tool
+  Location: deployment\MBAS_v1.0.9_Production_Ready\
+  File: DIAGNOSE_AND_FIX.bat
+
+  What it does:
+    ✓ Checks Python installation
+    ✓ Creates virtual environment
+    ✓ Installs all dependencies
+    ✓ Creates database
+    ✓ Checks port availability
+    ✓ Fixes all issues automatically
+
+STEP 2: Start MBAS
+  After DIAGNOSE_AND_FIX.bat completes:
+    - Double-click: START_MBAS_TRAY.bat
+    - System tray icon should appear (green)
+    - Browser should open automatically
+
+================================================================================
+  COMMON ISSUES AND SOLUTIONS
+================================================================================
+
+ISSUE 1: "Python is not installed"
+  SOLUTION:
+    1. Download Python 3.11 or 3.12 from python.org
+    2. Run installer
+    3. CHECK "Add Python to PATH" (IMPORTANT!)
+    4. Restart computer
+    5. Run DIAGNOSE_AND_FIX.bat again
+
+ISSUE 2: "Failed to create virtual environment"
+  SOLUTION:
+    1. Right-click DIAGNOSE_AND_FIX.bat
+    2. Select "Run as Administrator"
+    3. Try again
+
+ISSUE 3: "Port 8000 is already in use"
+  SOLUTION:
+    1. Open Task Manager (Ctrl+Shift+Esc)
+    2. Find "python.exe" processes
+    3. End them
+    4. Try starting MBAS again
+
+    OR run this command:
+    taskkill /F /IM python.exe
+
+ISSUE 4: "Dependencies failed to install"
+  SOLUTION:
+    1. Check internet connection
+    2. Disable antivirus temporarily
+    3. Run as Administrator
+    4. Try again
+
+================================================================================
+  VERIFICATION STEPS
+================================================================================
+
+After running DIAGNOSE_AND_FIX.bat, verify:
+
+  1. Virtual environment exists:
+     - Check folder: venv\Scripts\python.exe
+     - Should exist
+
+  2. Dependencies installed:
+     - Run: venv\Scripts\python -c "import fastapi, uvicorn"
+     - Should run without error
+
+  3. Database created:
+     - Check file: backend\mbas_database.db
+     - Should exist
+
+  4. Port 8000 free:
+     - Run: netstat -ano | findstr ":8000"
+     - Should show nothing or LISTENING
+
+================================================================================
+  STILL NOT WORKING?
+================================================================================
+
+If MBAS still doesn't start:
+
+  1. Check the logs:
+     - backend\logs\*.log
+     - Look for error messages
+
+  2. Run manual startup to see errors:
+     - Double-click: START_MBAS.bat
+     - You'll see the CMD window with errors
+
+  3. Check backend directly:
+     cd backend
+     ..\venv\Scripts\python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+     This will show the exact error
+
+  4. Common errors and fixes:
+
+     ERROR: "ModuleNotFoundError: No module named 'fastapi'"
+     FIX: Run INSTALL.bat again
+
+     ERROR: "Address already in use"
+     FIX: taskkill /F /IM python.exe
+
+     ERROR: "Database locked"
+     FIX: Close all MBAS instances, delete backend\mbas_database.db, run INSTALL.bat
+
+     ERROR: "Permission denied"
+     FIX: Run as Administrator
+
+================================================================================
+  CLEAN REINSTALL (LAST RESORT)
+================================================================================
+
+If nothing works, do a clean reinstall:
+
+  1. Stop all MBAS processes:
+     taskkill /F /IM python.exe
+     taskkill /F /IM pythonw.exe
+
+  2. Delete venv folder:
+     rmdir /s /q venv
+
+  3. Delete database:
+     del backend\mbas_database.db
+
+  4. Run INSTALL.bat again:
+     Double-click: INSTALL.bat
+     Wait for completion
+
+  5. Start MBAS:
+     Double-click: START_MBAS_TRAY.bat
+
+================================================================================
+  CONTACT SUPPORT
+================================================================================
+
+If issue persists, contact support with:
+  - Screenshot of error
+  - Output of DIAGNOSE_AND_FIX.bat
+  - Contents of: backend\logs\*.log
+  - Your Python version: python --version
+
+================================================================================
+
+TL;DR - QUICK FIX:
+  1. Run: DIAGNOSE_AND_FIX.bat
+  2. Run: START_MBAS_TRAY.bat
+  3. Done!
+
+================================================================================

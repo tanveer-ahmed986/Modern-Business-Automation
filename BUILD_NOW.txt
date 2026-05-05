@@ -1,0 +1,114 @@
+================================================================================
+    BUILD YOUR INSTALLER NOW - SIMPLE INSTRUCTIONS
+================================================================================
+
+✅ All files verified and ready!
+✅ Frontend built
+✅ Backend ready
+✅ Logo integrated
+✅ Icon ready
+
+================================================================================
+    OPTION 1: SIMPLE BUILD (RECOMMENDED)
+================================================================================
+
+Double-click this file:
+
+    BUILD_INSTALLER_SIMPLE.bat
+
+It will:
+  1. Verify all files exist
+  2. Build frontend (if needed)
+  3. Compile installer with Inno Setup
+  4. Create: MBAS_Professional_Setup_v2.0.0_ZT_Technologies.exe
+
+Takes 5-10 minutes.
+
+================================================================================
+    OPTION 2: MANUAL BUILD
+================================================================================
+
+If you prefer manual control:
+
+1. Open Inno Setup 6
+
+2. Open file:
+   deployment\build_installer\MBAS_Installer_Professional_ZT.iss
+
+3. Click: Build → Compile
+
+4. Wait for completion
+
+5. Find installer in:
+   deployment\build_installer\output\
+
+================================================================================
+    WHAT YOU'LL GET
+================================================================================
+
+Installer Name:
+  MBAS_Professional_Setup_v2.0.0_ZT_Technologies.exe
+
+Size:
+  ~50-80 MB (includes all dependencies)
+
+Branding:
+  ✓ Company: Z&T Technologies
+  ✓ Website: www.zttechnologies.org
+  ✓ Email: zttechnologies12@gmail.com
+  ✓ Logo: Z&T_LOGO.png (included)
+  ✓ Version: 2.0.0
+
+Features:
+  ✓ Professional Windows installer
+  ✓ No CMD windows for users
+  ✓ System tray mode
+  ✓ Auto-install dependencies
+  ✓ Desktop shortcuts
+  ✓ Start Menu entries
+  ✓ Clean uninstall
+
+================================================================================
+    AFTER BUILDING
+================================================================================
+
+Test the installer:
+  1. Copy to clean Windows machine
+  2. Run installer
+  3. Verify MBAS starts
+  4. Check branding appears correctly
+  5. Test all features
+
+Then:
+  1. Upload to www.zttechnologies.org
+  2. Share with customers
+  3. Distribute!
+
+================================================================================
+    TROUBLESHOOTING
+================================================================================
+
+If build fails:
+
+1. "Inno Setup not found"
+   → Install from: https://jrsoftware.org/isdl.php
+
+2. "Frontend dist not found"
+   → Run: cd frontend && npm run build
+
+3. "Missing files"
+   → Check BUILD_INSTALLER_SIMPLE.bat output
+   → It will show which files are missing
+
+================================================================================
+
+READY? Just run:
+
+    BUILD_INSTALLER_SIMPLE.bat
+
+================================================================================
+
+Z&T Technologies - State-of-the-Art Business Solutions
+www.zttechnologies.org | zttechnologies12@gmail.com
+
+================================================================================

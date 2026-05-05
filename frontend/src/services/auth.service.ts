@@ -1,4 +1,5 @@
 import api from './api';
+import axios from 'axios';
 
 export interface User {
   id: number;
@@ -15,37 +16,76 @@ export interface AuthResponse {
   user: User;
 }
 
-const login = async (username: string, password: string): Promise<AuthResponse> => {
+// Helper function to check if backend is reachable
+const checkBackendHealth = async (): Promise<boolean> => {
+  try {
+    await axios.get(`${api.defaults.baseURL}/health`, { timeout: 5000 });
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
+
+// Login with retry logic and exponential backoff
+const login = async (username: string, password: string, retryCount = 0): Promise<AuthResponse> => {
+  const MAX_RETRIES = 2;
   const formData = new FormData();
   formData.append('username', username);
   formData.append('password', password);
 
-  const response = await api.post<AuthResponse>('/auth/login', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  try {
+    const response = await api.post<AuthResponse>('/auth/login', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-  if (response.data.access_token) {
-    localStorage.setItem('mbas_token', response.data.access_token);
-    localStorage.setItem('mbas_user', JSON.stringify(response.data.user));
+    if (response.data.access_token) {
+      sessionStorage.setItem('mbas_token', response.data.access_token);
+      sessionStorage.setItem('mbas_user', JSON.stringify(response.data.user));
+    }
+
+    return response.data;
+  } catch (error: any) {
+    // Check if it's a timeout or network error
+    const isTimeoutError = error.code === 'ECONNABORTED' || error.message?.includes('timeout');
+    const isNetworkError = error.message === 'Network Error' || !error.response;
+
+    if ((isTimeoutError || isNetworkError) && retryCount < MAX_RETRIES) {
+      // Wait with exponential backoff before retrying
+      const delay = Math.min(1000 * Math.pow(2, retryCount), 5000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+
+      // Check if backend is healthy before retrying
+      const isHealthy = await checkBackendHealth();
+      if (!isHealthy) {
+        throw new Error('SERVER_UNAVAILABLE');
+      }
+
+      return login(username, password, retryCount + 1);
+    }
+
+    // If it's a timeout/network error and we've exhausted retries
+    if (isTimeoutError || isNetworkError) {
+      throw new Error('SERVER_TIMEOUT');
+    }
+
+    throw error;
   }
-
-  return response.data;
 };
 
 const logout = () => {
-  localStorage.removeItem('mbas_token');
-  localStorage.removeItem('mbas_user');
+  sessionStorage.removeItem('mbas_token');
+  sessionStorage.removeItem('mbas_user');
 };
 
 const getCurrentUser = (): User | null => {
-  const userStr = localStorage.getItem('mbas_user');
+  const userStr = sessionStorage.getItem('mbas_user');
   if (userStr) {
     try {
       return JSON.parse(userStr);
     } catch (e) {
-      console.error('Failed to parse user from localStorage', e);
+      console.error('Failed to parse user from sessionStorage', e);
       return null;
     }
   }
@@ -53,7 +93,7 @@ const getCurrentUser = (): User | null => {
 };
 
 const isAuthenticated = (): boolean => {
-  return !!localStorage.getItem('mbas_token');
+  return !!sessionStorage.getItem('mbas_token');
 };
 
 const authService = {

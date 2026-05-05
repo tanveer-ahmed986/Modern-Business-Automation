@@ -1,0 +1,48 @@
+MBAS - Modern Business Automation System
+End-User License Agreement (EULA)
+
+Copyright (c) 2024-2026 ZT Products. All rights reserved.
+
+This software is licensed, not sold. By installing, copying, or using MBAS,
+you agree to the terms of this license agreement.
+
+GRANT OF LICENSE
+---------------
+ZT Products grants you a non-exclusive, non-transferable license to use the
+MBAS software for business automation purposes.
+
+PERMITTED USE
+-------------
+- Install and use on unlimited computers within your organization
+- Create backups for archival purposes
+- Use for commercial business operations
+
+RESTRICTIONS
+------------
+- You may not reverse engineer, decompile, or disassemble the software
+- You may not rent, lease, or lend the software
+- You may not remove any copyright notices from the software
+- You may not distribute or sell the software to third parties
+
+SUPPORT
+-------
+Technical support is available via email: support@ztproducts.com
+
+LIMITED WARRANTY
+----------------
+This software is provided "as is" without warranty of any kind, either
+expressed or implied, including but not limited to warranties of
+merchantability or fitness for a particular purpose.
+
+LIMITATION OF LIABILITY
+-----------------------
+In no event shall ZT Products be liable for any damages whatsoever arising
+out of the use or inability to use this software.
+
+TERMINATION
+-----------
+This license is effective until terminated. Your rights under this license
+will terminate automatically without notice if you fail to comply with any
+term of this agreement.
+
+For questions about this license, contact: support@ztproducts.com

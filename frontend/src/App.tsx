@@ -9,6 +9,8 @@ import SupplierLedger from './features/suppliers/SupplierLedger';
 import PurchasePage from './features/purchases/PurchasePage';
 import ReportsPage from './features/reports/ReportsPage';
 import AIChatPanel from './features/ai/AIChatPanel';
+import AutomaticBackupPage from './features/settings/AutomaticBackupPage';
+import UsersPage from './features/users/UsersPage';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import { Toaster } from './components/ui/sonner';
@@ -35,8 +37,8 @@ const App: React.FC = () => {
             <Route path="/suppliers" element={<SupplierLedger />} />
             <Route path="/purchases/new" element={<PurchasePage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/users" element={<div>Users Management (Coming Soon)</div>} />
-            <Route path="/backup" element={<div>System Backup (Coming Soon)</div>} />
+            <Route path="/users" element={<UsersPage />} />
+            <Route path="/backup" element={<AutomaticBackupPage />} />
             <Route path="/ai" element={<AIChatPanel />} />
           </Route>
         </Route>

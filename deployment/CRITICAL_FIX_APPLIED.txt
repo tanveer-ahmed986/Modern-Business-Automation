@@ -1,0 +1,143 @@
+================================================================
+  CRITICAL FIX APPLIED - DATABASE SESSION ERROR
+================================================================
+
+ISSUE: Page loading failed with error:
+  TypeError: 'generator' object does not support the context
+  manager protocol
+
+CAUSE: The get_session() function was incorrectly used as a
+       context manager in the startup code.
+
+FIX: Changed from get_session() to Session(engine) which is
+     the proper context manager.
+
+================================================================
+  NEW PACKAGE
+================================================================
+
+File: MBAS_v1.0.0_Basic_20260426.zip
+Location: deployment folder
+Status: READY FOR INSTALLATION
+
+This package includes:
+  ✅ Database session fix (CRITICAL)
+  ✅ Diagnostic tool (DIAGNOSE.bat)
+  ✅ Troubleshooting guides
+  ✅ Desktop icon and shortcut
+  ✅ Properly signed Standard license
+  ✅ All dependency fixes (bcrypt, numpy/pandas)
+
+================================================================
+  INSTALLATION INSTRUCTIONS
+================================================================
+
+1. Extract MBAS_v1.0.0_Basic_20260426.zip
+
+2. Run: INSTALL.bat
+   - Wait for completion (2-5 minutes)
+   - Should show: [SUCCESS] System initialized successfully
+
+3. Run: START_MBAS.bat
+   - Should show: INFO: Uvicorn running on http://127.0.0.1:8000
+   - Browser should open automatically
+
+4. Login:
+   - Username: admin
+   - Password: admin123
+
+================================================================
+  EXPECTED OUTPUT (STARTUP)
+================================================================
+
+[OK] Starting MBAS Server...
+INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+License validated: ABC Pharmacy (STANDARD)
+License: PERPETUAL
+Feature flags loaded from license: 8 enabled
+Automatic backup scheduler started
+Serving frontend from ...\frontend\dist
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000
+
+================================================================
+  IF STILL HAVING ISSUES
+================================================================
+
+1. Run: DIAGNOSE.bat
+   - This will check your installation
+
+2. Run START_MBAS.bat from Command Prompt:
+   cd MBAS_Package
+   START_MBAS.bat
+
+3. Check these files:
+   - QUICK_FIX_PAGE_LOADING.txt
+   - PAGE_LOADING_FIX.md
+   - DIAGNOSE.bat
+
+4. Common issues:
+   - Port 8000 in use → Run STOP_MBAS.bat
+   - Dependencies missing → Run INSTALL.bat
+   - Database locked → Delete backend\mbas_database.db and reinstall
+
+================================================================
+  WHAT WAS FIXED
+================================================================
+
+Technical Details:
+
+Before (BROKEN):
+  from src.core.db import get_session
+  with get_session() as session:  # ERROR!
+      ...
+
+After (FIXED):
+  from src.core.db import engine
+  from sqlmodel import Session
+  with Session(engine) as session:  # WORKS!
+      ...
+
+The get_session() function is a generator (uses yield) for
+FastAPI dependency injection. It cannot be used as a context
+manager. The proper way is to use Session(engine) directly.
+
+================================================================
+  VERSION HISTORY
+================================================================
+
+v1.0.0 (2026-04-26):
+  - Fixed database session context manager error
+  - Added diagnostic tools
+  - Fixed bcrypt compatibility
+  - Removed numpy/pandas from Basic tier
+  - Added desktop icon functionality
+  - Properly signed licenses
+
+================================================================
+  VERIFICATION
+================================================================
+
+To verify the fix worked:
+
+1. Extract the package
+2. Run INSTALL.bat
+3. Watch for these messages:
+   ✓ [+] Creating default system settings...
+   ✓ [+] Loaded STANDARD license for: ABC Pharmacy
+   ✓ [SUCCESS] System initialized successfully
+
+4. Run START_MBAS.bat
+5. Should show: "Uvicorn running..." with NO errors
+
+If you see "TypeError" again:
+  - The old package is being used
+  - Extract the NEW package: MBAS_v1.0.0_Basic_20260426.zip
+  - Make sure timestamp is April 26, 2026
+
+================================================================
+
+This critical fix should resolve the page loading issue!
+
+================================================================

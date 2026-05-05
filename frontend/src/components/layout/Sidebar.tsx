@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import authService from '@/services/auth.service';
 import { Button } from '@/components/ui/button';
 import useBranding from '@/hooks/useBranding';
+import { useFeatureFlags } from '@/hooks/useFeatureFlag';
 
 interface SidebarItem {
   name: string;
@@ -28,15 +29,15 @@ interface SidebarItem {
 }
 
 const sidebarItems: SidebarItem[] = [
-  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-  { name: 'Inventory', path: '/inventory', icon: Package, roles: ['admin', 'manager'] },
-  { name: 'Billing', path: '/billing', icon: ShoppingCart },
-  { name: 'Suppliers', path: '/suppliers', icon: Truck, roles: ['admin', 'manager'] },
-  { name: 'Purchases', path: '/purchases/new', icon: FileDown, roles: ['admin', 'manager'] },
-  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['admin', 'manager'] },
+  { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, feature: 'dashboard' },
+  { name: 'Inventory', path: '/inventory', icon: Package, roles: ['admin', 'manager'], feature: 'inventory' },
+  { name: 'Billing', path: '/billing', icon: ShoppingCart, feature: 'billing' },
+  { name: 'Suppliers', path: '/suppliers', icon: Truck, roles: ['admin', 'manager'], feature: 'suppliers' },
+  { name: 'Purchases', path: '/purchases/new', icon: FileDown, roles: ['admin', 'manager'], feature: 'purchases' },
+  { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['admin', 'manager'], feature: 'advanced_reports' },
   { name: 'Users', path: '/users', icon: Users, roles: ['admin'] },
-  { name: 'Backup', path: '/backup', icon: Database, roles: ['admin'] },
-  { name: 'AI Insights', path: '/ai', icon: BrainCircuit, roles: ['admin'] },
+  { name: 'Backup', path: '/backup', icon: Database, roles: ['admin'], feature: 'backup_restore' },
+  { name: 'AI Insights', path: '/ai', icon: BrainCircuit, roles: ['admin'], feature: 'ai_assistant' },
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['admin'] },
 ];
 
@@ -44,6 +45,7 @@ const Sidebar: React.FC = () => {
   const user = authService.getCurrentUser();
   const navigate = useNavigate();
   const { businessName, isLoading } = useBranding();
+  const featureFlags = useFeatureFlags();
 
   const handleLogout = () => {
     authService.logout();
@@ -51,7 +53,12 @@ const Sidebar: React.FC = () => {
   };
 
   const filteredItems = sidebarItems.filter(item => {
+    // Check role-based access
     if (item.roles && user && !item.roles.includes(user.role)) return false;
+
+    // Check feature flag (if specified)
+    if (item.feature && !featureFlags[item.feature]) return false;
+
     return true;
   });
 

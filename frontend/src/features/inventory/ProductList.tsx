@@ -60,18 +60,20 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { 
-  inventoryService, 
-  type Product, 
-  type Category 
+import {
+  inventoryService,
+  type Product,
+  type Category
 } from '@/services/inventory.service';
 import authService from '@/services/auth.service';
 import { toast } from 'sonner';
+import { useBranding } from '@/hooks/useBranding';
 
 // Placeholder for the form modal - will be implemented in next step
 import ProductForm from './ProductForm';
 
 const ProductList: React.FC = () => {
+  const branding = useBranding();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -228,11 +230,7 @@ const ProductList: React.FC = () => {
       header: "Selling Price",
       cell: ({ row }) => {
         const amount = parseFloat(row.getValue("selling_price"));
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(amount);
-        return <div className="font-medium">{formatted}</div>;
+        return <div className="font-medium">{branding.currency} {amount.toFixed(2)}</div>;
       },
     },
     ...(isAdminOrManager ? [{
@@ -240,11 +238,7 @@ const ProductList: React.FC = () => {
       header: "Cost Price",
       cell: ({ row }: { row: any }) => {
         const amount = parseFloat(row.getValue("cost_price") || 0);
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(amount);
-        return <div className="text-muted-foreground">{formatted}</div>;
+        return <div className="text-muted-foreground">{branding.currency} {amount.toFixed(2)}</div>;
       },
     }] : []),
     {

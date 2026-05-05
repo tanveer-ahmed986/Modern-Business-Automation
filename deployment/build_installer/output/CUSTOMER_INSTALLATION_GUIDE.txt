@@ -1,0 +1,315 @@
+========================================================================
+    MBAS - Modern Business Automation System
+    Installation Guide for Customers
+    Version 1.2.0
+========================================================================
+
+THANK YOU FOR CHOOSING MBAS!
+
+This package contains everything needed to install and run MBAS on
+your Windows computer.
+
+========================================================================
+QUICK START (3 Easy Steps)
+========================================================================
+
+1. INSTALL PYTHON (If not already installed)
+   Download: https://www.python.org/downloads/
+   Version: Python 3.11 or 3.12
+
+   IMPORTANT: During Python installation:
+   ✓ Check "Add Python to PATH"
+   ✓ Click "Install Now"
+
+2. RUN THE INSTALLER
+   Double-click: MBAS_Setup_v1.2.0_Robust.exe
+
+   - Click "Next" through the wizard
+   - Choose installation path (Recommended: C:\MBAS)
+   - Check "Create desktop shortcut"
+   - Click "Install"
+   - Wait 2-4 minutes
+
+3. LAUNCH MBAS
+   - Double-click desktop shortcut: "MBAS - Modern Business Automation System"
+   - Wait 30-60 seconds for first startup
+   - Browser opens automatically to: http://localhost:5173
+
+   Default Login:
+   Username: admin
+   Password: password
+
+   IMPORTANT: Change password after first login!
+
+========================================================================
+SYSTEM REQUIREMENTS
+========================================================================
+
+Operating System: Windows 10 or Windows 11 (64-bit)
+Required Software: Python 3.11 or 3.12
+Disk Space:       2GB free space
+RAM:              4GB minimum, 8GB recommended
+Internet:         Required for first-time setup only
+
+========================================================================
+INSTALLATION DETAILS
+========================================================================
+
+Installation Location (Recommended):
+  C:\MBAS
+
+This location DOES NOT require administrator permissions.
+You can also install to other locations like:
+  - D:\MBAS
+  - C:\Users\YourName\MBAS
+
+Avoid installing to:
+  - C:\Program Files (requires admin for every operation)
+
+Installation Time:
+  - Copying files: 1 minute
+  - Installing dependencies: 2-3 minutes
+  - Total: 3-4 minutes
+
+What Gets Installed:
+  ✓ MBAS Backend (Python/FastAPI)
+  ✓ MBAS Frontend (React/Vite)
+  ✓ Database (SQLite - no separate installation needed)
+  ✓ Desktop shortcuts
+  ✓ Start menu items
+  ✓ Python virtual environment (isolated dependencies)
+
+========================================================================
+FIRST RUN
+========================================================================
+
+After installation completes:
+
+1. Launch MBAS from desktop shortcut
+2. A system tray icon appears (green = running)
+3. Browser opens automatically
+4. Login with default credentials:
+   Username: admin
+   Password: password
+
+5. IMPORTANT FIRST STEPS:
+   - Change default password immediately
+   - Configure your business settings
+   - Add your company information
+   - Set up currency and language preferences
+
+========================================================================
+USING MBAS
+========================================================================
+
+Starting MBAS:
+  - Desktop shortcut: "MBAS - Modern Business Automation System"
+  - Or: C:\MBAS\START_MBAS_TRAY.bat
+
+  Look for green tray icon = System is running
+  Browser opens automatically to http://localhost:5173
+
+Stopping MBAS:
+  - Right-click tray icon → Exit
+  - Or: Start Menu → MBAS → Stop MBAS
+
+Health Check:
+  - Start Menu → MBAS → Health Check
+  - Verifies system is running correctly
+
+========================================================================
+FEATURES INCLUDED
+========================================================================
+
+✓ Inventory Management
+  - Product tracking
+  - Stock levels
+  - Low stock alerts
+  - Barcode support
+
+✓ Sales & Billing
+  - Invoice generation
+  - Customer management
+  - Payment tracking
+  - Sales reports
+
+✓ Purchase Management
+  - Supplier management
+  - Purchase orders
+  - Stock receiving
+  - Supplier ledger
+
+✓ Dashboard & Reports
+  - Real-time analytics
+  - Sales trends
+  - Profit analysis
+  - Custom reports
+  - PDF/Excel export
+
+✓ AI-Powered Features
+  - Sales forecasting
+  - Demand prediction
+  - Inventory optimization
+  - Smart recommendations
+
+✓ User Management
+  - Multiple user accounts
+  - Role-based access control
+  - Activity logging
+
+========================================================================
+TROUBLESHOOTING
+========================================================================
+
+Problem: "Python not found" during installation
+Solution: Install Python 3.11 or 3.12
+         Make sure "Add Python to PATH" was checked
+
+Problem: Browser doesn't open automatically
+Solution: Manually open: http://localhost:5173
+         Check tray icon is green
+
+Problem: Can't login
+Solution: Use default credentials:
+         Username: admin
+         Password: password
+
+Problem: Port 8000 already in use
+Solution: Close other applications using port 8000
+         Or restart your computer
+
+Problem: Slow first startup
+Solution: This is normal! First startup takes 30-60 seconds
+         Subsequent startups are much faster (5-10 seconds)
+
+Problem: Application won't start
+Solution: Run Health Check from Start Menu → MBAS → Health Check
+
+For more help:
+  - See: C:\MBAS\README_FIRST.txt
+  - See: C:\MBAS\START_HERE_IF_PROBLEMS.txt
+
+========================================================================
+UNINSTALLING
+========================================================================
+
+If you need to uninstall MBAS:
+
+1. Windows Settings → Apps → Apps & features
+2. Find "MBAS - Modern Business Automation System"
+3. Click Uninstall
+4. Follow the wizard
+
+Your database will be automatically backed up to Desktop before removal.
+
+Alternative:
+  - Start Menu → MBAS → Uninstall MBAS
+
+========================================================================
+DATA BACKUP
+========================================================================
+
+Your business data is stored in:
+  C:\MBAS\backend\mbas_database.db
+
+Backup Recommendations:
+  - Backup this file daily
+  - Keep backups on separate drive or cloud storage
+  - Use Settings → Backup/Restore for automatic backups
+
+Automatic Backups:
+  MBAS automatically backs up your database:
+  - Before uninstalling
+  - Before upgrading to new version
+  - Backups saved to: Desktop\MBAS_Backup
+
+========================================================================
+UPDATING MBAS
+========================================================================
+
+When a new version is available:
+
+1. Download new installer: MBAS_Setup_v[NEW_VERSION].exe
+2. Run the installer
+3. Installer detects existing installation
+4. Your database is automatically backed up
+5. Files are updated
+6. Your data is preserved
+
+No need to uninstall old version first!
+
+========================================================================
+SECURITY & PRIVACY
+========================================================================
+
+✓ All data stored locally on your computer
+✓ No cloud services required
+✓ No data sent to external servers
+✓ Offline-capable (after initial setup)
+✓ Your business data stays private
+
+First Steps for Security:
+1. Change default admin password
+2. Create user accounts for staff
+3. Set up regular backups
+4. Keep Windows and Python updated
+
+========================================================================
+SUPPORT
+========================================================================
+
+Installation Support:
+  - Email: [Your Support Email]
+  - Phone: [Your Support Phone]
+  - Business Hours: [Your Hours]
+
+Documentation:
+  - Installed at: C:\MBAS\docs\
+  - README_FIRST.txt
+  - START_HERE_IF_PROBLEMS.txt
+  - QUICK_REFERENCE.txt
+
+Emergency Fix:
+  - Run: C:\MBAS\EMERGENCY_FIX.bat
+  - Automatically fixes common issues
+
+========================================================================
+LICENSE & WARRANTY
+========================================================================
+
+This software is licensed for commercial use.
+License file: C:\MBAS\mbas.license
+
+Warranty: 90-day software warranty
+Support: 1 year free support included
+
+For license questions:
+  - Email: [Your Licensing Email]
+
+========================================================================
+THANK YOU!
+========================================================================
+
+Thank you for choosing MBAS - Modern Business Automation System!
+
+We're committed to helping your business succeed.
+
+If you have any questions or need assistance, please don't hesitate
+to contact our support team.
+
+Visit: [Your Website]
+Email: [Your Support Email]
+Phone: [Your Support Phone]
+
+========================================================================
+
+File Information:
+  Installer: MBAS_Setup_v1.2.0_Robust.exe
+  Version: 1.2.0
+  Build Date: May 3, 2026
+  File Size: 2.4 MB
+  MD5: ad2f02f725d9b368f3fe518243e2f7d2
+
+© 2026 ZT Products. All rights reserved.
+
+========================================================================

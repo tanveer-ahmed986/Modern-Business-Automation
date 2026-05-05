@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { getDashboardMetrics } from '@/services/dashboard.service';
 import type { DashboardMetrics } from '@/services/dashboard.service';
 import { LowStockWidget } from './LowStockWidget';
+import { useBranding } from '@/hooks/useBranding';
 
 const IconMap: Record<string, React.ComponentType<any>> = {
   DollarSign,
@@ -22,6 +23,7 @@ const IconMap: Record<string, React.ComponentType<any>> = {
 };
 
 const DashboardPage: React.FC = () => {
+  const branding = useBranding();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -111,7 +113,7 @@ const DashboardPage: React.FC = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>{new Date(sale.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</TableCell>
-                    <TableCell className="text-right">${sale.grand_total.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">{branding.currency} {(typeof sale.grand_total === 'string' ? parseFloat(sale.grand_total) : sale.grand_total).toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
                 {metrics.recent_sales.length === 0 && (
@@ -148,7 +150,7 @@ const DashboardPage: React.FC = () => {
                       </p>
                     </div>
                     <div className="ml-auto font-medium">
-                      +${product.total_revenue.toFixed(2)}
+                      +{branding.currency} {(typeof product.total_revenue === 'string' ? parseFloat(product.total_revenue) : product.total_revenue).toFixed(2)}
                     </div>
                   </div>
                 ))}

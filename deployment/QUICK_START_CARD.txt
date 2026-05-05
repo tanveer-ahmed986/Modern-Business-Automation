@@ -1,0 +1,272 @@
+╔════════════════════════════════════════════════════════════════════╗
+║                                                                    ║
+║     MBAS v1.0.9 - Modern Business Automation System                ║
+║     Quick Start Guide for End Users                                ║
+║                                                                    ║
+╚════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────┐
+│  BEFORE YOU START                                                  │
+└────────────────────────────────────────────────────────────────────┘
+
+  ✓ Windows 10 or Windows 11
+  ✓ Python 3.11 or 3.12 installed
+    (Download from: https://www.python.org/downloads/)
+    ⚠️ IMPORTANT: Check "Add Python to PATH" during installation
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  STEP 1: EXTRACT THE PACKAGE                                      │
+└────────────────────────────────────────────────────────────────────┘
+
+  1. Locate: MBAS_v1.0.9_Production_Ready.zip
+  2. Right-click → Extract All
+  3. Choose location: C:\MBAS (or any folder you prefer)
+  4. Click "Extract"
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  STEP 2: RUN INSTALLATION                                         │
+└────────────────────────────────────────────────────────────────────┘
+
+  1. Open the extracted folder
+  2. Double-click: INSTALL.bat
+  3. Wait for "Installation Complete!" message
+     (Takes 2-4 minutes on first install)
+  4. A desktop shortcut "MBAS" will be created
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  STEP 3: START MBAS                                               │
+└────────────────────────────────────────────────────────────────────┘
+
+  Option A (Easiest):
+    → Double-click the "MBAS" desktop shortcut
+
+  Option B:
+    → Go to the MBAS folder
+    → Double-click: START_MBAS_TRAY.bat
+
+  What happens:
+    • MBAS icon appears in system tray (near clock) 🟢
+    • Browser opens automatically
+    • Login page loads
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  STEP 4: LOGIN                                                    │
+└────────────────────────────────────────────────────────────────────┘
+
+  Default Credentials:
+    Username: admin
+    Password: admin123
+
+  ⚠️ SECURITY: Change your password immediately after first login!
+
+  How to change password:
+    1. Click your name (top-right corner)
+    2. Settings → Change Password
+    3. Enter new password
+    4. Save
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  USING MBAS                                                       │
+└────────────────────────────────────────────────────────────────────┘
+
+  📊 Dashboard
+    • View sales, inventory, and business metrics
+    • Real-time updates
+
+  📦 Inventory
+    • Add/edit products
+    • Track stock levels
+    • Set low stock alerts
+
+  🛒 Sales & Billing
+    • Create invoices
+    • Process sales
+    • Print receipts
+
+  📈 Reports
+    • Sales reports
+    • Inventory reports
+    • Financial summaries
+
+  ⚙️ Settings
+    • Company information
+    • Currency settings
+    • Backup & restore
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  SYSTEM TRAY MENU                                                 │
+└────────────────────────────────────────────────────────────────────┘
+
+  Right-click the MBAS icon in system tray:
+
+    📂 Open MBAS          → Opens in browser
+    ✅ Server Status      → Shows if running
+    🔄 Restart Server     → Restart backend
+    ❌ Exit               → Stop MBAS completely
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  STOPPING MBAS                                                    │
+└────────────────────────────────────────────────────────────────────┘
+
+  Option A:
+    → Right-click system tray icon
+    → Click "Exit"
+
+  Option B:
+    → Go to MBAS folder
+    → Double-click: STOP_MBAS.bat
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  TROUBLESHOOTING                                                  │
+└────────────────────────────────────────────────────────────────────┘
+
+  Problem: "Python is not installed"
+  Solution:
+    1. Install Python 3.11 or 3.12 from python.org
+    2. Check "Add Python to PATH" during installation
+    3. Restart computer
+    4. Run INSTALL.bat again
+
+  ─────────────────────────────────────────────────────────────────
+
+  Problem: Installation fails
+  Solution:
+    1. Check internet connection
+    2. Run INSTALL.bat as Administrator
+       (Right-click → Run as Administrator)
+    3. Temporarily disable antivirus
+    4. Try again
+
+  ─────────────────────────────────────────────────────────────────
+
+  Problem: System tray icon doesn't appear
+  Solution:
+    1. Wait 10-15 seconds (startup time)
+    2. Check system tray (click up arrow ↑)
+    3. If still missing, run: START_MBAS.bat
+       (Shows windows for troubleshooting)
+
+  ─────────────────────────────────────────────────────────────────
+
+  Problem: Can't access http://localhost:8000
+  Solution:
+    1. Check if MBAS is running (system tray icon)
+    2. Try: http://127.0.0.1:8000
+    3. Check firewall settings
+    4. Run: HEALTH_CHECK.bat for diagnostics
+
+  ─────────────────────────────────────────────────────────────────
+
+  Problem: Login doesn't work
+  Solution:
+    1. Use default credentials: admin / admin123
+    2. Wait 30 seconds if it hangs
+    3. Click "Retry" button
+    4. Restart MBAS if needed
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  IMPORTANT TIPS                                                   │
+└────────────────────────────────────────────────────────────────────┘
+
+  💾 BACKUPS:
+    • MBAS automatically backs up your data
+    • Backups stored in: backend\backups\
+    • Keep backups safe!
+
+  🔒 SECURITY:
+    • Change default password immediately
+    • Use strong passwords
+    • Don't share your credentials
+
+  📱 ACCESS:
+    • Only accessible from this computer
+    • URL: http://localhost:8000
+    • Not accessible from other devices
+
+  🔄 UPDATES:
+    • Keep MBAS updated
+    • Check for new versions
+    • Follow upgrade guides
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  GETTING HELP                                                     │
+└────────────────────────────────────────────────────────────────────┘
+
+  📖 Documentation:
+    • README_v1.0.9.txt (in MBAS folder)
+    • RELEASE_NOTES_v1.0.9.txt
+    • UPGRADE_GUIDE_v1.0.9.txt
+
+  🔧 Diagnostics:
+    • Run: HEALTH_CHECK.bat
+    • Provides system status report
+
+  📞 Support:
+    • Contact your system administrator
+    • Provide HEALTH_CHECK results
+    • Note any error messages
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  DAILY WORKFLOW                                                   │
+└────────────────────────────────────────────────────────────────────┘
+
+  Morning:
+    1. Double-click "MBAS" desktop shortcut
+    2. Wait for system tray icon (🟢 green)
+    3. Open browser to http://localhost:8000
+    4. Login and start working
+
+  During the day:
+    • MBAS runs silently in background
+    • No visible windows (professional mode)
+    • Access anytime via browser
+
+  Evening:
+    1. Close browser (MBAS keeps running)
+    2. Right-click tray icon
+    3. Click "Exit" to stop MBAS
+    4. Data automatically backed up
+
+
+┌────────────────────────────────────────────────────────────────────┐
+│  FILE LOCATIONS                                                   │
+└────────────────────────────────────────────────────────────────────┘
+
+  📁 MBAS Installation:
+    → C:\MBAS\ (or your chosen location)
+
+  📁 Database:
+    → C:\MBAS\backend\mbas_database.db
+
+  📁 Backups:
+    → C:\MBAS\backend\backups\
+
+  📁 Logs:
+    → C:\MBAS\backend\logs\
+
+
+╔════════════════════════════════════════════════════════════════════╗
+║                                                                    ║
+║  🎉 YOU'RE READY TO GO!                                            ║
+║                                                                    ║
+║  Start MBAS and begin managing your business efficiently.          ║
+║                                                                    ║
+║  Questions? Check README_v1.0.9.txt or contact support.           ║
+║                                                                    ║
+╚════════════════════════════════════════════════════════════════════╝
+
+─────────────────────────────────────────────────────────────────────
+MBAS v1.0.9 - Modern Business Automation System
+Package Date: 2026-04-30
+─────────────────────────────────────────────────────────────────────

@@ -1,0 +1,150 @@
+============================================================
+   BACKEND INSTALLATION FIX GUIDE
+   "Failed building wheel for pydantic-core"
+============================================================
+
+THE PROBLEM:
+Your Python 3.13 is very new - many packages don't have
+pre-built wheels yet, so pip tries to compile from source.
+But you don't have a Rust compiler installed.
+
+============================================================
+SOLUTION 1: Install Without Version Constraints (EASIEST)
+============================================================
+
+Let pip find compatible pre-built versions automatically:
+
+cd F:\MBAS_Package\backend
+
+pip uninstall -y fastapi pydantic pydantic-settings pydantic-core uvicorn sqlmodel
+
+pip install fastapi uvicorn sqlmodel
+
+pip install python-jose[cryptography] passlib[bcrypt] python-multipart apscheduler
+
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+This should work because pip will choose versions that have
+pre-built wheels for Python 3.13.
+
+============================================================
+SOLUTION 2: Use --only-binary Flag
+============================================================
+
+Force pip to ONLY use pre-built packages:
+
+cd F:\MBAS_Package\backend
+
+pip install --only-binary :all: fastapi uvicorn sqlmodel python-jose passlib python-multipart apscheduler
+
+If this fails, some package doesn't have a wheel for Python 3.13.
+Try Solution 3.
+
+============================================================
+SOLUTION 3: Downgrade to Python 3.11 (RECOMMENDED)
+============================================================
+
+Python 3.13 is very new (released Oct 2024).
+Python 3.11 is more stable and has more pre-built packages.
+
+1. Uninstall Python 3.13
+
+2. Install Python 3.11 from:
+   https://www.python.org/downloads/release/python-3119/
+
+3. Download: "Windows installer (64-bit)"
+
+4. Run installer:
+   ✓ Check "Add Python to PATH"
+   ✓ Click "Install Now"
+
+5. Restart computer
+
+6. Verify:
+   python --version
+   Should show: Python 3.11.x
+
+7. Install dependencies:
+   cd F:\MBAS_Package\backend
+   pip install -r requirements.txt
+
+============================================================
+SOLUTION 4: Install Latest Compatible Versions
+============================================================
+
+Install newest versions that have pre-built wheels:
+
+cd F:\MBAS_Package\backend
+
+pip install --upgrade pip
+
+pip install "fastapi>=0.100" "uvicorn[standard]>=0.20" sqlmodel
+
+pip install python-jose[cryptography] passlib[bcrypt] python-multipart apscheduler
+
+This installs latest compatible versions.
+
+============================================================
+SOLUTION 5: Use the Automated Script
+============================================================
+
+Copy INSTALL_BACKEND_FIXED.bat to F:\MBAS_Package\
+
+Then run:
+F:\MBAS_Package\INSTALL_BACKEND_FIXED.bat
+
+It tries multiple methods automatically.
+
+============================================================
+WHICH SOLUTION TO TRY?
+============================================================
+
+FASTEST (Try this first):
+  Solution 1 - Install without version constraints
+  Takes 30 seconds
+
+MOST RELIABLE (If Solution 1 fails):
+  Solution 3 - Downgrade to Python 3.11
+  Takes 10 minutes but guarantees success
+
+============================================================
+QUICK COMMAND (Copy-Paste This):
+============================================================
+
+cd F:\MBAS_Package\backend
+pip uninstall -y fastapi pydantic pydantic-settings pydantic-core uvicorn sqlmodel
+pip install fastapi uvicorn sqlmodel python-jose[cryptography] passlib[bcrypt] python-multipart apscheduler
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+============================================================
+EXPECTED SUCCESS OUTPUT:
+============================================================
+
+INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+
+If you see this = SUCCESS!
+
+============================================================
+WHY THIS IS HAPPENING:
+============================================================
+
+Python 3.13 was just released (Oct 2024).
+Many Python packages haven't released pre-compiled wheels
+for Python 3.13 yet.
+
+When a wheel isn't available, pip tries to compile from
+source code, which requires:
+- Rust compiler (for pydantic-core)
+- C++ compiler (for other packages)
+
+You don't have these installed, so compilation fails.
+
+SOLUTIONS:
+1. Use older Python version (3.11) - has all wheels
+2. Install compilers (complex, not recommended)
+3. Wait for packages to release Python 3.13 wheels
+
+============================================================

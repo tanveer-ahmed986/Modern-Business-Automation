@@ -1,0 +1,186 @@
+============================================================
+   MBAS COMPLETE SETUP GUIDE
+   Follow these steps IN ORDER
+============================================================
+
+CURRENT STATUS:
+- Frontend: ✓ Running (port 5173)
+- Backend: ? Not confirmed running
+- Database: ✗ NOT initialized (no admin user)
+
+============================================================
+STEP 1: Initialize Database (REQUIRED)
+============================================================
+
+The database needs to be created with default admin user.
+
+OPTION A - If init_db.py exists:
+cd F:\MBAS_Package\backend
+python src\scripts\init_db.py
+
+OPTION B - Use the initialization script:
+Copy create_admin_user.py to F:\MBAS_Package\
+cd F:\MBAS_Package
+python create_admin_user.py
+
+OPTION C - Use the batch file:
+Copy INIT_DATABASE.bat to F:\MBAS_Package\
+Double-click: INIT_DATABASE.bat
+
+EXPECTED OUTPUT:
+============================================================
+  ✓ DATABASE INITIALIZED SUCCESSFULLY!
+============================================================
+
+Default Admin Credentials:
+  Username: admin
+  Password: admin123
+
+⚠ IMPORTANT: Change the password after first login!
+============================================================
+
+============================================================
+STEP 2: Fix Backend Dependencies (If Not Done)
+============================================================
+
+The backend needs compatible FastAPI/Pydantic versions.
+
+cd F:\MBAS_Package\backend
+
+pip install fastapi uvicorn sqlmodel python-jose[cryptography] passlib[bcrypt] python-multipart apscheduler
+
+(This installs without version constraints for Python 3.13)
+
+============================================================
+STEP 3: Start Backend Server
+============================================================
+
+cd F:\MBAS_Package\backend
+
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+EXPECTED OUTPUT:
+INFO:     Started server process [12345]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000
+
+LEAVE THIS WINDOW OPEN!
+
+============================================================
+STEP 4: Frontend Should Already Be Running
+============================================================
+
+You should have frontend running in another window:
+
+cd F:\MBAS_Package\frontend
+npm run dev
+
+EXPECTED OUTPUT:
+VITE v5.x.x  ready in 500 ms
+Local:   http://localhost:5173/
+
+LEAVE THIS WINDOW OPEN!
+
+============================================================
+STEP 5: Login to MBAS
+============================================================
+
+1. Open browser: http://localhost:5173
+
+2. Login with:
+   Username: admin
+   Password: admin123
+
+3. You should see the Dashboard!
+
+============================================================
+VERIFICATION CHECKLIST
+============================================================
+
+After completing all steps, verify:
+
+Backend Window Shows:
+[✓] INFO: Uvicorn running on http://127.0.0.1:8000
+[✓] INFO: Application startup complete
+
+Frontend Window Shows:
+[✓] Local: http://localhost:5173/
+[✓] ready in XXX ms
+
+Browser Shows:
+[✓] MBAS login page
+[✓] Can login with admin/admin123
+[✓] Dashboard appears after login
+[✓] Sidebar shows all menu items:
+    - Dashboard
+    - Inventory
+    - Customers
+    - Suppliers
+    - Purchases
+    - Billing
+    - Reports
+    - Backup
+    - AI Assistant
+    - Settings
+    - Users
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+PROBLEM: Login fails "Incorrect username or password"
+CAUSE: Database not initialized
+FIX: Run STEP 1 (initialize database)
+
+PROBLEM: "Network Error" when loading data
+CAUSE: Backend not running
+FIX: Check backend window shows "Uvicorn running"
+
+PROBLEM: "Can't reach this page"
+CAUSE: Frontend not running
+FIX: Check frontend window shows "Local: http://localhost:5173"
+
+PROBLEM: Backend shows "AttributeError: 'FieldInfo'"
+CAUSE: FastAPI/Pydantic version mismatch
+FIX: Run STEP 2 (install compatible versions)
+
+PROBLEM: Backend shows "Failed building wheel for pydantic-core"
+CAUSE: Python 3.13 too new, no pre-built wheels
+FIX: Install without version constraints (STEP 2)
+  OR: Downgrade to Python 3.11
+
+============================================================
+QUICK COMMAND SUMMARY
+============================================================
+
+# 1. Initialize database
+cd F:\MBAS_Package
+python create_admin_user.py
+
+# 2. Install backend dependencies
+cd backend
+pip install fastapi uvicorn sqlmodel python-jose[cryptography] passlib[bcrypt] python-multipart apscheduler
+
+# 3. Start backend
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+# 4. Start frontend (in new window)
+cd F:\MBAS_Package\frontend
+npm run dev
+
+# 5. Open browser
+http://localhost:5173
+Login: admin / admin123
+
+============================================================
+FILES YOU NEED
+============================================================
+
+Copy these to F:\MBAS_Package\:
+
+1. create_admin_user.py - Database initialization script
+2. INIT_DATABASE.bat - Automated database setup
+3. COMPLETE_SETUP_GUIDE.txt - This file
+
+============================================================

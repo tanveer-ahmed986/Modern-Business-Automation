@@ -11,7 +11,7 @@ export interface MetricCard {
 export interface RecentSale {
   id: number;
   customer_name: string;
-  grand_total: number;
+  grand_total: number | string;
   created_at: string;
   status: string;
 }
@@ -20,7 +20,7 @@ export interface TopProduct {
   id: number;
   name: string;
   total_quantity: number;
-  total_revenue: number;
+  total_revenue: number | string;
 }
 
 export interface DashboardMetrics {

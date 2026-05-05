@@ -1,0 +1,33 @@
+============================================================
+   MBAS - AUTOMATED QUICK START
+   One-Click Installation and Startup
+============================================================
+
+STEP 1: Copy AUTO_START_MBAS.bat to F:\MBAS_Package\
+
+STEP 2: Double-click AUTO_START_MBAS.bat
+
+STEP 3: Wait 30 seconds
+
+STEP 4: Browser opens automatically
+
+STEP 5: Login with admin / admin123
+
+DONE!
+
+============================================================
+
+The script automatically:
+- Kills old processes
+- Installs dependencies
+- Creates database
+- Creates admin user
+- Starts backend
+- Starts frontend
+- Opens browser
+
+Everything is automated!
+
+To stop: Double-click STOP_ALL.bat
+
+============================================================

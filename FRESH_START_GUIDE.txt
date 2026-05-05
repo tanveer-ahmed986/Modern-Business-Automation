@@ -1,0 +1,180 @@
+================================================================================
+    MBAS - Fresh Installation Guide (After Uninstall)
+================================================================================
+
+You have multiple MBAS installations that need to be cleaned up.
+Follow these steps for a completely fresh start.
+
+================================================================================
+  STEP 1: COMPLETE UNINSTALL (2 MINUTES)
+================================================================================
+
+1. Copy COMPLETE_UNINSTALL.bat to your Desktop
+
+   Source: D:\gemini_modern_business_automation_system\COMPLETE_UNINSTALL.bat
+
+2. Right-click COMPLETE_UNINSTALL.bat → Run as Administrator
+
+3. Read the warning and press any key to continue
+
+4. Wait for the script to complete
+
+5. You should see: "[SUCCESS] Complete Uninstall Successful!"
+
+The script will remove:
+  ✓ F:\MBAS_v1.0.9_Production_Ready (and any nested folders)
+  ✓ C:\MBAS
+  ✓ All Python processes
+  ✓ Desktop shortcuts
+  ✓ Temp files
+  ✓ Port 8000 processes
+
+================================================================================
+  STEP 2: RESTART COMPUTER (RECOMMENDED)
+================================================================================
+
+After uninstall, restart your computer to ensure:
+  - All file locks are released
+  - All processes fully terminated
+  - Clean registry state
+  - Fresh start
+
+================================================================================
+  STEP 3: FRESH INSTALLATION (5 MINUTES)
+================================================================================
+
+After restart:
+
+1. EXTRACT PACKAGE
+   - Extract: MBAS_v1.0.9_Production_Ready.zip
+   - Location: C:\MBAS (ALWAYS use C: drive)
+   - Verify path: C:\MBAS\INSTALL.bat
+
+2. OPEN FILE EXPLORER
+   - Navigate to: C:\MBAS
+   - Do NOT open Command Prompt first
+   - Work directly in File Explorer
+
+3. RUN INSTALLATION
+   - Find: INSTALL.bat
+   - Right-click → Run as Administrator
+   - Wait for: "[SUCCESS] Installation Complete!"
+
+4. VERIFY INSTALLATION
+   - Check: C:\MBAS\venv folder exists
+   - Check: C:\MBAS\backend\mbas_database.db exists
+   - Check: Desktop shortcut "MBAS" created
+
+5. START MBAS
+   - Still in File Explorer at C:\MBAS
+   - Find: START_MBAS_TRAY.bat
+   - Right-click → Run as Administrator
+   - Wait for green system tray icon
+   - Browser opens automatically
+
+6. LOGIN
+   - Username: admin
+   - Password: admin123
+   - Change password immediately!
+
+================================================================================
+  TROUBLESHOOTING
+================================================================================
+
+ISSUE: Uninstall script can't remove folders
+SOLUTION:
+  1. Restart computer
+  2. Run COMPLETE_UNINSTALL.bat again
+  3. Manually delete remaining folders
+
+ISSUE: Installation still fails after uninstall
+SOLUTION:
+  1. Disable Windows Defender temporarily
+  2. Run INSTALL.bat as Administrator
+  3. Re-enable Windows Defender after installation
+
+ISSUE: Port 8000 still in use
+SOLUTION:
+  Run in Command Prompt (Admin):
+    netstat -ano | findstr ":8000"
+    taskkill /F /PID [PID from above]
+
+================================================================================
+  IMPORTANT TIPS
+================================================================================
+
+DO:
+  ✓ Always install to C:\MBAS (not D:, E:, F:)
+  ✓ Always run scripts from File Explorer (navigate there first)
+  ✓ Always right-click → Run as Administrator
+  ✓ Wait for complete installation before starting
+  ✓ Restart computer after uninstall
+
+DON'T:
+  ✗ Install to external drives (F:, USB, network drives)
+  ✗ Run scripts from Command Prompt that opens in System32
+  ✗ Install multiple copies in different locations
+  ✗ Start MBAS while another instance is running
+  ✗ Skip the uninstall step if you have multiple installations
+
+================================================================================
+  WHY MULTIPLE INSTALLATIONS CAUSE PROBLEMS
+================================================================================
+
+Having MBAS in both F: and C: causes:
+  - Port 8000 conflict (only one can use it)
+  - Desktop shortcut points to wrong location
+  - Python processes from both running simultaneously
+  - Virtual environments conflict
+  - Database locks
+  - Confusion about which installation is running
+
+SOLUTION: Always have only ONE installation at C:\MBAS
+
+================================================================================
+  VERIFICATION CHECKLIST
+================================================================================
+
+After fresh install, verify:
+
+□ Only ONE MBAS folder exists (C:\MBAS)
+□ F:\MBAS_v1.0.9_Production_Ready is deleted
+□ Desktop has only ONE "MBAS" shortcut
+□ Installation completed without errors
+□ venv folder exists (size ~100MB)
+□ Database file created
+□ System tray icon appears (green)
+□ Browser opens automatically
+□ Login works
+□ Dashboard loads
+□ No Python errors on first startup
+
+================================================================================
+  SUMMARY
+================================================================================
+
+CURRENT STATE:
+  ✗ MBAS installed in F: drive
+  ✗ MBAS installed in C: drive
+  ✗ Conflicts causing installation failures
+
+DESIRED STATE:
+  ✓ Clean system with no MBAS
+  ✓ Fresh install at C:\MBAS only
+  ✓ Working installation
+  ✓ No conflicts
+
+PROCESS:
+  1. Run COMPLETE_UNINSTALL.bat (as Admin)
+  2. Restart computer
+  3. Extract to C:\MBAS
+  4. Run INSTALL.bat (as Admin, from C:\MBAS)
+  5. Run START_MBAS_TRAY.bat (as Admin, from C:\MBAS)
+  6. Success!
+
+================================================================================
+
+Questions? Run the uninstall script first, then we'll troubleshoot the fresh
+installation if needed.
+
+================================================================================

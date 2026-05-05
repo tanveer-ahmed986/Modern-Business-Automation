@@ -1,0 +1,35 @@
+============================================================
+   BACKEND VERSION COMPATIBILITY FIX
+   AttributeError: 'FieldInfo' object has no attribute 'in_'
+============================================================
+
+THE PROBLEM:
+FastAPI 0.110.0 is incompatible with some Pydantic versions
+
+THE SOLUTION:
+Install compatible versions
+
+============================================================
+DO THIS NOW - Copy and paste these commands:
+============================================================
+
+cd F:\MBAS_Package\backend
+
+pip uninstall -y fastapi pydantic pydantic-settings pydantic-core
+
+pip install fastapi==0.104.1 pydantic==2.5.3 pydantic-settings==2.1.0 uvicorn==0.24.0
+
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+============================================================
+EXPECTED OUTPUT:
+============================================================
+
+INFO:     Started server process [XXXX]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000
+
+If you see this, backend is WORKING!
+
+============================================================

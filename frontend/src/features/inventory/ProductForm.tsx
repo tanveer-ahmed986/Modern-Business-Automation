@@ -17,15 +17,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { 
-  inventoryService, 
-  type Product, 
+import {
+  inventoryService,
+  type Product,
   type Category,
   type ProductCreate,
   type ProductUpdate
 } from '@/services/inventory.service';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
+import { useBranding } from '@/hooks/useBranding';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
   categories,
   onSuccess
 }) => {
+  const branding = useBranding();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -60,8 +62,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
         name: product.name,
         barcode: product.barcode,
         category_id: product.category_id?.toString() || '',
-        cost_price: product.cost_price || 0,
-        selling_price: product.selling_price,
+        cost_price: Number(product.cost_price) || 0,
+        selling_price: Number(product.selling_price),
         stock_quantity: product.stock_quantity,
         low_stock_threshold: product.low_stock_threshold,
         is_active: product.is_active
@@ -172,7 +174,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
 
             <div className="col-span-1 space-y-2">
-              <Label htmlFor="cost_price">Cost Price ($)</Label>
+              <Label htmlFor="cost_price">Cost Price ({branding.currency})</Label>
               <Input 
                 id="cost_price" 
                 name="cost_price" 
@@ -185,7 +187,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </div>
 
             <div className="col-span-1 space-y-2">
-              <Label htmlFor="selling_price">Selling Price ($)</Label>
+              <Label htmlFor="selling_price">Selling Price ({branding.currency})</Label>
               <Input 
                 id="selling_price" 
                 name="selling_price" 

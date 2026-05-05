@@ -1,0 +1,3 @@
+SHA256 hash of MBAS_Professional_Setup_v2.0.0_ZT_Technologies.exe:
+4b55a0de01d14ccd6dc7e717d212934601ad5cba94236ad31830843fd1997ce8
+CertUtil: -hashfile command completed successfully.

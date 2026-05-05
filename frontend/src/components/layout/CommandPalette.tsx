@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "cmdk";
 import { LayoutDashboard, Package, ShoppingCart, Settings, Users, BarChart3, Database, BrainCircuit, Truck, FileDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+// toast available from sonner if needed
 
 interface CommandItem {
   label: string;

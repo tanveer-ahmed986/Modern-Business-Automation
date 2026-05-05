@@ -1,0 +1,168 @@
+================================================================
+   SETTINGS PAGE ERROR - QUICK FIX GUIDE
+================================================================
+
+ERROR: "Settings object has no field 'updated_at'"
+
+CAUSE: Field name mismatch between frontend and backend
+
+FIX READY: Version 1.0.3 with automatic migration
+
+================================================================
+   QUICKEST FIX (2 Minutes)
+================================================================
+
+1. STOP MBAS
+   - Press Ctrl+C in the console window
+
+2. COPY 3 FILES from development to your installation:
+
+   FROM: D:\gemini_modern_business_automation_system\backend\src\
+   TO: F:\MBAS_v1.0.2_Standard_20260427_DevOps\MBAS_Package_V2\backend\src\
+
+   Files:
+   ✓ models\core.py
+   ✓ api\settings.py
+   ✓ scripts\migrate_settings_schema.py (NEW file)
+
+3. RUN MIGRATION:
+
+   Open Command Prompt (cmd.exe):
+
+   cd F:\MBAS_v1.0.2_Standard_20260427_DevOps\MBAS_Package_V2\backend
+   ..\venv\Scripts\activate.bat
+   python src\scripts\migrate_settings_schema.py
+
+   Should show: "[SUCCESS] Migration Complete!"
+
+4. START MBAS:
+
+   cd ..
+   START_MBAS.bat
+
+5. TEST SETTINGS:
+   - Go to Settings page
+   - Change business name or tax rate
+   - Click "Save Settings"
+   - ✅ Should work now!
+
+================================================================
+   ALTERNATIVE: Fresh Install (5 Minutes)
+================================================================
+
+1. BACKUP DATABASE:
+   Copy: F:\MBAS_v1.0.2...\backend\mbas_database.db
+   To: Desktop\mbas_backup.db
+
+2. EXTRACT NEW PACKAGE:
+   File: D:\gemini_modern_business_automation_system\deployment\
+         MBAS_v1.0.3_Standard_20260427_DevOps.zip
+   To: F:\MBAS_v1.0.3
+
+3. INSTALL:
+   cd F:\MBAS_v1.0.3\MBAS_Package_V2
+   INSTALL.bat
+
+4. RESTORE DATABASE:
+   Copy: Desktop\mbas_backup.db
+   To: F:\MBAS_v1.0.3\MBAS_Package_V2\backend\mbas_database.db
+
+5. MIGRATE DATABASE:
+   cd F:\MBAS_v1.0.3\MBAS_Package_V2\backend
+   ..\venv\Scripts\activate.bat
+   python src\scripts\migrate_settings_schema.py
+
+6. START:
+   cd ..
+   START_MBAS.bat
+
+================================================================
+   WHAT WAS FIXED
+================================================================
+
+Problem 1: Field name mismatch
+  Frontend: uses "currency"
+  Backend: had "currency_symbol"
+  FIX: Renamed to "currency" in backend
+
+Problem 2: Missing timestamp fields
+  Frontend: sends "updated_at"
+  Backend: didn't have "updated_at" field
+  FIX: Added created_at and updated_at to Settings model
+
+Problem 3: Pydantic v2 strict validation
+  Cannot set attributes that don't exist
+  FIX: All fields now properly defined
+
+================================================================
+   FILES CHANGED
+================================================================
+
+✓ backend/src/models/core.py
+  - Changed currency_symbol → currency
+  - Added created_at timestamp
+  - Added updated_at timestamp
+
+✓ backend/src/api/settings.py
+  - Exclude readonly fields from updates
+  - Properly handle timestamp updates
+
+✓ backend/src/scripts/migrate_settings_schema.py (NEW)
+  - Automatic database migration
+  - Renames currency_symbol column
+  - Adds timestamp columns
+  - Preserves all data
+
+================================================================
+   VERIFICATION
+================================================================
+
+After applying fix, test:
+
+Settings Page:
+[ ] Opens without error
+[ ] Can change business name
+[ ] Can change currency
+[ ] Can change tax rate
+[ ] "Save Settings" works
+[ ] Changes persist after refresh
+
+Billing Page:
+[ ] Can complete sales
+[ ] Tax calculated correctly
+
+================================================================
+   TROUBLESHOOTING
+================================================================
+
+If migration fails:
+1. Make sure MBAS is stopped
+2. Check you copied all 3 files
+3. Verify virtual environment is activated
+4. Check migration script output for specific error
+
+If settings still won't save:
+1. Run HEALTH_CHECK.bat
+2. Check backend console for errors
+3. Verify Settings table has new columns:
+   - Open mbas_database.db with SQLite viewer
+   - Check settings table has "currency" and "updated_at"
+
+================================================================
+   PACKAGE VERSIONS
+================================================================
+
+v1.0.1 - Initial DevOps package (venv isolation)
+v1.0.2 - Billing fix (Decimal types)
+v1.0.3 - Settings fix (field names + timestamps) ← USE THIS
+
+Current Package Location:
+D:\gemini_modern_business_automation_system\deployment\
+  MBAS_v1.0.3_Standard_20260427_DevOps.zip
+
+================================================================
+
+Choose your option and follow the steps.
+Settings will work perfectly after the fix!
+
+Good luck! 🚀

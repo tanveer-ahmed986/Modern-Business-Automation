@@ -4,19 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
-import { 
-  Trash2, 
-  Search, 
-  ArrowLeft, 
-  ShoppingCart, 
+import {
+  Trash2,
+  Search,
+  ArrowLeft,
+  ShoppingCart,
   Save,
   User
 } from "lucide-react";
@@ -33,6 +33,8 @@ import inventoryService from "@/services/inventory.service";
 import type { Product } from "@/services/inventory.service";
 import purchasesService from "@/services/purchases.service";
 import type { PurchaseCreate } from "@/services/purchases.service";
+import settingsService from "@/services/settings.service";
+import type { Settings } from "@/services/settings.service";
 import { toast } from "sonner";
 
 interface CartItem {
@@ -50,6 +52,7 @@ export default function PurchasePage() {
   const [taxAmount, setTaxAmount] = useState(0);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [paidAmount, setPaidAmount] = useState(0);
+  const [settings, setSettings] = useState<Settings | null>(null);
 
   // Product Search State
   const [productSearch, setProductSearch] = useState("");
@@ -58,9 +61,21 @@ export default function PurchasePage() {
   // Cart State
   const [cart, setCart] = useState<CartItem[]>([]);
 
+  const currency = settings?.currency || "USD";
+
   useEffect(() => {
     loadSuppliers();
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    try {
+      const data = await settingsService.getSettings();
+      setSettings(data);
+    } catch (error) {
+      console.error("Failed to load settings");
+    }
+  };
 
   const loadSuppliers = async () => {
     try {
@@ -97,10 +112,10 @@ export default function PurchasePage() {
         )
       );
     } else {
-      setCart([...cart, { 
-        product, 
-        quantity: 1, 
-        cost_price: product.cost_price || 0 
+      setCart([...cart, {
+        product,
+        quantity: 1,
+        cost_price: Number(product.cost_price) || 0
       }]);
     }
     setProductSearch("");
@@ -234,7 +249,7 @@ export default function PurchasePage() {
                           <div className="text-xs text-muted-foreground">{product.barcode}</div>
                         </div>
                         <div className="text-sm font-bold">
-                          ${(product.cost_price || 0).toLocaleString()}
+                          {currency} {(product.cost_price || 0).toLocaleString()}
                         </div>
                       </div>
                     ))}
@@ -286,7 +301,7 @@ export default function PurchasePage() {
                             />
                           </TableCell>
                           <TableCell className="font-medium">
-                            ${(item.cost_price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                            {currency} {(item.cost_price * item.quantity).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                           </TableCell>
                           <TableCell>
                             <Button
@@ -317,7 +332,7 @@ export default function PurchasePage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span>Subtotal</span>
-                <span>${totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{currency} {totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-sm">
@@ -341,7 +356,7 @@ export default function PurchasePage() {
               </div>
               <div className="pt-4 border-t flex justify-between items-center font-bold text-lg">
                 <span>Total</span>
-                <span>${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span>{currency} {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="space-y-2 pt-4">
                 <Label className="text-primary">Amount Paid</Label>

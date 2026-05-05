@@ -1,0 +1,50 @@
+# Tauri build ignore file
+# Files and directories to exclude from the final bundle
+
+# Development files
+node_modules/
+target/debug/
+.git/
+.github/
+.vscode/
+
+# Test files
+tests/
+__tests__/
+*.test.ts
+*.test.tsx
+*.test.js
+*.spec.ts
+*.spec.tsx
+
+# Documentation
+docs/
+*.md
+README*
+CHANGELOG*
+LICENSE*
+
+# Build artifacts
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Backend source (we include only the compiled binary)
+../../backend/src/
+../../backend/tests/
+../../backend/build/*.build/
+../../backend/**/__pycache__/
+
+# Frontend source (we include only the built dist)
+../../frontend/src/
+../../frontend/node_modules/
+../../frontend/e2e/
+../../frontend/public/
+
+# Tools and scripts
+../../tools/keys/private_key.pem
+../../scripts/
+
+# Large AI models (optional - include only if needed)
+# ../../models/*.gguf

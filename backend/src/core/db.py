@@ -2,20 +2,30 @@ from sqlmodel import create_engine, SQLModel, Session, text
 import os
 
 # Import all models to ensure they are registered with SQLModel.metadata
-from backend.src.models.core import User, Settings
-from backend.src.models.inventory import Category, Product
-from backend.src.models.sales import Customer, Sale, SaleItem
-from backend.src.models.purchases import Supplier, Purchase, PurchaseItem
+from src.models.core import User, Settings
+from src.models.inventory import Category, Product
+from src.models.sales import Customer, Sale, SaleItem
+from src.models.purchases import Supplier, Purchase, PurchaseItem, SupplierPayment
+from src.models.ai_analytics import AIAnalytics
 
 # Database file path (local SQLite)
 DB_FILE = "mbas_database.db"
 DB_URL = f"sqlite:///{DB_FILE}"
 
-# Create engine with check_same_thread=False for SQLite compatibility with FastAPI
+# Create engine with connection pooling and timeout settings
+# Pool settings for SQLite to prevent connection exhaustion
 engine = create_engine(
-    DB_URL, 
-    connect_args={"check_same_thread": False},
-    echo=False # Set to True for debugging SQL queries
+    DB_URL,
+    connect_args={
+        "check_same_thread": False,
+        "timeout": 30.0,  # 30 second timeout for database locks
+    },
+    pool_size=10,  # Maximum 10 connections in the pool
+    max_overflow=20,  # Allow up to 20 additional connections beyond pool_size
+    pool_timeout=30,  # Wait up to 30 seconds for a connection from the pool
+    pool_recycle=3600,  # Recycle connections after 1 hour
+    pool_pre_ping=True,  # Verify connections before using them
+    echo=False  # Set to True for debugging SQL queries
 )
 
 def init_db():
@@ -66,5 +76,12 @@ def init_db():
 
 def get_session():
     """Dependency for FastAPI endpoints to get a DB session."""
-    with Session(engine) as session:
+    session = Session(engine)
+    try:
         yield session
+    finally:
+        session.close()
+
+def cleanup_connections():
+    """Cleanup database connections and dispose of the connection pool."""
+    engine.dispose()

@@ -1,0 +1,112 @@
+============================================================
+     MBAS - Quick Start Guide
+============================================================
+
+PREREQUISITES:
+  1. Python 3.11 or higher
+  2. Node.js 18 or higher
+
+============================================================
+INSTALLATION (First Time Only)
+============================================================
+
+Step 1: Install Dependencies
+  Run: INSTALL_FIX_WINDOWS.bat
+  (Wait 5-10 minutes for completion)
+
+Step 2: Initialize Database
+  cd backend
+  python src/scripts/init_db.py
+
+Step 3: (Optional) Generate License
+  Run: GENERATE_LICENSE.bat
+  Follow the prompts
+
+============================================================
+STARTING MBAS
+============================================================
+
+OPTION 1: Start Everything Together (Recommended)
+  Double-click: START_MBAS.bat
+
+  This will:
+  - Open 2 windows (Backend + Frontend)
+  - Wait 15 seconds
+  - Open browser automatically
+
+OPTION 2: Start Separately (Advanced)
+  1. Double-click: start-backend.bat
+  2. Double-click: start-frontend.bat
+  3. Open browser: http://localhost:5173
+
+============================================================
+STOPPING MBAS
+============================================================
+
+OPTION 1: Close the Windows
+  - Close the Backend window (press Ctrl+C, then Y)
+  - Close the Frontend window (press Ctrl+C, then Y)
+
+OPTION 2: Use Stop Script
+  Double-click: STOP_MBAS.bat
+
+============================================================
+DEFAULT LOGIN
+============================================================
+
+  URL:      http://localhost:5173
+  Username: admin
+  Password: admin123
+
+  IMPORTANT: Change password after first login!
+
+============================================================
+TROUBLESHOOTING
+============================================================
+
+Problem: "Can't reach this page"
+Fix:
+  - Make sure BOTH backend AND frontend are running
+  - Check backend window says "Uvicorn running on http://127.0.0.1:8000"
+  - Check frontend window says "Local: http://localhost:5173"
+
+Problem: "Port already in use"
+Fix:
+  - Run: STOP_MBAS.bat
+  - Then restart
+
+Problem: Blank page after login
+Fix:
+  - Press F12 in browser
+  - Check Console tab for errors
+  - Make sure backend is running
+
+Problem: "Python is not recognized"
+Fix:
+  - Install Python from https://www.python.org/downloads/
+  - Check "Add Python to PATH" during installation
+  - Restart computer
+
+Problem: "npm is not recognized"
+Fix:
+  - Install Node.js from https://nodejs.org/
+  - Restart computer
+
+============================================================
+FILE LOCATIONS
+============================================================
+
+Database:     database/mbas_database.db
+Backups:      backups/
+License:      mbas.license (root folder)
+Logs:         Check terminal windows
+
+============================================================
+SUPPORT
+============================================================
+
+For detailed instructions, see:
+  - INSTALL_ON_NEW_COMPUTER.md (step-by-step guide)
+  - WINDOWS_INSTALLATION_GUIDE.md (troubleshooting)
+
+============================================================

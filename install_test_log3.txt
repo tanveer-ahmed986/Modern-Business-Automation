@@ -1,0 +1,710 @@
+﻿2026-05-04 00:10:24.273   Log opened. (Time zone: UTC+05:00)
+2026-05-04 00:10:24.273   Setup version: Inno Setup version 6.7.1
+2026-05-04 00:10:24.273   Original Setup EXE: D:\gemini_modern_business_automation_system\deployment\build_installer\output\MBAS_Professional_Setup_v2.0.2_ZT_Technologies.exe
+2026-05-04 00:10:24.273   Setup command line: /SL5="$604EC,17929023,876032,D:\gemini_modern_business_automation_system\deployment\build_installer\output\MBAS_Professional_Setup_v2.0.2_ZT_Technologies.exe" /VERYSILENT /NORESTART /LOG=D:/gemini_modern_business_automation_system/install_test_log3.txt /SUPPRESSMSGBOXES 
+2026-05-04 00:10:24.273   Compatibility mode: Yes (DetectorsAppHealth Installer)
+2026-05-04 00:10:24.273   Windows version: 10.0.26200
+2026-05-04 00:10:24.273   Windows architecture: x64 (64-bit)
+2026-05-04 00:10:24.273   Machine types supported by system: x86 x64
+2026-05-04 00:10:24.273   User privileges: Administrative
+2026-05-04 00:10:24.278   Administrative install mode: Yes
+2026-05-04 00:10:24.278   Install mode root key: HKEY_LOCAL_MACHINE
+2026-05-04 00:10:24.278   64-bit install mode: Yes
+2026-05-04 00:10:24.278   RedirectionGuard status for current process: Enabled in enforcing mode
+2026-05-04 00:10:24.280   Created protected temporary directory: C:\Users\pc\AppData\Local\Temp\is-FHHBCHM2X9.tmp
+2026-05-04 00:10:24.446   Python detected on system
+2026-05-04 00:10:25.175   Found 0 files to register with RestartManager.
+2026-05-04 00:10:25.191   Starting the installation process.
+2026-05-04 00:10:25.198   Creating directory: C:\Program Files\MBAS
+2026-05-04 00:10:25.198   Creating directory: C:\Program Files\MBAS\backend
+2026-05-04 00:10:25.198   Creating directory: C:\Program Files\MBAS\backend\build
+2026-05-04 00:10:25.198   Creating directory: C:\Program Files\MBAS\backend\config
+2026-05-04 00:10:25.198   Directory for uninstall files: C:\Program Files\MBAS
+2026-05-04 00:10:25.198   Creating new uninstall log: C:\Program Files\MBAS\unins000.dat
+2026-05-04 00:10:25.207   -- File entry --
+2026-05-04 00:10:25.207   Dest filename: C:\Program Files\MBAS\unins000.exe
+2026-05-04 00:10:25.207   Non-default bitness: 32-bit
+2026-05-04 00:10:25.213   Time stamp of our file: 2026-05-04 00:10:23.705
+2026-05-04 00:10:25.213   Installing the file.
+2026-05-04 00:10:25.223   Successfully installed the file.
+2026-05-04 00:10:25.223   -- File entry --
+2026-05-04 00:10:25.223   Dest filename: C:\Program Files\MBAS\backend\add_sample_customers.py
+2026-05-04 00:10:25.223   Time stamp of our file: 2026-04-25 00:13:56.000
+2026-05-04 00:10:25.223   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\add_sample_products.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-25 00:29:08.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\check_db.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-23 20:47:32.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\diagnose_auth.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-23 21:12:58.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\fix_product_prices.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-25 00:29:22.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\init_database.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-23 20:38:02.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\pytest.ini
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-23 08:36:42.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.239   Successfully installed the file.
+2026-05-04 00:10:25.239   -- File entry --
+2026-05-04 00:10:25.239   Dest filename: C:\Program Files\MBAS\backend\quick_init.py
+2026-05-04 00:10:25.239   Time stamp of our file: 2026-04-23 21:21:08.000
+2026-05-04 00:10:25.239   Installing the file.
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\requirements-lock.txt
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-04-27 15:34:36.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\requirements-premium.txt
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-04-26 22:45:14.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\requirements.txt
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-04-30 00:49:54.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\watchdog.py
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-04-29 23:15:32.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\scripts\build.py
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-04-23 08:55:28.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Creating directory: C:\Program Files\MBAS\backend\scripts
+2026-05-04 00:10:25.255   Successfully installed the file.
+2026-05-04 00:10:25.255   -- File entry --
+2026-05-04 00:10:25.255   Dest filename: C:\Program Files\MBAS\backend\src\main.py
+2026-05-04 00:10:25.255   Time stamp of our file: 2026-05-03 18:24:20.000
+2026-05-04 00:10:25.255   Installing the file.
+2026-05-04 00:10:25.255   Creating directory: C:\Program Files\MBAS\backend\src
+2026-05-04 00:10:25.271   Successfully installed the file.
+2026-05-04 00:10:25.271   -- File entry --
+2026-05-04 00:10:25.271   Dest filename: C:\Program Files\MBAS\backend\src\ai\forecasting.py
+2026-05-04 00:10:25.271   Time stamp of our file: 2026-04-25 23:47:14.000
+2026-05-04 00:10:25.271   Installing the file.
+2026-05-04 00:10:25.271   Creating directory: C:\Program Files\MBAS\backend\src\ai
+2026-05-04 00:10:25.273   Successfully installed the file.
+2026-05-04 00:10:25.273   -- File entry --
+2026-05-04 00:10:25.273   Dest filename: C:\Program Files\MBAS\backend\src\ai\llm.py
+2026-05-04 00:10:25.273   Time stamp of our file: 2026-04-23 09:05:22.000
+2026-05-04 00:10:25.273   Installing the file.
+2026-05-04 00:10:25.273   Successfully installed the file.
+2026-05-04 00:10:25.273   -- File entry --
+2026-05-04 00:10:25.273   Dest filename: C:\Program Files\MBAS\backend\src\api\ai.py
+2026-05-04 00:10:25.273   Time stamp of our file: 2026-04-23 09:08:52.000
+2026-05-04 00:10:25.273   Installing the file.
+2026-05-04 00:10:25.273   Creating directory: C:\Program Files\MBAS\backend\src\api
+2026-05-04 00:10:25.273   Successfully installed the file.
+2026-05-04 00:10:25.273   -- File entry --
+2026-05-04 00:10:25.273   Dest filename: C:\Program Files\MBAS\backend\src\api\auth.py
+2026-05-04 00:10:25.273   Time stamp of our file: 2026-03-07 00:50:02.000
+2026-05-04 00:10:25.273   Installing the file.
+2026-05-04 00:10:25.273   Successfully installed the file.
+2026-05-04 00:10:25.273   -- File entry --
+2026-05-04 00:10:25.273   Dest filename: C:\Program Files\MBAS\backend\src\api\billing.py
+2026-05-04 00:10:25.273   Time stamp of our file: 2026-03-07 00:50:00.000
+2026-05-04 00:10:25.273   Installing the file.
+2026-05-04 00:10:25.273   Successfully installed the file.
+2026-05-04 00:10:25.273   -- File entry --
+2026-05-04 00:10:25.273   Dest filename: C:\Program Files\MBAS\backend\src\api\dashboard.py
+2026-05-04 00:10:25.273   Time stamp of our file: 2026-04-27 09:31:28.000
+2026-05-04 00:10:25.273   Installing the file.
+2026-05-04 00:10:25.287   Successfully installed the file.
+2026-05-04 00:10:25.287   -- File entry --
+2026-05-04 00:10:25.287   Dest filename: C:\Program Files\MBAS\backend\src\api\inventory.py
+2026-05-04 00:10:25.287   Time stamp of our file: 2026-04-27 08:43:26.000
+2026-05-04 00:10:25.287   Installing the file.
+2026-05-04 00:10:25.289   Successfully installed the file.
+2026-05-04 00:10:25.289   -- File entry --
+2026-05-04 00:10:25.289   Dest filename: C:\Program Files\MBAS\backend\src\api\purchases.py
+2026-05-04 00:10:25.291   Time stamp of our file: 2026-03-07 00:49:58.000
+2026-05-04 00:10:25.291   Installing the file.
+2026-05-04 00:10:25.291   Successfully installed the file.
+2026-05-04 00:10:25.291   -- File entry --
+2026-05-04 00:10:25.293   Dest filename: C:\Program Files\MBAS\backend\src\api\reports.py
+2026-05-04 00:10:25.293   Time stamp of our file: 2026-03-05 18:09:16.000
+2026-05-04 00:10:25.293   Installing the file.
+2026-05-04 00:10:25.293   Successfully installed the file.
+2026-05-04 00:10:25.293   -- File entry --
+2026-05-04 00:10:25.293   Dest filename: C:\Program Files\MBAS\backend\src\api\settings.py
+2026-05-04 00:10:25.293   Time stamp of our file: 2026-04-27 08:58:16.000
+2026-05-04 00:10:25.293   Installing the file.
+2026-05-04 00:10:25.293   Successfully installed the file.
+2026-05-04 00:10:25.293   -- File entry --
+2026-05-04 00:10:25.293   Dest filename: C:\Program Files\MBAS\backend\src\api\suppliers.py
+2026-05-04 00:10:25.293   Time stamp of our file: 2026-04-27 08:43:28.000
+2026-05-04 00:10:25.293   Installing the file.
+2026-05-04 00:10:25.293   Successfully installed the file.
+2026-05-04 00:10:25.293   -- File entry --
+2026-05-04 00:10:25.293   Dest filename: C:\Program Files\MBAS\backend\src\api\system.py
+2026-05-04 00:10:25.293   Time stamp of our file: 2026-04-25 12:30:30.000
+2026-05-04 00:10:25.293   Installing the file.
+2026-05-04 00:10:25.293   Successfully installed the file.
+2026-05-04 00:10:25.293   -- File entry --
+2026-05-04 00:10:25.303   Dest filename: C:\Program Files\MBAS\backend\src\api\users.py
+2026-05-04 00:10:25.303   Time stamp of our file: 2026-04-25 02:20:02.000
+2026-05-04 00:10:25.303   Installing the file.
+2026-05-04 00:10:25.303   Successfully installed the file.
+2026-05-04 00:10:25.303   -- File entry --
+2026-05-04 00:10:25.303   Dest filename: C:\Program Files\MBAS\backend\src\core\auth.py
+2026-05-04 00:10:25.303   Time stamp of our file: 2026-04-27 10:17:30.000
+2026-05-04 00:10:25.303   Installing the file.
+2026-05-04 00:10:25.303   Creating directory: C:\Program Files\MBAS\backend\src\core
+2026-05-04 00:10:25.307   Successfully installed the file.
+2026-05-04 00:10:25.307   -- File entry --
+2026-05-04 00:10:25.309   Dest filename: C:\Program Files\MBAS\backend\src\core\backup.py
+2026-05-04 00:10:25.309   Time stamp of our file: 2026-03-05 18:27:54.000
+2026-05-04 00:10:25.309   Installing the file.
+2026-05-04 00:10:25.309   Successfully installed the file.
+2026-05-04 00:10:25.309   -- File entry --
+2026-05-04 00:10:25.309   Dest filename: C:\Program Files\MBAS\backend\src\core\config.py
+2026-05-04 00:10:25.313   Time stamp of our file: 2026-04-23 08:31:28.000
+2026-05-04 00:10:25.313   Installing the file.
+2026-05-04 00:10:25.315   Successfully installed the file.
+2026-05-04 00:10:25.315   -- File entry --
+2026-05-04 00:10:25.315   Dest filename: C:\Program Files\MBAS\backend\src\core\db.py
+2026-05-04 00:10:25.315   Time stamp of our file: 2026-04-29 23:14:32.000
+2026-05-04 00:10:25.315   Installing the file.
+2026-05-04 00:10:25.319   Successfully installed the file.
+2026-05-04 00:10:25.319   -- File entry --
+2026-05-04 00:10:25.319   Dest filename: C:\Program Files\MBAS\backend\src\core\export.py
+2026-05-04 00:10:25.320   Time stamp of our file: 2026-04-25 23:47:26.000
+2026-05-04 00:10:25.320   Installing the file.
+2026-05-04 00:10:25.321   Successfully installed the file.
+2026-05-04 00:10:25.321   -- File entry --
+2026-05-04 00:10:25.321   Dest filename: C:\Program Files\MBAS\backend\src\core\features.py
+2026-05-04 00:10:25.321   Time stamp of our file: 2026-04-23 00:19:08.000
+2026-05-04 00:10:25.321   Installing the file.
+2026-05-04 00:10:25.323   Successfully installed the file.
+2026-05-04 00:10:25.323   -- File entry --
+2026-05-04 00:10:25.325   Dest filename: C:\Program Files\MBAS\backend\src\core\license.py
+2026-05-04 00:10:25.325   Time stamp of our file: 2026-04-23 09:11:54.000
+2026-05-04 00:10:25.325   Installing the file.
+2026-05-04 00:10:25.327   Successfully installed the file.
+2026-05-04 00:10:25.327   -- File entry --
+2026-05-04 00:10:25.327   Dest filename: C:\Program Files\MBAS\backend\src\core\scheduler.py
+2026-05-04 00:10:25.327   Time stamp of our file: 2026-04-25 12:38:26.000
+2026-05-04 00:10:25.327   Installing the file.
+2026-05-04 00:10:25.329   Successfully installed the file.
+2026-05-04 00:10:25.329   -- File entry --
+2026-05-04 00:10:25.329   Dest filename: C:\Program Files\MBAS\backend\src\core\security.py
+2026-05-04 00:10:25.331   Time stamp of our file: 2026-03-05 00:31:00.000
+2026-05-04 00:10:25.331   Installing the file.
+2026-05-04 00:10:25.331   Successfully installed the file.
+2026-05-04 00:10:25.331   -- File entry --
+2026-05-04 00:10:25.331   Dest filename: C:\Program Files\MBAS\backend\src\embedded\public_key.pem
+2026-05-04 00:10:25.331   Time stamp of our file: 2026-04-23 00:16:36.000
+2026-05-04 00:10:25.331   Installing the file.
+2026-05-04 00:10:25.331   Creating directory: C:\Program Files\MBAS\backend\src\embedded
+2026-05-04 00:10:25.336   Successfully installed the file.
+2026-05-04 00:10:25.336   -- File entry --
+2026-05-04 00:10:25.336   Dest filename: C:\Program Files\MBAS\backend\src\models\ai_analytics.py
+2026-05-04 00:10:25.337   Time stamp of our file: 2026-03-06 23:55:30.000
+2026-05-04 00:10:25.337   Installing the file.
+2026-05-04 00:10:25.337   Creating directory: C:\Program Files\MBAS\backend\src\models
+2026-05-04 00:10:25.337   Successfully installed the file.
+2026-05-04 00:10:25.337   -- File entry --
+2026-05-04 00:10:25.337   Dest filename: C:\Program Files\MBAS\backend\src\models\core.py
+2026-05-04 00:10:25.337   Time stamp of our file: 2026-04-27 08:58:06.000
+2026-05-04 00:10:25.337   Installing the file.
+2026-05-04 00:10:25.337   Successfully installed the file.
+2026-05-04 00:10:25.337   -- File entry --
+2026-05-04 00:10:25.337   Dest filename: C:\Program Files\MBAS\backend\src\models\inventory.py
+2026-05-04 00:10:25.337   Time stamp of our file: 2026-04-25 00:58:20.000
+2026-05-04 00:10:25.337   Installing the file.
+2026-05-04 00:10:25.344   Successfully installed the file.
+2026-05-04 00:10:25.344   -- File entry --
+2026-05-04 00:10:25.344   Dest filename: C:\Program Files\MBAS\backend\src\models\license.py
+2026-05-04 00:10:25.344   Time stamp of our file: 2026-04-23 00:08:50.000
+2026-05-04 00:10:25.344   Installing the file.
+2026-05-04 00:10:25.344   Successfully installed the file.
+2026-05-04 00:10:25.344   -- File entry --
+2026-05-04 00:10:25.344   Dest filename: C:\Program Files\MBAS\backend\src\models\purchases.py
+2026-05-04 00:10:25.344   Time stamp of our file: 2026-03-06 23:55:14.000
+2026-05-04 00:10:25.344   Installing the file.
+2026-05-04 00:10:25.344   Successfully installed the file.
+2026-05-04 00:10:25.344   -- File entry --
+2026-05-04 00:10:25.344   Dest filename: C:\Program Files\MBAS\backend\src\models\sales.py
+2026-05-04 00:10:25.344   Time stamp of our file: 2026-03-06 23:54:48.000
+2026-05-04 00:10:25.350   Installing the file.
+2026-05-04 00:10:25.351   Successfully installed the file.
+2026-05-04 00:10:25.351   -- File entry --
+2026-05-04 00:10:25.351   Dest filename: C:\Program Files\MBAS\backend\src\scripts\init_db.py
+2026-05-04 00:10:25.351   Time stamp of our file: 2026-04-25 22:54:32.000
+2026-05-04 00:10:25.351   Installing the file.
+2026-05-04 00:10:25.351   Creating directory: C:\Program Files\MBAS\backend\src\scripts
+2026-05-04 00:10:25.351   Successfully installed the file.
+2026-05-04 00:10:25.351   -- File entry --
+2026-05-04 00:10:25.351   Dest filename: C:\Program Files\MBAS\backend\src\scripts\migrate_settings_schema.py
+2026-05-04 00:10:25.351   Time stamp of our file: 2026-04-27 08:59:06.000
+2026-05-04 00:10:25.351   Installing the file.
+2026-05-04 00:10:25.351   Successfully installed the file.
+2026-05-04 00:10:25.351   -- File entry --
+2026-05-04 00:10:25.351   Dest filename: C:\Program Files\MBAS\backend\src\services\ai_service.py
+2026-05-04 00:10:25.351   Time stamp of our file: 2026-04-23 09:06:46.000
+2026-05-04 00:10:25.351   Installing the file.
+2026-05-04 00:10:25.351   Creating directory: C:\Program Files\MBAS\backend\src\services
+2026-05-04 00:10:25.351   Successfully installed the file.
+2026-05-04 00:10:25.351   -- File entry --
+2026-05-04 00:10:25.351   Dest filename: C:\Program Files\MBAS\backend\src\services\purchase_service.py
+2026-05-04 00:10:25.351   Time stamp of our file: 2026-03-07 00:49:54.000
+2026-05-04 00:10:25.351   Installing the file.
+2026-05-04 00:10:25.351   Successfully installed the file.
+2026-05-04 00:10:25.351   -- File entry --
+2026-05-04 00:10:25.351   Dest filename: C:\Program Files\MBAS\backend\src\services\report_service.py
+2026-05-04 00:10:25.366   Time stamp of our file: 2026-03-06 23:56:38.000
+2026-05-04 00:10:25.366   Installing the file.
+2026-05-04 00:10:25.367   Successfully installed the file.
+2026-05-04 00:10:25.367   -- File entry --
+2026-05-04 00:10:25.367   Dest filename: C:\Program Files\MBAS\backend\src\services\sale_service.py
+2026-05-04 00:10:25.367   Time stamp of our file: 2026-04-27 08:43:10.000
+2026-05-04 00:10:25.367   Installing the file.
+2026-05-04 00:10:25.367   Successfully installed the file.
+2026-05-04 00:10:25.367   -- File entry --
+2026-05-04 00:10:25.367   Dest filename: C:\Program Files\MBAS\frontend\dist\index.html
+2026-05-04 00:10:25.367   Time stamp of our file: 2026-05-03 18:43:22.000
+2026-05-04 00:10:25.367   Installing the file.
+2026-05-04 00:10:25.367   Creating directory: C:\Program Files\MBAS\frontend
+2026-05-04 00:10:25.367   Creating directory: C:\Program Files\MBAS\frontend\dist
+2026-05-04 00:10:25.367   Successfully installed the file.
+2026-05-04 00:10:25.367   -- File entry --
+2026-05-04 00:10:25.367   Dest filename: C:\Program Files\MBAS\frontend\dist\vite.svg
+2026-05-04 00:10:25.367   Time stamp of our file: 2026-03-05 00:10:14.000
+2026-05-04 00:10:25.367   Installing the file.
+2026-05-04 00:10:25.375   Successfully installed the file.
+2026-05-04 00:10:25.375   -- File entry --
+2026-05-04 00:10:25.375   Dest filename: C:\Program Files\MBAS\frontend\dist\assets\index-BUvJqFSG.css
+2026-05-04 00:10:25.375   Time stamp of our file: 2026-05-03 18:43:22.000
+2026-05-04 00:10:25.375   Installing the file.
+2026-05-04 00:10:25.375   Creating directory: C:\Program Files\MBAS\frontend\dist\assets
+2026-05-04 00:10:25.382   Successfully installed the file.
+2026-05-04 00:10:25.382   -- File entry --
+2026-05-04 00:10:25.382   Dest filename: C:\Program Files\MBAS\frontend\dist\assets\index-CE4PNPuu.js
+2026-05-04 00:10:25.382   Time stamp of our file: 2026-05-03 18:43:22.000
+2026-05-04 00:10:25.382   Installing the file.
+2026-05-04 00:10:25.414   Successfully installed the file.
+2026-05-04 00:10:25.414   -- File entry --
+2026-05-04 00:10:25.414   Dest filename: C:\Program Files\MBAS\scripts\build_deployment_package.py
+2026-05-04 00:10:25.414   Time stamp of our file: 2026-04-26 23:52:26.000
+2026-05-04 00:10:25.414   Installing the file.
+2026-05-04 00:10:25.414   Creating directory: C:\Program Files\MBAS\scripts
+2026-05-04 00:10:25.429   Successfully installed the file.
+2026-05-04 00:10:25.429   -- File entry --
+2026-05-04 00:10:25.429   Dest filename: C:\Program Files\MBAS\scripts\build_deployment_package_v2.py
+2026-05-04 00:10:25.431   Time stamp of our file: 2026-04-27 10:19:32.000
+2026-05-04 00:10:25.431   Installing the file.
+2026-05-04 00:10:25.433   Successfully installed the file.
+2026-05-04 00:10:25.433   -- File entry --
+2026-05-04 00:10:25.435   Dest filename: C:\Program Files\MBAS\scripts\create_shortcut.vbs
+2026-05-04 00:10:25.435   Time stamp of our file: 2026-04-26 23:13:46.000
+2026-05-04 00:10:25.435   Installing the file.
+2026-05-04 00:10:25.435   Successfully installed the file.
+2026-05-04 00:10:25.435   -- File entry --
+2026-05-04 00:10:25.435   Dest filename: C:\Program Files\MBAS\scripts\create_venv_installer.py
+2026-05-04 00:10:25.435   Time stamp of our file: 2026-04-27 00:15:36.000
+2026-05-04 00:10:25.435   Installing the file.
+2026-05-04 00:10:25.435   Successfully installed the file.
+2026-05-04 00:10:25.435   -- File entry --
+2026-05-04 00:10:25.435   Dest filename: C:\Program Files\MBAS\scripts\DIAGNOSE.bat
+2026-05-04 00:10:25.435   Time stamp of our file: 2026-04-26 23:52:14.000
+2026-05-04 00:10:25.435   Installing the file.
+2026-05-04 00:10:25.442   Successfully installed the file.
+2026-05-04 00:10:25.442   -- File entry --
+2026-05-04 00:10:25.442   Dest filename: C:\Program Files\MBAS\scripts\download_model.py
+2026-05-04 00:10:25.442   Time stamp of our file: 2026-04-23 09:04:06.000
+2026-05-04 00:10:25.442   Installing the file.
+2026-05-04 00:10:25.445   Successfully installed the file.
+2026-05-04 00:10:25.445   -- File entry --
+2026-05-04 00:10:25.445   Dest filename: C:\Program Files\MBAS\scripts\FIX_SETTINGS_DATABASE.bat
+2026-05-04 00:10:25.445   Time stamp of our file: 2026-04-27 08:59:16.000
+2026-05-04 00:10:25.445   Installing the file.
+2026-05-04 00:10:25.445   Successfully installed the file.
+2026-05-04 00:10:25.445   -- File entry --
+2026-05-04 00:10:25.445   Dest filename: C:\Program Files\MBAS\scripts\mbas_tray.py
+2026-05-04 00:10:25.445   Time stamp of our file: 2026-04-30 00:11:44.000
+2026-05-04 00:10:25.445   Installing the file.
+2026-05-04 00:10:25.445   Successfully installed the file.
+2026-05-04 00:10:25.445   -- File entry --
+2026-05-04 00:10:25.445   Dest filename: C:\Program Files\MBAS\scripts\START_MBAS_TRAY.bat
+2026-05-04 00:10:25.445   Time stamp of our file: 2026-04-28 22:11:22.000
+2026-05-04 00:10:25.445   Installing the file.
+2026-05-04 00:10:25.445   Successfully installed the file.
+2026-05-04 00:10:25.445   -- File entry --
+2026-05-04 00:10:25.445   Dest filename: C:\Program Files\MBAS\wheels\annotated_doc-0.0.4-py3-none-any.whl
+2026-05-04 00:10:25.445   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.445   Installing the file.
+2026-05-04 00:10:25.445   Creating directory: C:\Program Files\MBAS\wheels
+2026-05-04 00:10:25.445   Successfully installed the file.
+2026-05-04 00:10:25.445   -- File entry --
+2026-05-04 00:10:25.445   Dest filename: C:\Program Files\MBAS\wheels\annotated_types-0.7.0-py3-none-any.whl
+2026-05-04 00:10:25.461   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.461   Installing the file.
+2026-05-04 00:10:25.461   Successfully installed the file.
+2026-05-04 00:10:25.461   -- File entry --
+2026-05-04 00:10:25.461   Dest filename: C:\Program Files\MBAS\wheels\anyio-4.13.0-py3-none-any.whl
+2026-05-04 00:10:25.461   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.461   Installing the file.
+2026-05-04 00:10:25.479   Successfully installed the file.
+2026-05-04 00:10:25.479   -- File entry --
+2026-05-04 00:10:25.479   Dest filename: C:\Program Files\MBAS\wheels\apscheduler-3.11.2-py3-none-any.whl
+2026-05-04 00:10:25.479   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.479   Installing the file.
+2026-05-04 00:10:25.482   Successfully installed the file.
+2026-05-04 00:10:25.482   -- File entry --
+2026-05-04 00:10:25.482   Dest filename: C:\Program Files\MBAS\wheels\bcrypt-3.2.2-cp36-abi3-win_amd64.whl
+2026-05-04 00:10:25.482   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.482   Installing the file.
+2026-05-04 00:10:25.494   Successfully installed the file.
+2026-05-04 00:10:25.494   -- File entry --
+2026-05-04 00:10:25.494   Dest filename: C:\Program Files\MBAS\wheels\certifi-2026.4.22-py3-none-any.whl
+2026-05-04 00:10:25.494   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.494   Installing the file.
+2026-05-04 00:10:25.509   Successfully installed the file.
+2026-05-04 00:10:25.509   -- File entry --
+2026-05-04 00:10:25.509   Dest filename: C:\Program Files\MBAS\wheels\cffi-2.0.0-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:25.509   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.509   Installing the file.
+2026-05-04 00:10:25.525   Successfully installed the file.
+2026-05-04 00:10:25.525   -- File entry --
+2026-05-04 00:10:25.525   Dest filename: C:\Program Files\MBAS\wheels\charset_normalizer-3.4.7-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:25.525   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.525   Installing the file.
+2026-05-04 00:10:25.540   Successfully installed the file.
+2026-05-04 00:10:25.540   -- File entry --
+2026-05-04 00:10:25.540   Dest filename: C:\Program Files\MBAS\wheels\click-8.3.3-py3-none-any.whl
+2026-05-04 00:10:25.540   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.540   Installing the file.
+2026-05-04 00:10:25.540   Successfully installed the file.
+2026-05-04 00:10:25.540   -- File entry --
+2026-05-04 00:10:25.540   Dest filename: C:\Program Files\MBAS\wheels\colorama-0.4.6-py2.py3-none-any.whl
+2026-05-04 00:10:25.540   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.540   Installing the file.
+2026-05-04 00:10:25.555   Successfully installed the file.
+2026-05-04 00:10:25.555   -- File entry --
+2026-05-04 00:10:25.555   Dest filename: C:\Program Files\MBAS\wheels\coverage-7.13.5-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:25.555   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.555   Installing the file.
+2026-05-04 00:10:25.575   Successfully installed the file.
+2026-05-04 00:10:25.575   -- File entry --
+2026-05-04 00:10:25.575   Dest filename: C:\Program Files\MBAS\wheels\cryptography-47.0.0-cp311-abi3-win_amd64.whl
+2026-05-04 00:10:25.575   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.575   Installing the file.
+2026-05-04 00:10:25.800   Successfully installed the file.
+2026-05-04 00:10:25.800   -- File entry --
+2026-05-04 00:10:25.800   Dest filename: C:\Program Files\MBAS\wheels\ecdsa-0.19.2-py2.py3-none-any.whl
+2026-05-04 00:10:25.800   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.800   Installing the file.
+2026-05-04 00:10:25.809   Successfully installed the file.
+2026-05-04 00:10:25.809   -- File entry --
+2026-05-04 00:10:25.809   Dest filename: C:\Program Files\MBAS\wheels\fastapi-0.136.1-py3-none-any.whl
+2026-05-04 00:10:25.809   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.809   Installing the file.
+2026-05-04 00:10:25.809   Successfully installed the file.
+2026-05-04 00:10:25.809   -- File entry --
+2026-05-04 00:10:25.809   Dest filename: C:\Program Files\MBAS\wheels\greenlet-3.5.0-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:25.809   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.809   Installing the file.
+2026-05-04 00:10:25.826   Successfully installed the file.
+2026-05-04 00:10:25.826   -- File entry --
+2026-05-04 00:10:25.826   Dest filename: C:\Program Files\MBAS\wheels\h11-0.16.0-py3-none-any.whl
+2026-05-04 00:10:25.826   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.826   Installing the file.
+2026-05-04 00:10:25.837   Successfully installed the file.
+2026-05-04 00:10:25.837   -- File entry --
+2026-05-04 00:10:25.837   Dest filename: C:\Program Files\MBAS\wheels\httpcore-1.0.9-py3-none-any.whl
+2026-05-04 00:10:25.837   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.837   Installing the file.
+2026-05-04 00:10:25.841   Successfully installed the file.
+2026-05-04 00:10:25.841   -- File entry --
+2026-05-04 00:10:25.841   Dest filename: C:\Program Files\MBAS\wheels\httptools-0.7.1-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:25.841   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.841   Installing the file.
+2026-05-04 00:10:25.852   Successfully installed the file.
+2026-05-04 00:10:25.852   -- File entry --
+2026-05-04 00:10:25.852   Dest filename: C:\Program Files\MBAS\wheels\httpx-0.28.1-py3-none-any.whl
+2026-05-04 00:10:25.852   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.852   Installing the file.
+2026-05-04 00:10:25.857   Successfully installed the file.
+2026-05-04 00:10:25.857   -- File entry --
+2026-05-04 00:10:25.857   Dest filename: C:\Program Files\MBAS\wheels\idna-3.13-py3-none-any.whl
+2026-05-04 00:10:25.857   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.857   Installing the file.
+2026-05-04 00:10:25.864   Successfully installed the file.
+2026-05-04 00:10:25.864   -- File entry --
+2026-05-04 00:10:25.864   Dest filename: C:\Program Files\MBAS\wheels\iniconfig-2.3.0-py3-none-any.whl
+2026-05-04 00:10:25.864   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.864   Installing the file.
+2026-05-04 00:10:25.867   Successfully installed the file.
+2026-05-04 00:10:25.867   -- File entry --
+2026-05-04 00:10:25.867   Dest filename: C:\Program Files\MBAS\wheels\packaging-26.2-py3-none-any.whl
+2026-05-04 00:10:25.867   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.867   Installing the file.
+2026-05-04 00:10:25.873   Successfully installed the file.
+2026-05-04 00:10:25.873   -- File entry --
+2026-05-04 00:10:25.873   Dest filename: C:\Program Files\MBAS\wheels\passlib-1.7.4-py2.py3-none-any.whl
+2026-05-04 00:10:25.873   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.873   Installing the file.
+2026-05-04 00:10:25.888   Successfully installed the file.
+2026-05-04 00:10:25.888   -- File entry --
+2026-05-04 00:10:25.888   Dest filename: C:\Program Files\MBAS\wheels\pip-26.1-py3-none-any.whl
+2026-05-04 00:10:25.888   Time stamp of our file: 2026-05-03 23:24:46.000
+2026-05-04 00:10:25.888   Installing the file.
+2026-05-04 00:10:25.984   Successfully installed the file.
+2026-05-04 00:10:25.984   -- File entry --
+2026-05-04 00:10:25.984   Dest filename: C:\Program Files\MBAS\wheels\pluggy-1.6.0-py3-none-any.whl
+2026-05-04 00:10:25.984   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.984   Installing the file.
+2026-05-04 00:10:25.984   Successfully installed the file.
+2026-05-04 00:10:25.984   -- File entry --
+2026-05-04 00:10:25.984   Dest filename: C:\Program Files\MBAS\wheels\psutil-5.9.8-cp37-abi3-win_amd64.whl
+2026-05-04 00:10:25.984   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.984   Installing the file.
+2026-05-04 00:10:25.984   Successfully installed the file.
+2026-05-04 00:10:25.984   -- File entry --
+2026-05-04 00:10:25.984   Dest filename: C:\Program Files\MBAS\wheels\pyasn1-0.6.3-py3-none-any.whl
+2026-05-04 00:10:25.984   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.984   Installing the file.
+2026-05-04 00:10:25.999   Successfully installed the file.
+2026-05-04 00:10:25.999   -- File entry --
+2026-05-04 00:10:25.999   Dest filename: C:\Program Files\MBAS\wheels\pycparser-3.0-py3-none-any.whl
+2026-05-04 00:10:25.999   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:25.999   Installing the file.
+2026-05-04 00:10:26.005   Successfully installed the file.
+2026-05-04 00:10:26.005   -- File entry --
+2026-05-04 00:10:26.005   Dest filename: C:\Program Files\MBAS\wheels\pydantic-2.13.3-py3-none-any.whl
+2026-05-04 00:10:26.005   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.005   Installing the file.
+2026-05-04 00:10:26.015   Successfully installed the file.
+2026-05-04 00:10:26.015   -- File entry --
+2026-05-04 00:10:26.015   Dest filename: C:\Program Files\MBAS\wheels\pydantic_core-2.46.3-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:26.015   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.015   Installing the file.
+2026-05-04 00:10:26.080   Successfully installed the file.
+2026-05-04 00:10:26.080   -- File entry --
+2026-05-04 00:10:26.080   Dest filename: C:\Program Files\MBAS\wheels\pydantic_settings-2.14.0-py3-none-any.whl
+2026-05-04 00:10:26.080   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.080   Installing the file.
+2026-05-04 00:10:26.087   Successfully installed the file.
+2026-05-04 00:10:26.087   -- File entry --
+2026-05-04 00:10:26.087   Dest filename: C:\Program Files\MBAS\wheels\pygments-2.20.0-py3-none-any.whl
+2026-05-04 00:10:26.087   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.087   Installing the file.
+2026-05-04 00:10:26.157   Successfully installed the file.
+2026-05-04 00:10:26.157   -- File entry --
+2026-05-04 00:10:26.157   Dest filename: C:\Program Files\MBAS\wheels\pytest-9.0.3-py3-none-any.whl
+2026-05-04 00:10:26.157   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.157   Installing the file.
+2026-05-04 00:10:26.174   Successfully installed the file.
+2026-05-04 00:10:26.174   -- File entry --
+2026-05-04 00:10:26.174   Dest filename: C:\Program Files\MBAS\wheels\pytest_asyncio-1.3.0-py3-none-any.whl
+2026-05-04 00:10:26.174   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.174   Installing the file.
+2026-05-04 00:10:26.184   Successfully installed the file.
+2026-05-04 00:10:26.184   -- File entry --
+2026-05-04 00:10:26.184   Dest filename: C:\Program Files\MBAS\wheels\pytest_cov-7.1.0-py3-none-any.whl
+2026-05-04 00:10:26.184   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.184   Installing the file.
+2026-05-04 00:10:26.188   Successfully installed the file.
+2026-05-04 00:10:26.188   -- File entry --
+2026-05-04 00:10:26.188   Dest filename: C:\Program Files\MBAS\wheels\python_dotenv-1.2.2-py3-none-any.whl
+2026-05-04 00:10:26.188   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.188   Installing the file.
+2026-05-04 00:10:26.191   Successfully installed the file.
+2026-05-04 00:10:26.191   -- File entry --
+2026-05-04 00:10:26.191   Dest filename: C:\Program Files\MBAS\wheels\python_jose-3.5.0-py2.py3-none-any.whl
+2026-05-04 00:10:26.191   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.191   Installing the file.
+2026-05-04 00:10:26.195   Successfully installed the file.
+2026-05-04 00:10:26.195   -- File entry --
+2026-05-04 00:10:26.195   Dest filename: C:\Program Files\MBAS\wheels\python_multipart-0.0.27-py3-none-any.whl
+2026-05-04 00:10:26.195   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.195   Installing the file.
+2026-05-04 00:10:26.198   Successfully installed the file.
+2026-05-04 00:10:26.198   -- File entry --
+2026-05-04 00:10:26.198   Dest filename: C:\Program Files\MBAS\wheels\pyyaml-6.0.3-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:26.198   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.198   Installing the file.
+2026-05-04 00:10:26.204   Successfully installed the file.
+2026-05-04 00:10:26.204   -- File entry --
+2026-05-04 00:10:26.204   Dest filename: C:\Program Files\MBAS\wheels\requests-2.33.1-py3-none-any.whl
+2026-05-04 00:10:26.204   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.204   Installing the file.
+2026-05-04 00:10:26.209   Successfully installed the file.
+2026-05-04 00:10:26.209   -- File entry --
+2026-05-04 00:10:26.209   Dest filename: C:\Program Files\MBAS\wheels\rsa-4.9.1-py3-none-any.whl
+2026-05-04 00:10:26.209   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.209   Installing the file.
+2026-05-04 00:10:26.213   Successfully installed the file.
+2026-05-04 00:10:26.213   -- File entry --
+2026-05-04 00:10:26.213   Dest filename: C:\Program Files\MBAS\wheels\setuptools-82.0.1-py3-none-any.whl
+2026-05-04 00:10:26.213   Time stamp of our file: 2026-05-03 23:24:46.000
+2026-05-04 00:10:26.213   Installing the file.
+2026-05-04 00:10:26.284   Successfully installed the file.
+2026-05-04 00:10:26.284   -- File entry --
+2026-05-04 00:10:26.284   Dest filename: C:\Program Files\MBAS\wheels\six-1.17.0-py2.py3-none-any.whl
+2026-05-04 00:10:26.284   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.284   Installing the file.
+2026-05-04 00:10:26.284   Successfully installed the file.
+2026-05-04 00:10:26.284   -- File entry --
+2026-05-04 00:10:26.284   Dest filename: C:\Program Files\MBAS\wheels\sqlalchemy-2.0.49-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:26.284   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.284   Installing the file.
+2026-05-04 00:10:26.319   Successfully installed the file.
+2026-05-04 00:10:26.319   -- File entry --
+2026-05-04 00:10:26.319   Dest filename: C:\Program Files\MBAS\wheels\sqlmodel-0.0.38-py3-none-any.whl
+2026-05-04 00:10:26.319   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.319   Installing the file.
+2026-05-04 00:10:26.328   Successfully installed the file.
+2026-05-04 00:10:26.328   -- File entry --
+2026-05-04 00:10:26.328   Dest filename: C:\Program Files\MBAS\wheels\starlette-1.0.0-py3-none-any.whl
+2026-05-04 00:10:26.328   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.328   Installing the file.
+2026-05-04 00:10:26.332   Successfully installed the file.
+2026-05-04 00:10:26.332   -- File entry --
+2026-05-04 00:10:26.332   Dest filename: C:\Program Files\MBAS\wheels\typing_extensions-4.15.0-py3-none-any.whl
+2026-05-04 00:10:26.332   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.332   Installing the file.
+2026-05-04 00:10:26.338   Successfully installed the file.
+2026-05-04 00:10:26.338   -- File entry --
+2026-05-04 00:10:26.338   Dest filename: C:\Program Files\MBAS\wheels\typing_inspection-0.4.2-py3-none-any.whl
+2026-05-04 00:10:26.338   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.338   Installing the file.
+2026-05-04 00:10:26.338   Successfully installed the file.
+2026-05-04 00:10:26.338   -- File entry --
+2026-05-04 00:10:26.338   Dest filename: C:\Program Files\MBAS\wheels\tzdata-2026.2-py2.py3-none-any.whl
+2026-05-04 00:10:26.338   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.338   Installing the file.
+2026-05-04 00:10:26.361   Successfully installed the file.
+2026-05-04 00:10:26.363   -- File entry --
+2026-05-04 00:10:26.363   Dest filename: C:\Program Files\MBAS\wheels\tzlocal-5.3.1-py3-none-any.whl
+2026-05-04 00:10:26.363   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.363   Installing the file.
+2026-05-04 00:10:26.365   Successfully installed the file.
+2026-05-04 00:10:26.365   -- File entry --
+2026-05-04 00:10:26.365   Dest filename: C:\Program Files\MBAS\wheels\urllib3-2.6.3-py3-none-any.whl
+2026-05-04 00:10:26.365   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.365   Installing the file.
+2026-05-04 00:10:26.371   Successfully installed the file.
+2026-05-04 00:10:26.371   -- File entry --
+2026-05-04 00:10:26.371   Dest filename: C:\Program Files\MBAS\wheels\uvicorn-0.46.0-py3-none-any.whl
+2026-05-04 00:10:26.371   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.371   Installing the file.
+2026-05-04 00:10:26.380   Successfully installed the file.
+2026-05-04 00:10:26.380   -- File entry --
+2026-05-04 00:10:26.380   Dest filename: C:\Program Files\MBAS\wheels\watchfiles-1.1.1-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:26.380   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.380   Installing the file.
+2026-05-04 00:10:26.390   Successfully installed the file.
+2026-05-04 00:10:26.390   -- File entry --
+2026-05-04 00:10:26.390   Dest filename: C:\Program Files\MBAS\wheels\websockets-16.0-cp312-cp312-win_amd64.whl
+2026-05-04 00:10:26.390   Time stamp of our file: 2026-05-03 23:24:30.000
+2026-05-04 00:10:26.390   Installing the file.
+2026-05-04 00:10:26.408   Successfully installed the file.
+2026-05-04 00:10:26.408   -- File entry --
+2026-05-04 00:10:26.408   Dest filename: C:\Program Files\MBAS\wheels\wheel-0.47.0-py3-none-any.whl
+2026-05-04 00:10:26.408   Time stamp of our file: 2026-05-03 23:24:46.000
+2026-05-04 00:10:26.408   Installing the file.
+2026-05-04 00:10:26.411   Successfully installed the file.
+2026-05-04 00:10:26.411   -- File entry --
+2026-05-04 00:10:26.411   Dest filename: C:\Program Files\MBAS\mbas_icon.ico
+2026-05-04 00:10:26.411   Time stamp of our file: 2026-04-30 00:10:42.000
+2026-05-04 00:10:26.411   Installing the file.
+2026-05-04 00:10:26.413   Successfully installed the file.
+2026-05-04 00:10:26.413   -- File entry --
+2026-05-04 00:10:26.413   Dest filename: C:\Program Files\MBAS\mbas.license
+2026-05-04 00:10:26.413   Time stamp of our file: 2026-04-30 00:10:42.000
+2026-05-04 00:10:26.413   Installing the file.
+2026-05-04 00:10:26.413   Successfully installed the file.
+2026-05-04 00:10:26.413   -- File entry --
+2026-05-04 00:10:26.413   Dest filename: C:\Program Files\MBAS\docs\About.html
+2026-05-04 00:10:26.413   Time stamp of our file: 2026-05-03 18:25:40.000
+2026-05-04 00:10:26.413   Installing the file.
+2026-05-04 00:10:26.413   Creating directory: C:\Program Files\MBAS\docs
+2026-05-04 00:10:26.413   Successfully installed the file.
+2026-05-04 00:10:26.413   -- File entry --
+2026-05-04 00:10:26.413   Dest filename: C:\Program Files\MBAS\docs\Installation_Guide.md
+2026-05-04 00:10:26.413   Time stamp of our file: 2026-05-03 18:25:54.000
+2026-05-04 00:10:26.413   Installing the file.
+2026-05-04 00:10:26.426   Successfully installed the file.
+2026-05-04 00:10:26.426   -- File entry --
+2026-05-04 00:10:26.426   Dest filename: C:\Program Files\MBAS\docs\README.md
+2026-05-04 00:10:26.426   Time stamp of our file: 2026-05-03 14:52:08.000
+2026-05-04 00:10:26.426   Installing the file.
+2026-05-04 00:10:26.429   Successfully installed the file.
+2026-05-04 00:10:26.429   -- File entry --
+2026-05-04 00:10:26.429   Dest filename: C:\Program Files\MBAS\INSTALL_MBAS.bat
+2026-05-04 00:10:26.429   Time stamp of our file: 2026-05-03 23:46:40.000
+2026-05-04 00:10:26.429   Installing the file.
+2026-05-04 00:10:26.429   Successfully installed the file.
+2026-05-04 00:10:26.429   -- File entry --
+2026-05-04 00:10:26.429   Dest filename: C:\Program Files\MBAS\START_MBAS_TRAY.bat
+2026-05-04 00:10:26.429   Time stamp of our file: 2026-05-03 18:19:14.000
+2026-05-04 00:10:26.429   Installing the file.
+2026-05-04 00:10:26.429   Successfully installed the file.
+2026-05-04 00:10:26.429   -- File entry --
+2026-05-04 00:10:26.429   Dest filename: C:\Program Files\MBAS\START_MBAS_DIRECT.bat
+2026-05-04 00:10:26.429   Time stamp of our file: 2026-05-03 18:19:20.000
+2026-05-04 00:10:26.429   Installing the file.
+2026-05-04 00:10:26.429   Successfully installed the file.
+2026-05-04 00:10:26.435   -- File entry --
+2026-05-04 00:10:26.435   Dest filename: C:\Program Files\MBAS\STOP_MBAS.bat
+2026-05-04 00:10:26.435   Time stamp of our file: 2026-05-03 23:31:02.000
+2026-05-04 00:10:26.435   Installing the file.
+2026-05-04 00:10:26.435   Successfully installed the file.
+2026-05-04 00:10:26.435   -- Icon entry --
+2026-05-04 00:10:26.435   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MBAS - Modern Business Automation System\MBAS - Modern Business Automation System.lnk
+2026-05-04 00:10:26.438   Creating the icon.
+2026-05-04 00:10:26.489   Successfully created the icon.
+2026-05-04 00:10:26.524   -- Icon entry --
+2026-05-04 00:10:26.524   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MBAS - Modern Business Automation System\MBAS - Modern Business Automation System (Direct Mode).lnk
+2026-05-04 00:10:26.526   Creating the icon.
+2026-05-04 00:10:26.532   Successfully created the icon.
+2026-05-04 00:10:26.553   -- Icon entry --
+2026-05-04 00:10:26.553   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MBAS - Modern Business Automation System\Stop MBAS.lnk
+2026-05-04 00:10:26.553   Creating the icon.
+2026-05-04 00:10:26.558   Successfully created the icon.
+2026-05-04 00:10:26.568   -- Icon entry --
+2026-05-04 00:10:26.568   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MBAS - Modern Business Automation System\Documentation.lnk
+2026-05-04 00:10:26.568   Creating the icon.
+2026-05-04 00:10:26.586   Successfully created the icon.
+2026-05-04 00:10:26.600   -- Icon entry --
+2026-05-04 00:10:26.600   Dest filename: C:\ProgramData\Microsoft\Windows\Start Menu\Programs\MBAS - Modern Business Automation System\Uninstall.lnk
+2026-05-04 00:10:26.608   Creating the icon.
+2026-05-04 00:10:26.616   Successfully created the icon.
+2026-05-04 00:10:26.638   Saving uninstall information.
+2026-05-04 00:10:26.638   Deleting uninstall key left over from previous administrative 64-bit install.
+2026-05-04 00:10:26.640   Creating new uninstall key: HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\{A1B2C3D4-E5F6-4A5B-8C9D-0E1F2A3B4C5D}_is1
+2026-05-04 00:10:26.640   Writing uninstall key values.
+2026-05-04 00:10:26.640   Detected previous non administrative install? No
+2026-05-04 00:10:26.640   Detected previous administrative 32-bit install? No
+2026-05-04 00:10:26.640   Installation process succeeded.
+2026-05-04 00:10:26.649   -- Run entry --
+2026-05-04 00:10:26.649   Run as: Current user
+2026-05-04 00:10:26.649   Type: Exec
+2026-05-04 00:10:26.649   Filename: cmd.exe
+2026-05-04 00:10:26.649   Parameters: /C "C:\Program Files\MBAS\INSTALL_MBAS.bat"
+2026-05-04 00:10:56.704   Process exit code: 0
+2026-05-04 00:10:56.704   Need to restart Windows? No
+2026-05-04 00:10:56.704   Deinitializing Setup.
+2026-05-04 00:10:56.719   Log closed.

@@ -1,0 +1,306 @@
+================================================================
+   MBAS v1.0.6 - UPDATE GUIDE
+================================================================
+
+NEW PACKAGE: MBAS_v1.0.6_Standard_20260427_DevOps.zip
+LOCATION: D:\gemini_modern_business_automation_system\deployment\
+SIZE: 0.29 MB (compressed)
+
+WHAT'S NEW:
+✓ Complete currency synchronization (ALL pages)
+✓ Reports page fixed (13 locations)
+✓ Dashboard backend fixed
+✓ Inventory fixed
+✓ Billing already working
+✓ Settings fixed
+✓ All previous fixes included
+
+================================================================
+   QUICK UPDATE FOR EXISTING INSTALLATIONS
+================================================================
+
+If you already have MBAS v1.0.3, v1.0.4, or v1.0.5 installed:
+
+METHOD 1: UPDATE IN PLACE (5 MINUTES)
+---------------------------------------
+
+1. STOP MBAS
+   - Close the MBAS console window
+   - Or press Ctrl+C
+
+2. BACKUP DATABASE
+   - Copy: [Your MBAS]\backend\mbas_database.db
+   - To: Desktop\mbas_backup.db
+
+3. EXTRACT NEW PACKAGE
+   - Extract: MBAS_v1.0.6_Standard_20260427_DevOps.zip
+   - To: Temporary folder (e.g., Desktop\MBAS_v1.0.6_Temp)
+
+4. COPY NEW FILES
+   Copy from extracted package to your installation:
+
+   A. Frontend:
+      FROM: Desktop\MBAS_v1.0.6_Temp\MBAS_Package_V2\frontend\dist\
+      TO: [Your MBAS]\frontend\dist\
+      (Replace entire dist folder)
+
+   B. Backend files:
+      FROM: Desktop\MBAS_v1.0.6_Temp\MBAS_Package_V2\backend\src\
+      TO: [Your MBAS]\backend\src\
+      (Replace entire src folder)
+
+   C. Database migration script:
+      FROM: Desktop\MBAS_v1.0.6_Temp\MBAS_Package_V2\backend\src\scripts\migrate_settings_schema.py
+      TO: [Your MBAS]\backend\src\scripts\migrate_settings_schema.py
+
+5. RUN DATABASE MIGRATION (if upgrading from v1.0.2 or earlier)
+   cd [Your MBAS]\backend
+   ..\venv\Scripts\activate.bat
+   python src\scripts\migrate_settings_schema.py
+
+   Should show: "[+] Migration completed successfully!"
+
+6. START MBAS
+   cd [Your MBAS]
+   START_MBAS.bat
+
+7. HARD REFRESH BROWSER
+   - Press Ctrl+Shift+R (or Ctrl+F5)
+
+8. VERIFY
+   - Settings → Currency: PKR → Save
+   - Check Dashboard → Shows "PKR" ✓
+   - Check Inventory → Shows "PKR" ✓
+   - Check Reports → Shows "PKR" ✓
+
+METHOD 2: FRESH INSTALL (10 MINUTES - SAFEST)
+----------------------------------------------
+
+1. BACKUP CURRENT INSTALLATION
+   - Copy: [Old MBAS]\backend\mbas_database.db
+   - To: Desktop\mbas_backup.db
+   - Copy: [Old MBAS]\mbas.license
+   - To: Desktop\mbas_license_backup
+
+2. EXTRACT NEW PACKAGE
+   - Extract: MBAS_v1.0.6_Standard_20260427_DevOps.zip
+   - To: C:\MBAS_v1.0.6 (or F:\MBAS_v1.0.6)
+
+3. RUN INSTALLER
+   - cd C:\MBAS_v1.0.6\MBAS_Package_V2
+   - Run: INSTALL.bat
+   - Wait: 2-4 minutes
+
+4. RESTORE DATABASE
+   - Stop MBAS if it started
+   - Copy: Desktop\mbas_backup.db
+   - To: C:\MBAS_v1.0.6\MBAS_Package_V2\backend\mbas_database.db
+   - Copy: Desktop\mbas_license_backup
+   - To: C:\MBAS_v1.0.6\MBAS_Package_V2\mbas.license
+
+5. RUN MIGRATION (if from v1.0.2 or earlier)
+   - cd C:\MBAS_v1.0.6\MBAS_Package_V2\backend
+   - ..\venv\Scripts\activate.bat
+   - python src\scripts\migrate_settings_schema.py
+
+6. VERIFY
+   - Run: HEALTH_CHECK.bat (all checks pass ✓)
+
+7. START
+   - Run: START_MBAS.bat
+   - Or: Double-click "MBAS" desktop icon
+
+8. TEST
+   - Login: admin / [your password]
+   - Settings → Change currency
+   - Verify all pages update
+
+================================================================
+   NEW INSTALLATION (FIRST TIME)
+================================================================
+
+1. REQUIREMENTS
+   - Windows 10/11 (64-bit)
+   - Python 3.11 or 3.12 (NOT 3.13!)
+   - 500 MB disk space
+   - Internet (for first install only)
+
+2. EXTRACT
+   - Extract: MBAS_v1.0.6_Standard_20260427_DevOps.zip
+   - To: C:\MBAS (or any location)
+
+3. INSTALL
+   - cd C:\MBAS\MBAS_Package_V2
+   - Run: INSTALL.bat
+   - Wait: 2-4 minutes
+   - Creates virtual environment
+   - Installs all dependencies
+   - Initializes database
+   - Creates desktop shortcut
+
+4. VERIFY
+   - Run: HEALTH_CHECK.bat
+   - All checks should pass ✓
+
+5. START
+   - Double-click: "MBAS" desktop icon
+   - Or run: START_MBAS.bat
+   - Browser opens automatically
+
+6. FIRST LOGIN
+   - URL: http://localhost:8000
+   - Username: admin
+   - Password: admin123
+   - IMPORTANT: Change password immediately!
+
+7. CONFIGURE
+   - Settings → Business name
+   - Settings → Currency (USD, EUR, GBP, PKR, INR)
+   - Settings → Tax rate
+   - Save Settings
+
+8. START USING
+   - Inventory → Add products
+   - Billing → Create sales
+   - Reports → View analytics
+
+================================================================
+   WHAT'S FIXED IN v1.0.6
+================================================================
+
+CURRENCY SYNCHRONIZATION:
+✓ Dashboard - "Today's Revenue" card (backend)
+✓ Dashboard - "Recent Sales" table (frontend)
+✓ Dashboard - "Top Products" widget (frontend)
+✓ Inventory - Product List prices (frontend)
+✓ Inventory - Product Form labels (frontend)
+✓ Reports - Total Revenue card (frontend)
+✓ Reports - Avg. Sale Value card (frontend)
+✓ Reports - Tax Collected card (frontend)
+✓ Reports - Top Products table (frontend)
+✓ Reports - Payment Methods table (frontend)
+✓ Reports - Category Sales table (frontend)
+✓ Reports - P&L Revenue card (frontend)
+✓ Reports - P&L COGS card (frontend)
+✓ Reports - P&L Gross Profit card (frontend)
+✓ Reports - Cash Flow Summary (frontend)
+✓ Billing - Already working (no changes)
+
+PREVIOUS FIXES (STILL INCLUDED):
+✓ Settings save functionality (v1.0.3)
+✓ Billing Decimal types (v1.0.2)
+✓ Virtual environment isolation (v1.0.1)
+✓ Dependency locking (v1.0.1)
+✓ Health check tool (v1.0.1)
+
+================================================================
+   VERIFICATION CHECKLIST
+================================================================
+
+After installation/update, verify:
+
+1. HEALTH CHECK
+   [ ] Run HEALTH_CHECK.bat
+   [ ] All 10 checks pass ✓
+
+2. LOGIN
+   [ ] Access http://localhost:8000
+   [ ] Login successful ✓
+
+3. CURRENCY TEST - PKR
+   [ ] Settings → Currency: PKR → Save
+   [ ] Dashboard → Shows "PKR X,XXX" ✓
+   [ ] Inventory → Shows "PKR XX.XX" ✓
+   [ ] Reports → All amounts show "PKR" ✓
+   [ ] Billing → Shows "PKR" ✓
+
+4. CURRENCY TEST - USD
+   [ ] Settings → Currency: USD → Save
+   [ ] All pages show "USD" ✓
+
+5. CURRENCY TEST - EUR
+   [ ] Settings → Currency: EUR → Save
+   [ ] All pages show "EUR" ✓
+
+6. CORE FEATURES
+   [ ] Add product ✓
+   [ ] Edit product ✓
+   [ ] Create sale ✓
+   [ ] Print invoice ✓
+   [ ] View reports ✓
+   [ ] Backup database ✓
+
+ALL CHECKS PASS = READY FOR PRODUCTION ✓
+
+================================================================
+   VERSION COMPARISON
+================================================================
+
+v1.0.0 → v1.0.6 (Major Upgrade):
+  - Currency synchronization: 0% → 100%
+  - Virtual environment: No → Yes
+  - Health checks: No → Yes
+  - Migration tools: No → Yes
+  - Documentation: Basic → Comprehensive
+
+v1.0.5 → v1.0.6 (Minor Update):
+  - Reports page currency: Fixed (13 locations)
+  - Complete synchronization achieved
+
+v1.0.4 → v1.0.6 (Minor Update):
+  - Dashboard backend: Fixed
+  - Reports frontend: Fixed
+
+v1.0.3 → v1.0.6 (Recommended Update):
+  - Currency sync: Incomplete → Complete
+  - All pages: Now synchronized
+
+================================================================
+   TROUBLESHOOTING
+================================================================
+
+Issue: Installation fails
+Fix: Verify Python 3.11/3.12 installed
+     Run as Administrator
+     Check internet connection
+
+Issue: Migration fails
+Fix: Make sure MBAS is stopped
+     Activate venv first
+     Check for error messages
+
+Issue: Currency not changing
+Fix: Hard refresh browser (Ctrl+Shift+R)
+     Clear browser cache
+     Restart MBAS
+
+Issue: Health check fails
+Fix: Re-run INSTALL.bat
+     Check Python version
+     Verify all files copied
+
+Issue: Port 8000 in use
+Fix: Run STOP_MBAS.bat
+     Or restart computer
+
+================================================================
+   SUPPORT
+================================================================
+
+Documentation:
+  - README.txt (quick start)
+  - DEPLOYMENT_GUIDE.txt (IT guide)
+  - RELEASE_NOTES_v1.0.6.md (complete changelog)
+
+Tools:
+  - HEALTH_CHECK.bat (diagnostics)
+  - migrate_settings_schema.py (DB migration)
+
+================================================================
+
+MBAS v1.0.6 is the most stable version!
+
+100% currency synchronized across ALL pages.
+Ready for production deployment.
+
+Happy deploying! 🚀

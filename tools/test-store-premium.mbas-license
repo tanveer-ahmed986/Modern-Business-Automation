@@ -1,0 +1,21 @@
+{
+  "licensee": "Test Store",
+  "tier": "premium",
+  "issued_date": "2026-04-22T19:18:16.627387",
+  "expiry_date": "2027-04-22T19:18:16.627387",
+  "machine_id_hash": null,
+  "features": {
+    "inventory": true,
+    "billing": true,
+    "customers": true,
+    "dashboard": true,
+    "suppliers": true,
+    "purchases": true,
+    "backup_restore": true,
+    "advanced_reports": true,
+    "premium_reports": true,
+    "ai_assistant": true,
+    "ai_forecasting": true
+  },
+  "signature": "ZvqOe/Enu38MHpBgGNuUhHPk7J3dolf5h0XUV0WWdY84Lw8PFYOaI4wfiICCLlplXCtGdi5COvVYGiWwYP6ZcNO9Gom9P53JRSR8DMJcDk8/eT2swi/dsDd0w79ZVpsmFnkZsxL0zvesaKKfIrlPtbvU3gdeCymHN2khhjaL2xdxHZIc4UBiOeGEjaoY/hWc23z20I3ApikajfOLSB/FF3dAhV0F9EXPKXARMH5sqVQGrxU9SCFxJYWQ5iGXX+U0wGgKQ7/g0xbqn/FQ5qqD2HOZaFM/QOcX9EDFu3HvQxf/m7PghWMzGZ2Lu3AM8mY5rPMItkEzXFJNT+VBiix8TAFjZ5CidcCuEQWfv7sSpno/0oMJn4MfkABurj8cdWc/6CShUmLIWQNKypeMndYdCi39KJuRhA5CNXlKRJdOyHxexmiB7aYFRmmXy6ha/ZRd5FKNL9dSx627GIUWPcvyhUEvtWWU4qeerYJJLfDCcuBlDqu/OZpieKj9qYb6mbzveZRVYG6SZl08+CGJOiHxr6tg1OYgcorsFUzZdxbFddfeg9HUWlNLKx7uQPSeekcnNtwPinx78bQGug8g4xgCWXT1j325RHt9kG2UfYXjIByduxlh1juea6Uo+PA1bUhkxo1D93x4CFtDqGABm/5pE6Ix4VWDU2iuPa+8P5Q1oqE="
+}

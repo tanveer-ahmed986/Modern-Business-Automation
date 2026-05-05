@@ -32,6 +32,26 @@
 **/*.sqlite3
 **/*.msi
 **/*.exe
+**/backups/
+
+# Security & Credentials (NEVER COMMIT THESE)
+**/secret.key
+**/private_key.pem
+**/*private*.pem
+**/*.license
+**/token.txt
+**/.env
+**/.env.*
+**/credentials.*
+**/config/secret.*
+
+# Test & Deployment artifacts
+test_deployment/
+**/test_log*.txt
+**/install_test_log*.txt
+**/uninstall_test_log*.txt
+screenshots/
+nul
 
 # Universal / IDE / OS
 .DS_Store

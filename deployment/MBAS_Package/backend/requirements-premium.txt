@@ -1,0 +1,12 @@
+# MBAS Premium Tier - Optional AI/ML Dependencies
+# Install these ONLY if you need AI forecasting features
+#
+# Installation:
+#   python -m pip install -r requirements-premium.txt
+#
+# NOTE: These packages require ~200MB disk space and may need
+#       compilation on some systems (C++ compiler required)
+
+pandas>=2.2.3,<3.0
+numpy>=1.26.4,<2.0
+scikit-learn>=1.4.1,<2.0

@@ -1,0 +1,105 @@
+================================================================================
+  MBAS - System Requirements
+  Version 2.0.0
+  Z&T Technologies
+================================================================================
+
+MINIMUM REQUIREMENTS:
+---------------------
+Operating System: Windows 10 (64-bit) or later
+Processor: Intel Core i3 or equivalent
+Memory (RAM): 4GB
+Hard Disk Space: 2GB free space
+Display: 1366x768 resolution
+Internet: Required for initial installation
+
+RECOMMENDED REQUIREMENTS:
+-------------------------
+Operating System: Windows 11 (64-bit)
+Processor: Intel Core i5 or better
+Memory (RAM): 8GB or more
+Hard Disk Space: 5GB free space
+Display: 1920x1080 resolution or higher
+Internet: Broadband connection
+
+SOFTWARE REQUIREMENTS:
+----------------------
+Python: 3.11 or 3.12 (installer will verify)
+  - Download from: https://www.python.org/downloads/
+  - NOTE: Python 3.13+ is NOT supported yet
+
+Web Browser: Modern browser required
+  - Google Chrome (recommended)
+  - Microsoft Edge
+  - Mozilla Firefox
+
+Administrator Access: Required for installation
+  - Installation to C:\Program Files requires admin
+  - Alternative: Install to C:\MBAS (no admin needed)
+
+NETWORK REQUIREMENTS (Optional):
+---------------------------------
+For multi-user/network installation:
+- Local network (LAN)
+- Port 8000 available
+- Static IP recommended for server
+
+STORAGE REQUIREMENTS:
+---------------------
+Application Files: ~500MB
+Database: Varies by usage (starts at 10MB)
+Backups: 100MB+ per backup (depending on data)
+Logs: 50MB (rotated automatically)
+
+PERFORMANCE NOTES:
+------------------
+- First startup takes 20-30 seconds (database initialization)
+- Subsequent starts: 5-10 seconds
+- Handles 1000s of products/transactions smoothly
+- Database grows with usage
+- Regular backups recommended
+
+COMPATIBILITY:
+--------------
+✓ Windows 10 (version 1809 or later)
+✓ Windows 11 (all versions)
+✗ Windows 8/8.1 (not supported)
+✗ Windows 7 (not supported)
+✗ Windows Server (untested, may work)
+
+FIREWALL/ANTIVIRUS:
+-------------------
+MBAS is safe and will not harm your computer.
+
+If your antivirus blocks MBAS:
+1. Add exception for: C:\Program Files\MBAS\
+2. Allow Python executables
+3. Contact support if issues persist
+
+Windows Defender may show SmartScreen warning:
+- Click "More info"
+- Click "Run anyway"
+- This is normal for new software
+
+ADDITIONAL NOTES:
+-----------------
+- No internet connection needed after installation
+- Works completely offline
+- All data stored locally
+- No cloud dependencies
+- Privacy-focused design
+
+For multi-user setup:
+- Install on one computer (server)
+- Other users access via web browser
+- No installation needed on client computers
+
+================================================================================
+
+Questions? Contact us:
+Email: zttechnologies12@gmail.com
+Website: www.zttechnologies.org
+
+Z&T Technologies - State-of-the-Art Business Solutions
+
+================================================================================

@@ -1,0 +1,213 @@
+============================================================
+   MANUAL SYSTEM CHECKS
+   Run these commands ONE BY ONE in Command Prompt
+============================================================
+
+Open Command Prompt and run these commands:
+
+============================================================
+STEP 1: Navigate to MBAS folder
+============================================================
+
+cd F:\MBAS
+
+(If this fails, MBAS is not in F:\MBAS - check where you extracted it)
+
+============================================================
+STEP 2: Check Python
+============================================================
+
+python --version
+
+EXPECTED: Python 3.11.x or higher
+IF ERROR: Install Python from https://www.python.org/downloads/
+          Make sure to CHECK "Add Python to PATH"
+
+============================================================
+STEP 3: Check Node.js
+============================================================
+
+node --version
+
+EXPECTED: v18.x.x or higher
+IF ERROR: Install Node.js from https://nodejs.org/
+
+============================================================
+STEP 4: Check npm
+============================================================
+
+npm --version
+
+EXPECTED: 9.x.x or higher
+IF ERROR: Reinstall Node.js
+
+============================================================
+STEP 5: List backend files
+============================================================
+
+dir backend
+
+EXPECTED: Should show "src" folder and "requirements.txt"
+IF ERROR: Backend files missing - extract MBAS package again
+
+============================================================
+STEP 6: List frontend files
+============================================================
+
+dir frontend
+
+EXPECTED: Should show "src" folder, "package.json"
+IF ERROR: Frontend files missing - extract MBAS package again
+
+============================================================
+STEP 7: Check frontend dependencies
+============================================================
+
+dir frontend\node_modules
+
+EXPECTED: Should show many folders
+IF ERROR: Dependencies not installed
+
+FIX:
+cd frontend
+npm install --legacy-peer-deps
+cd ..
+
+============================================================
+STEP 8: Check backend dependencies
+============================================================
+
+cd backend
+python -c "import fastapi"
+
+EXPECTED: No output (means success)
+IF ERROR: "ModuleNotFoundError"
+
+FIX:
+pip install -r requirements.txt
+
+Then test again:
+cd ..
+
+============================================================
+STEP 9: Manually start backend
+============================================================
+
+cd backend
+python -m uvicorn src.main:app --host 127.0.0.1 --port 8000
+
+EXPECTED OUTPUT:
+INFO:     Uvicorn running on http://127.0.0.1:8000
+INFO:     Application startup complete
+
+IF YOU SEE THIS = BACKEND WORKS!
+
+IF ERROR:
+- "ModuleNotFoundError" = Run: pip install -r requirements.txt
+- "Address already in use" = Run: taskkill /F /IM python.exe
+
+Press Ctrl+C to stop backend
+
+============================================================
+STEP 10: Manually start frontend (in NEW command prompt)
+============================================================
+
+Open a NEW Command Prompt window
+
+cd F:\MBAS\frontend
+npm run dev
+
+EXPECTED OUTPUT:
+VITE v5.x.x ready in 500 ms
+Local:   http://localhost:5173/
+Network: use --host to expose
+
+IF YOU SEE THIS = FRONTEND WORKS!
+
+IF ERROR:
+- "npm: command not found" = Install Node.js
+- "Cannot find module" = Run: npm install --legacy-peer-deps
+- "EADDRINUSE" = Port busy, run: taskkill /F /IM node.exe
+
+============================================================
+STEP 11: Open browser
+============================================================
+
+Open browser and go to:
+http://localhost:5173
+
+EXPECTED: MBAS login page appears
+
+IF "Can't reach this page":
+- Check frontend is running (Step 10)
+- Check you see "Local: http://localhost:5173"
+- Make sure URL is exactly: http://localhost:5173
+
+============================================================
+STEP 12: Test login (if page appears)
+============================================================
+
+Username: admin
+Password: admin123
+
+Click Login
+
+EXPECTED: Dashboard appears
+
+IF ERROR "Network Error" or "Cannot connect":
+- Check backend is running (Step 9)
+- Check you see "Uvicorn running on http://127.0.0.1:8000"
+
+============================================================
+MOST COMMON ISSUES
+============================================================
+
+ISSUE: "Can't reach this page"
+CAUSE: Frontend not running
+FIX: Complete Step 10
+
+ISSUE: Frontend shows errors
+CAUSE: node_modules not installed
+FIX:
+  cd F:\MBAS\frontend
+  rmdir /s /q node_modules
+  npm install --legacy-peer-deps
+
+ISSUE: Backend shows ModuleNotFoundError
+CAUSE: Dependencies not installed
+FIX:
+  cd F:\MBAS\backend
+  pip install -r requirements.txt
+
+ISSUE: "npm is not recognized"
+CAUSE: Node.js not installed
+FIX: Install Node.js from https://nodejs.org/
+     Restart computer
+
+ISSUE: "python is not recognized"
+CAUSE: Python not installed or not in PATH
+FIX: Install Python from https://www.python.org/downloads/
+     CHECK "Add Python to PATH"
+     Restart computer
+
+============================================================
+QUICK FIX - Most Likely Problem
+============================================================
+
+Based on your "Can't reach this page" error, the frontend is NOT running.
+
+Try this:
+
+cd F:\MBAS\frontend
+npm install --legacy-peer-deps
+
+Wait for it to finish (2-3 minutes), then:
+
+npm run dev
+
+You should see:
+"Local: http://localhost:5173"
+
+Then open that URL in browser!
+
+============================================================

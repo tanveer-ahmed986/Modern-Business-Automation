@@ -1,0 +1,245 @@
+============================================================
+   MBAS - Step-by-Step Troubleshooting
+   "Can't Reach This Page" Error
+============================================================
+
+IMPORTANT: Follow these steps IN ORDER to find the problem.
+
+============================================================
+STEP 1: Run Diagnostics
+============================================================
+
+Copy these files to F:\MBAS\:
+- DIAGNOSE.bat
+- TEST_BACKEND.bat
+- TEST_FRONTEND.bat
+
+Then run:
+  F:\MBAS\DIAGNOSE.bat
+
+This will check:
+- Python installed? YES/NO
+- Node.js installed? YES/NO
+- Backend files present? YES/NO
+- Frontend files present? YES/NO
+- node_modules installed? YES/NO
+- Backend dependencies installed? YES/NO
+
+WRITE DOWN WHICH CHECKS FAILED (if any)
+
+============================================================
+STEP 2: Test Backend Server ALONE
+============================================================
+
+Run:
+  F:\MBAS\TEST_BACKEND.bat
+
+WHAT TO LOOK FOR:
+
+SUCCESS (Backend Working):
+  You should see:
+  "INFO:     Uvicorn running on http://127.0.0.1:8000"
+  "INFO:     Application startup complete"
+
+  >> If you see this, press Ctrl+C and go to STEP 3
+
+FAILURE (Backend NOT Working):
+  Common errors:
+
+  Error: "ModuleNotFoundError: No module named 'fastapi'"
+  Fix:
+    cd F:\MBAS\backend
+    pip install -r requirements.txt
+
+  Error: "ModuleNotFoundError: No module named 'src'"
+  Fix: You're in wrong directory
+    cd F:\MBAS
+    TEST_BACKEND.bat
+
+  Error: "No module named 'uvicorn'"
+  Fix:
+    pip install uvicorn
+
+============================================================
+STEP 3: Test Frontend Server ALONE
+============================================================
+
+Run:
+  F:\MBAS\TEST_FRONTEND.bat
+
+WHAT TO LOOK FOR:
+
+SUCCESS (Frontend Working):
+  You should see:
+  "VITE v5.x.x  ready in XXX ms"
+  "Local:   http://localhost:5173/"
+  "Network: use --host to expose"
+
+  >> If you see this, open browser to http://localhost:5173
+  >> You should see MBAS login page
+  >> If login page appears = SUCCESS! Go to STEP 5
+
+FAILURE (Frontend NOT Working):
+  Common errors:
+
+  Error: "npm: command not found" or "npm is not recognized"
+  Fix:
+    1. Install Node.js from https://nodejs.org/
+    2. Restart computer
+    3. Try again
+
+  Error: "Cannot find module" or package errors
+  Fix:
+    cd F:\MBAS\frontend
+    rmdir /s /q node_modules
+    del package-lock.json
+    npm install --legacy-peer-deps
+
+  Error: "EADDRINUSE: port 5173 already in use"
+  Fix:
+    taskkill /F /IM node.exe
+    Then run TEST_FRONTEND.bat again
+
+  Error: "Failed to resolve entry for package"
+  Fix:
+    cd F:\MBAS\frontend
+    npm install --force
+
+============================================================
+STEP 4: Check What You Found
+============================================================
+
+Based on STEP 2 and STEP 3:
+
+CASE A: Backend works, Frontend works
+  Problem: START_MBAS.bat not working correctly
+  Solution: Use TEST_BACKEND.bat and TEST_FRONTEND.bat separately
+
+  To start MBAS:
+  1. Run TEST_BACKEND.bat (keep window open)
+  2. Run TEST_FRONTEND.bat (keep window open)
+  3. Open browser to http://localhost:5173
+
+CASE B: Backend works, Frontend DOESN'T work
+  Problem: Frontend dependencies or configuration
+  Solution: Fix frontend (see STEP 3 errors)
+
+CASE C: Backend DOESN'T work, Frontend works
+  Problem: Backend dependencies
+  Solution: Fix backend (see STEP 2 errors)
+
+CASE D: Both DON'T work
+  Problem: Missing Python/Node.js or wrong directory
+  Solution:
+    1. Install Python and Node.js
+    2. Make sure you're in F:\MBAS\ directory
+    3. Run INSTALL_FIX_WINDOWS.bat
+
+============================================================
+STEP 5: If Everything Works Separately But Not Together
+============================================================
+
+Problem: START_MBAS.bat script issue
+
+Solution: Use manual startup
+
+Create this file: F:\MBAS\START_MANUAL.bat
+
+@echo off
+echo Starting MBAS manually...
+start "MBAS Backend" cmd /k "cd /d F:\MBAS && TEST_BACKEND.bat"
+timeout /t 2 >nul
+start "MBAS Frontend" cmd /k "cd /d F:\MBAS && TEST_FRONTEND.bat"
+timeout /t 10 >nul
+start http://localhost:5173
+echo MBAS is starting...
+pause
+
+Then run: START_MANUAL.bat
+
+============================================================
+STEP 6: Common Issues Summary
+============================================================
+
+ISSUE: "Can't reach this page" at http://localhost:5173
+CAUSE: Frontend server not running
+CHECK:
+  - Run TEST_FRONTEND.bat
+  - Should show "Local: http://localhost:5173"
+  - If not showing, frontend didn't start
+
+ISSUE: Login page shows but can't login
+CAUSE: Backend server not running
+CHECK:
+  - Run TEST_BACKEND.bat
+  - Should show "Uvicorn running on http://127.0.0.1:8000"
+  - If not showing, backend didn't start
+
+ISSUE: Both servers start but browser shows error
+CAUSE: Wrong URL or port
+CHECK:
+  - URL should be: http://localhost:5173 (NOT 8000)
+  - Clear browser cache
+  - Try incognito/private mode
+
+============================================================
+QUICK DIAGNOSTIC CHECKLIST
+============================================================
+
+Run this in Command Prompt:
+
+cd F:\MBAS
+
+python --version
+>> Should show: Python 3.11.x or higher
+>> If not: Install Python
+
+node --version
+>> Should show: v18.x.x or higher
+>> If not: Install Node.js
+
+dir backend\src\main.py
+>> Should show file
+>> If not: Extract MBAS package again
+
+dir frontend\package.json
+>> Should show file
+>> If not: Extract MBAS package again
+
+dir frontend\node_modules
+>> Should show folder
+>> If not: Run "cd frontend && npm install --legacy-peer-deps"
+
+cd backend
+python -c "import fastapi"
+>> Should return no error
+>> If error: Run "pip install -r requirements.txt"
+
+============================================================
+MOST LIKELY CAUSE (90% of cases)
+============================================================
+
+The "Can't reach this page" error means:
+  Frontend server is NOT running
+
+To fix:
+1. cd F:\MBAS\frontend
+2. npm install --legacy-peer-deps
+3. npm run dev
+4. Should see "Local: http://localhost:5173"
+5. Open browser to that URL
+
+============================================================
+CONTACT INFO
+============================================================
+
+After running diagnostics, you'll know exactly what's wrong:
+
+- Python not installed? Install from python.org
+- Node.js not installed? Install from nodejs.org
+- node_modules missing? Run "npm install --legacy-peer-deps"
+- Backend deps missing? Run "pip install -r requirements.txt"
+- Frontend not starting? Check errors in TEST_FRONTEND.bat
+- Backend not starting? Check errors in TEST_BACKEND.bat
+
+============================================================

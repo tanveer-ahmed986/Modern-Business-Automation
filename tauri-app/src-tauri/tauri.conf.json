@@ -1,13 +1,14 @@
 {
   "$schema": "../../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "mbas-app",
-  "version": "0.1.0",
+  "productName": "MBAS",
+  "version": "1.0.8",
   "identifier": "com.mbas.app",
   "build": {
     "frontendDist": "../../frontend/dist",
     "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "cd ../../frontend && npm run dev",
+    "beforeBuildCommand": "cd ../../frontend && npm run build",
+    "withGlobalTauri": false
   },
   "app": {
     "windows": [
@@ -25,7 +26,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["msi"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -35,6 +36,24 @@
     ],
     "externalBin": [
       "binaries/mbas-backend"
-    ]
+    ],
+    "resources": [
+      "../../*.mbas-license"
+    ],
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": "",
+      "wix": {
+        "language": "en-US",
+        "banner": null,
+        "dialog": null
+      }
+    },
+    "shortDescription": "Modern Business Automation System",
+    "longDescription": "A comprehensive offline business management solution with inventory, billing, reports, and AI-powered insights.",
+    "publisher": "MBAS Team",
+    "homepage": "https://mbas.local",
+    "category": "Business"
   }
 }
