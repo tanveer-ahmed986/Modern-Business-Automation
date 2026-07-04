@@ -80,11 +80,12 @@ async def lifespan(app: FastAPI):
     # Step 2: Initialize database tables on startup
     init_db()
 
-    # Step 2b: Ensure default admin user and settings exist
+    # Step 2b: Ensure default admin user, settings, and categories exist
     # (INSTALL_MBAS.bat bootstrap may have failed silently during install)
     try:
         from src.core.db import engine
         from src.models.core import User, UserRole, Settings
+        from src.models.inventory import Category
         from src.core.security import get_password_hash
         from src.models.license import get_tier_features
         from sqlmodel import Session, select
@@ -115,6 +116,20 @@ async def lifespan(app: FastAPI):
                     hashed_password=get_password_hash("admin123")
                 )
                 session.add(admin)
+
+            # Ensure sample categories exist
+            categories = session.exec(select(Category)).all()
+            if not categories:
+                print("Creating sample categories...")
+                sample_categories = [
+                    Category(name="Electronics", description="Electronic items and gadgets"),
+                    Category(name="Groceries", description="Food and grocery items"),
+                    Category(name="Clothing", description="Apparel and accessories"),
+                    Category(name="Stationery", description="Office and school supplies"),
+                ]
+                for cat in sample_categories:
+                    session.add(cat)
+                print(f"Created {len(sample_categories)} sample categories")
 
             session.commit()
     except Exception as e:

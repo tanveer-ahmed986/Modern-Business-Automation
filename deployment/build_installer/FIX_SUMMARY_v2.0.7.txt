@@ -1,0 +1,223 @@
+================================================================================
+  MBAS Installer Fixes - Version 2.0.7
+  Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================
+
+Date: July 4, 2026
+Build: v2.0.7
+Status: CRITICAL BUG FIXES
+
+================================================================================
+ISSUES FIXED
+================================================================================
+
+1. CRITICAL: Categories Not Created During Installation
+   -------------------------------------------------------
+   Problem:
+   - Fresh installations failed to create product categories
+   - Users saw empty category dropdown when adding products
+   - Categories table was completely empty in database
+
+   Root Cause:
+   - The bootstrap script (backend/src/scripts/init_db.py) only created
+     Settings and Admin user, but did NOT create sample categories
+   - The full init script (backend/init_database.py) creates categories
+     but was never called during installation
+
+   Fix Applied:
+   - Updated backend/src/scripts/init_db.py to create 4 sample categories:
+     * Electronics
+     * Groceries
+     * Clothing
+     * Stationery
+   - Added category creation to backend/src/main.py startup routine
+   - Categories now created both during installation AND on first server start
+
+   Files Modified:
+   - backend/src/scripts/init_db.py (lines 10, 90-106)
+   - backend/src/main.py (lines 84, 119-131)
+
+2. CRITICAL: CMD Window Flashing/Blinking
+   ----------------------------------------
+   Problem:
+   - CMD window would briefly appear when server operations occurred
+   - Unprofessional user experience
+   - Occurred during watchdog auto-restart operations
+
+   Root Cause:
+   - Watchdog process used subprocess.run() without CREATE_NO_WINDOW flag
+   - System commands (taskkill, netstat) were showing CMD windows
+   - Watchdog restart didn't explicitly use pythonw.exe
+
+   Fix Applied:
+   - Added CREATE_NO_WINDOW flag to all subprocess calls in watchdog.py
+   - Added STARTUPINFO with SW_HIDE to suppress console windows
+   - Watchdog now explicitly finds and uses pythonw.exe for restarts
+   - All taskkill and netstat commands now run completely hidden
+
+   Files Modified:
+   - backend/watchdog.py (lines 61-106, 108-139)
+
+================================================================================
+TECHNICAL DETAILS
+================================================================================
+
+Category Creation Flow:
+-----------------------
+Installation:
+  1. Installer runs INSTALL_MBAS.bat
+  2. INSTALL_MBAS.bat calls: backend/src/scripts/init_db.py::bootstrap()
+  3. bootstrap() now creates categories if none exist
+
+First Server Start:
+  1. main.py lifespan() runs init_db()
+  2. Ensures Settings, Admin user, AND categories exist
+  3. Creates 4 sample categories if table is empty
+
+This dual approach ensures categories are created even if:
+- Installation bootstrap failed silently
+- Database was manually deleted
+- Upgrading from older version
+
+CMD Window Suppression:
+-----------------------
+Windows process creation flags used:
+  - subprocess.CREATE_NO_WINDOW (0x08000000)
+  - startupinfo.dwFlags = STARTF_USESHOWWINDOW
+  - startupinfo.wShowWindow = SW_HIDE (0)
+
+Applied to:
+  - taskkill commands (kill python/pythonw processes)
+  - netstat commands (find processes on port 8000)
+  - Backend server restart via uvicorn
+
+Python executable selection:
+  - If sys.executable is python.exe, look for pythonw.exe in same dir
+  - Use pythonw.exe if found, fallback to python.exe
+  - Ensures no console window even during auto-restarts
+
+================================================================================
+FILES CHANGED
+================================================================================
+
+1. backend/src/scripts/init_db.py
+   - Added Category import
+   - Added category creation logic to bootstrap()
+   - Creates 4 sample categories if none exist
+
+2. backend/src/main.py
+   - Added Category import
+   - Added category creation to lifespan startup
+   - Ensures categories exist on every server start
+
+3. backend/watchdog.py
+   - Added CREATE_NO_WINDOW to all subprocess calls
+   - Added STARTUPINFO with SW_HIDE for Windows
+   - Auto-detect and use pythonw.exe for restarts
+   - All system commands now run completely hidden
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+Before Release:
+□ Fresh install on clean Windows machine
+□ Verify categories appear in dropdown
+□ Add a product and assign to category
+□ Verify no CMD window appears during startup
+□ Stop and start MBAS via tray icon
+□ Wait for watchdog to perform health check
+□ Trigger a server restart via watchdog (if possible)
+□ Verify no CMD windows flash at any point
+□ Check database has 4 categories
+□ Check system tray icon works correctly
+□ Verify browser opens automatically
+□ Test uninstall and reinstall
+
+Database Verification:
+  Location: C:\ProgramData\MBAS\data\mbas_database.db
+
+  Query to check categories:
+  sqlite3 mbas_database.db "SELECT * FROM categories;"
+
+  Expected output:
+  1|Electronics|Electronic items and gadgets
+  2|Groceries|Food and grocery items
+  3|Clothing|Apparel and accessories
+  4|Stationery|Office and school supplies
+
+Window Suppression Verification:
+  - NO console windows should appear at any time
+  - Check Task Manager: only pythonw.exe processes (no python.exe)
+  - System tray icon is the only visible MBAS component
+
+================================================================================
+UPGRADE NOTES
+================================================================================
+
+Users upgrading from v2.0.6 or earlier:
+---------------------------------------
+1. Existing data will be preserved
+2. Categories will be created on first server start after upgrade
+3. No manual intervention required
+4. Database migration is automatic
+
+Clean Installation:
+-------------------
+1. Categories created during installation
+2. Also verified on first server start
+3. Ready to use immediately
+
+================================================================================
+BUILD INSTRUCTIONS
+================================================================================
+
+Prerequisites:
+  - Inno Setup 6 installed
+  - Frontend built: cd frontend && npm run build
+  - All tests passing
+
+Build Command:
+  cd deployment/build_installer
+  REBUILD_INSTALLER_v2.0.7.bat
+
+Output:
+  output/MBAS_Professional_Setup_v2.0.7_ZT_Technologies.exe
+
+================================================================================
+VERSION HISTORY
+================================================================================
+
+v2.0.7 (July 4, 2026)
+  - FIX: Categories not created during installation
+  - FIX: CMD window flashing during operations
+  - Updated watchdog to use pythonw.exe
+  - Added category creation to startup routine
+
+v2.0.6 (July 4, 2026)
+  - FIX: Server runs in background using pythonw.exe
+  - No CMD window visible during normal operation
+
+v2.0.5 and earlier
+  - Various features and improvements
+  - CMD window visible issue existed
+
+================================================================================
+SUPPORT
+================================================================================
+
+Website: www.zttechnologies.org
+Email: zttechnologies12@gmail.com
+
+For installation issues:
+  1. Check: C:\ProgramData\MBAS\logs\install_log.txt
+  2. Check: C:\ProgramData\MBAS\logs\mbas_tray.log
+  3. Check: C:\Program Files\MBAS\install_log.txt
+
+For database issues:
+  Location: C:\ProgramData\MBAS\data\mbas_database.db
+  Backup location: C:\ProgramData\MBAS\data\backups/
+
+================================================================================
+END OF FIX SUMMARY
+================================================================================

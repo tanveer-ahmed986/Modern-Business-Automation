@@ -61,23 +61,33 @@ class BackendWatchdog:
         try:
             # Find and kill Python processes running uvicorn
             if sys.platform == "win32":
-                # Windows
+                # Windows - use CREATE_NO_WINDOW to prevent CMD flash
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
+
                 subprocess.run(
                     ["taskkill", "/F", "/FI", "IMAGENAME eq python.exe", "/FI", "WINDOWTITLE eq MBAS*"],
                     capture_output=True,
-                    timeout=10
+                    timeout=10,
+                    startupinfo=startupinfo,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 subprocess.run(
                     ["taskkill", "/F", "/FI", "IMAGENAME eq pythonw.exe", "/FI", "WINDOWTITLE eq MBAS*"],
                     capture_output=True,
-                    timeout=10
+                    timeout=10,
+                    startupinfo=startupinfo,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 # Also kill by port
                 result = subprocess.run(
                     ["netstat", "-ano"],
                     capture_output=True,
                     text=True,
-                    timeout=10
+                    timeout=10,
+                    startupinfo=startupinfo,
+                    creationflags=subprocess.CREATE_NO_WINDOW
                 )
                 for line in result.stdout.split("\n"):
                     if ":8000" in line and "LISTENING" in line:
@@ -85,7 +95,13 @@ class BackendWatchdog:
                         if parts:
                             pid = parts[-1]
                             try:
-                                subprocess.run(["taskkill", "/F", "/PID", pid], capture_output=True, timeout=5)
+                                subprocess.run(
+                                    ["taskkill", "/F", "/PID", pid],
+                                    capture_output=True,
+                                    timeout=5,
+                                    startupinfo=startupinfo,
+                                    creationflags=subprocess.CREATE_NO_WINDOW
+                                )
                                 self.log(f"Killed process on port 8000 (PID: {pid})")
                             except:
                                 pass
@@ -109,12 +125,25 @@ class BackendWatchdog:
         try:
             backend_dir = Path(__file__).parent
 
+            # Find pythonw.exe to run without window
+            python_exe = sys.executable
             if sys.platform == "win32":
-                # Windows - use pythonw to run in background
+                # Try to use pythonw.exe instead of python.exe
+                pythonw_exe = python_exe.replace("python.exe", "pythonw.exe")
+                if Path(pythonw_exe).exists():
+                    python_exe = pythonw_exe
+
+            if sys.platform == "win32":
+                # Windows - use pythonw to run in background with hidden window flags
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = subprocess.SW_HIDE
+
                 self.backend_process = subprocess.Popen(
-                    [sys.executable, "-m", "uvicorn", "src.main:app",
+                    [python_exe, "-m", "uvicorn", "src.main:app",
                      "--host", "127.0.0.1", "--port", "8000"],
                     cwd=str(backend_dir),
+                    startupinfo=startupinfo,
                     creationflags=subprocess.CREATE_NO_WINDOW,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE
@@ -122,7 +151,7 @@ class BackendWatchdog:
             else:
                 # Linux/Mac
                 self.backend_process = subprocess.Popen(
-                    [sys.executable, "-m", "uvicorn", "src.main:app",
+                    [python_exe, "-m", "uvicorn", "src.main:app",
                      "--host", "127.0.0.1", "--port", "8000"],
                     cwd=str(backend_dir),
                     stdout=subprocess.PIPE,

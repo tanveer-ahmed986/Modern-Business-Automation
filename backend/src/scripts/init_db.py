@@ -9,6 +9,7 @@ if str(backend_src) not in sys.path:
 from sqlmodel import Session, select
 from src.core.db import engine, init_db
 from src.models.core import User, UserRole, Settings
+from src.models.inventory import Category
 from src.core.security import get_password_hash
 from src.models.license import get_tier_features
 
@@ -90,6 +91,21 @@ def bootstrap():
                 hashed_password=get_password_hash("admin123") # Default password
             )
             session.add(admin)
+
+        # 3. Create sample categories if none exist
+        statement = select(Category)
+        categories = session.exec(statement).all()
+        if not categories:
+            print("[+] Creating sample categories...")
+            sample_categories = [
+                Category(name="Electronics", description="Electronic items and gadgets"),
+                Category(name="Groceries", description="Food and grocery items"),
+                Category(name="Clothing", description="Apparel and accessories"),
+                Category(name="Stationery", description="Office and school supplies"),
+            ]
+            for cat in sample_categories:
+                session.add(cat)
+            print(f"[+] Created {len(sample_categories)} sample categories")
 
         session.commit()
 
