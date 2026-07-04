@@ -8,7 +8,7 @@ from apscheduler.triggers.cron import CronTrigger
 from datetime import datetime, timedelta
 from pathlib import Path
 import logging
-from .backup import BackupUtility
+from .backup import BackupUtility, _DEFAULT_BACKUP_DIR
 from .db import get_session
 from ..models.core import Settings
 
@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class BackupScheduler:
     def __init__(self):
         self.scheduler = BackgroundScheduler()
-        self.backup_dir = Path("backups")
-        self.backup_dir.mkdir(exist_ok=True)
+        self.backup_dir = Path(_DEFAULT_BACKUP_DIR)
+        self.backup_dir.mkdir(parents=True, exist_ok=True)
 
     def start(self):
         """Start the backup scheduler"""

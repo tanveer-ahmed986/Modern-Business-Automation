@@ -1,0 +1,137 @@
+================================================================================
+MBAS v2.1.0 PWA - Quick Start Guide
+Modern Business Automation System - Progressive Web App Edition
+================================================================================
+
+WHAT'S NEW IN v2.1.0 PWA?
+
+✓ 65% smaller bundle size (169KB vs 487KB)
+✓ Works offline with Service Worker
+✓ Installable on desktop (Chrome/Edge)
+✓ Mobile-friendly (Android, iOS, tablets)
+✓ 95% faster data loading (pagination)
+✓ Smooth navigation (no freezing)
+✓ Windows 7/10/11 compatible
+✓ Python 3.10/3.11/3.12 support
+
+================================================================================
+
+GETTING STARTED
+
+1. START THE SERVER
+   - Double-click: START_MBAS_PWA.bat
+   - Wait for "Uvicorn running on http://0.0.0.0:8000" message
+
+2. OPEN IN BROWSER
+   - Desktop: http://localhost:8000
+   - Mobile/Tablet: http://YOUR-IP:8000
+     (Find IP with 'ipconfig' command)
+
+3. LOGIN
+   - Username: admin
+   - Password: admin123
+
+4. INSTALL AS PWA (Optional)
+   - Chrome/Edge: Click install button (⊕) in address bar
+   - The app will install to your desktop/start menu
+
+================================================================================
+
+BETA LICENSE
+
+This installation includes a STANDARD tier perpetual license for beta testing.
+
+License Features:
+  ✓ Dashboard & Analytics
+  ✓ Inventory Management
+  ✓ Billing & Sales
+  ✓ Customer Management
+  ✓ Supplier & Purchase Management
+  ✓ Advanced Reports
+  ✓ Automatic Backups
+  ✗ AI Assistant (Premium only)
+  ✗ Premium Reports (Premium only)
+
+Note: Replace mbas.license file with production license after beta testing.
+
+================================================================================
+
+TESTING CHECKLIST
+
+Desktop Testing:
+  □ Server starts without errors
+  □ PWA loads at http://localhost:8000
+  □ Login works (admin/admin123)
+  □ Navigation is smooth (Dashboard → Inventory → Billing)
+  □ No UI freezing when switching sections
+  □ Pagination shows "Page 1 of X" (50 items per page)
+  □ Search is instant (debounced)
+  □ PWA install button appears in browser
+  □ Offline mode works (DevTools → Application → Offline)
+
+Mobile/Tablet Testing:
+  □ Access via WiFi (http://YOUR-IP:8000)
+  □ Pages load quickly
+  □ Touch controls work
+  □ "Add to Home Screen" works
+  □ App runs offline after installation
+
+Windows 7 Testing (if available):
+  □ Works with Python 3.10
+  □ All features functional
+
+================================================================================
+
+MOBILE TESTING
+
+For detailed mobile/tablet testing instructions, see:
+  → MOBILE_TESTING_GUIDE.txt
+
+================================================================================
+
+TROUBLESHOOTING
+
+Problem: "Cannot connect to server"
+Solution:
+  - Make sure START_MBAS_PWA.bat is running
+  - Check Windows Firewall isn't blocking port 8000
+  - Try http://127.0.0.1:8000 instead
+
+Problem: Server won't start
+Solution:
+  - Check Python is installed: python --version
+  - Reinstall dependencies: Run INSTALL_PWA.bat
+  - Check port 8000 isn't in use: netstat -ano | findstr :8000
+
+Problem: Old MBAS version conflicts
+Solution:
+  - Stop old MBAS: STOP_MBAS.bat (or Task Manager → End python.exe)
+  - Delete old database: C:\ProgramData\MBAS\data\mbas_database.db
+  - Restart: START_MBAS_PWA.bat
+
+================================================================================
+
+SUPPORT
+
+For issues or feedback during beta testing:
+  - Email: support@zttechnologies.org
+  - Include: MBAS version, Windows version, error messages, screenshots
+
+================================================================================
+
+PERFORMANCE COMPARISON
+
+                    v2.0.5          v2.1.0 PWA
+Bundle Size:        487 KB          169 KB (65% smaller)
+Products Loaded:    1000+           50 (paginated)
+Page Switch Time:   1-3 seconds     <300ms
+Search Response:    Immediate       Debounced (500ms)
+Platform Support:   Win 10/11       Win 7/10/11 + Mobile
+Offline Support:    No              Yes (Service Worker)
+Python Required:    3.12 only       3.10/3.11/3.12
+
+================================================================================
+
+Version: 2.1.0 PWA Beta
+Released: June 20, 2026
+Z&T Technologies - State-of-the-Art Business Solutions

@@ -10,28 +10,45 @@ export interface Branding {
   error: string | null;
 }
 
+// Module-level cache so the hook returns instantly after first successful load.
+// This eliminates redundant renders/loading states when navigating between sections.
+let _brandingCache: Branding | null = null;
+
 export const useBranding = () => {
-  const [branding, setBranding] = useState<Branding>({
-    businessName: "MBAS",
-    currency: "USD",
-    taxRate: 0,
-    isLoading: true,
-    error: null,
-  });
+  const [branding, setBranding] = useState<Branding>(
+    _brandingCache || {
+      businessName: "MBAS",
+      currency: "USD",
+      taxRate: 0,
+      isLoading: true,
+      error: null,
+    }
+  );
 
   useEffect(() => {
+    // If already cached, set immediately and skip fetch
+    if (_brandingCache) {
+      setBranding(_brandingCache);
+      return;
+    }
+
+    const controller = new AbortController();
     const fetchBranding = async () => {
       try {
         const settings = await settingsService.getSettings();
-        setBranding({
+        if (controller.signal.aborted) return;
+        const result: Branding = {
           businessName: settings.business_name,
           logoUrl: settings.business_logo_url,
           currency: settings.currency,
           taxRate: settings.tax_rate,
           isLoading: false,
           error: null,
-        });
+        };
+        _brandingCache = result;
+        setBranding(result);
       } catch (err) {
+        if (controller.signal.aborted) return;
         setBranding((prev) => ({
           ...prev,
           isLoading: false,
@@ -41,6 +58,7 @@ export const useBranding = () => {
     };
 
     fetchBranding();
+    return () => { controller.abort(); };
   }, []);
 
   return branding;

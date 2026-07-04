@@ -20,7 +20,7 @@ import { billingService, type Customer, type Sale } from "../../services/billing
 import { inventoryService, type Product } from "../../services/inventory.service";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 
-export const BillingPage: React.FC = () => {
+const BillingPage: React.FC = () => {
   const { 
     items, addItem, removeItem, updateQuantity, clearCart,
     subtotal, taxAmount, discount, setDiscount, total, 
@@ -40,41 +40,64 @@ export const BillingPage: React.FC = () => {
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
 
   // Focus search input on load
   useEffect(() => {
     searchInputRef.current?.focus();
   }, []);
 
-  // Product search
+  // Abort controller for cancelling search on unmount/new search
+  const searchAbortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
+    return () => { searchAbortRef.current?.abort(); };
+  }, []);
+
+  // Product search - works for both barcode scanner and manual typing
+  useEffect(() => {
+    if (searchQuery.length < 1) {
+      setSearchResults([]);
+      setSelectedIndex(-1);
+      return;
+    }
+
     const timer = setTimeout(async () => {
-      if (searchQuery.length >= 2) {
-        // setIsSearching(true);
-        try {
-          const results = await inventoryService.searchProducts(searchQuery);
-          setSearchResults(results);
-        } catch (error) {
-          console.error("Search error:", error);
-        } finally {
-          // setIsSearching(false);
+      searchAbortRef.current?.abort();
+      const controller = new AbortController();
+      searchAbortRef.current = controller;
+      try {
+        const response = await inventoryService.searchProducts(searchQuery, 1, 20, controller.signal);
+        if (controller.signal.aborted) return;
+        setSearchResults(response.items);
+        if (response.items.length === 1 && response.items[0].barcode === searchQuery) {
+          setSelectedIndex(0);
+        } else {
+          setSelectedIndex(-1);
         }
-      } else {
-        setSearchResults([]);
+      } catch (error: any) {
+        if (controller.signal.aborted) return;
+        console.error("Search error:", error);
       }
-    }, 300);
+    }, 150); // Faster debounce for POS responsiveness
 
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Customer search
+  // Customer search with abort signal
+  const customerAbortRef = useRef<AbortController | null>(null);
   useEffect(() => {
     const timer = setTimeout(async () => {
       if (customerSearch.length >= 2) {
+        customerAbortRef.current?.abort();
+        const controller = new AbortController();
+        customerAbortRef.current = controller;
         try {
           const results = await billingService.getCustomers(customerSearch);
+          if (controller.signal.aborted) return;
           setCustomers(results);
-        } catch (error) {
+        } catch (error: any) {
+          if (controller.signal.aborted) return;
           console.error("Customer search error:", error);
         }
       } else {
@@ -82,7 +105,7 @@ export const BillingPage: React.FC = () => {
       }
     }, 300);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); customerAbortRef.current?.abort(); };
   }, [customerSearch]);
 
   const handleAddToCart = (product: Product) => {
@@ -172,6 +195,33 @@ export const BillingPage: React.FC = () => {
                   placeholder="Search products by name or barcode... (Alt+S)"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      setSearchResults([]);
+                      setSelectedIndex(-1);
+                      return;
+                    }
+                    if (searchResults.length === 0) return;
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedIndex((prev) =>
+                        prev < searchResults.length - 1 ? prev + 1 : 0
+                      );
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedIndex((prev) =>
+                        prev > 0 ? prev - 1 : searchResults.length - 1
+                      );
+                    } else if (e.key === "Enter") {
+                      e.preventDefault();
+                      // Use selected index, or first item if none selected
+                      const idx = selectedIndex >= 0 ? selectedIndex : 0;
+                      if (searchResults[idx]) {
+                        handleAddToCart(searchResults[idx]);
+                      }
+                    }
+                  }}
                   className="pl-10 h-12 text-lg"
                 />
               </div>
@@ -180,11 +230,21 @@ export const BillingPage: React.FC = () => {
               {searchResults.length > 0 && (
                 <Card className="absolute left-4 right-4 top-full mt-1 z-50 shadow-xl border-primary/20 max-h-96 overflow-auto">
                   <div className="p-2 space-y-1">
-                    {searchResults.map((product) => (
+                    {searchResults.map((product, index) => (
                       <button
                         key={product.id}
-                        className="w-full flex items-center justify-between p-3 hover:bg-primary/10 rounded-md transition-colors text-left"
+                        ref={(el) => {
+                          if (index === selectedIndex && el) {
+                            el.scrollIntoView({ block: "nearest" });
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between p-3 rounded-md transition-colors text-left ${
+                          index === selectedIndex
+                            ? "bg-primary/20 ring-1 ring-primary/30"
+                            : "hover:bg-primary/10"
+                        }`}
                         onClick={() => handleAddToCart(product)}
+                        onMouseEnter={() => setSelectedIndex(index)}
                       >
                         <div>
                           <p className="font-medium">{product.name}</p>
@@ -445,3 +505,6 @@ export const BillingPage: React.FC = () => {
     </div>
   );
 };
+
+export { BillingPage };
+export default BillingPage;

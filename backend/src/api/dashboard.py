@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select, func, desc
+from sqlmodel import Session, select, func, desc, col
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 from pydantic import BaseModel
+import time
 
 from src.core.db import get_session
 from src.core.auth import get_current_user
@@ -13,6 +15,12 @@ from src.models.inventory import Product, Category
 from src.models.sales import Customer
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+
+# ---------------------------------------------------------------------------
+# Server-side metrics cache (avoids running 5 aggregation queries per visit)
+# ---------------------------------------------------------------------------
+_metrics_cache: dict = {"data": None, "ts": 0.0, "date": ""}
+_METRICS_TTL = 10  # seconds – short enough to feel fresh, long enough to absorb page switches
 
 class MetricCard(BaseModel):
     title: str
@@ -41,10 +49,20 @@ class DashboardMetrics(BaseModel):
     low_stock_count: int
 
 @router.get("/metrics", response_model=DashboardMetrics)
-async def get_dashboard_metrics(
+def get_dashboard_metrics(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
+    # Return cached metrics if fresh (absorbs rapid page switches without hitting DB)
+    now = time.monotonic()
+    today_str = str(date.today())
+    if (
+        _metrics_cache["data"]
+        and (now - _metrics_cache["ts"]) < _METRICS_TTL
+        and _metrics_cache["date"] == today_str
+    ):
+        return _metrics_cache["data"]
+
     # Get currency from settings
     settings = session.get(Settings, 1)
     currency = settings.currency if settings else "USD"
@@ -52,53 +70,50 @@ async def get_dashboard_metrics(
     # Today's Range
     today_start = datetime.combine(date.today(), datetime.min.time())
     today_end = datetime.combine(date.today(), datetime.max.time())
-    
-    # 1. Total Sales Today
-    sales_today_query = select(func.sum(Sale.grand_total)).where(
-        Sale.created_at >= today_start,
-        Sale.created_at <= today_end,
-        Sale.status == SaleStatus.COMPLETED
-    )
-    total_sales_today = session.exec(sales_today_query).one() or Decimal("0.0")
-    
-    # 2. Total Orders Today
-    orders_today_query = select(func.count(Sale.id)).where(
-        Sale.created_at >= today_start,
-        Sale.created_at <= today_end,
-        Sale.status == SaleStatus.COMPLETED
-    )
-    total_orders_today = session.exec(orders_today_query).one() or 0
-    
-    # 3. Low Stock Count
-    low_stock_query = select(func.count(Product.id)).where(
-        Product.stock_quantity <= Product.low_stock_threshold,
-        Product.is_active == True
-    )
-    low_stock_count = session.exec(low_stock_query).one() or 0
-    
-    # 4. Total Customers
-    customers_query = select(func.count(Customer.id))
-    total_customers = session.exec(customers_query).one() or 0
-    
-    # 5. Recent Sales
-    recent_sales_query = select(Sale).order_by(desc(Sale.created_at)).limit(5)
-    recent_sales_db = session.exec(recent_sales_query).all()
-    recent_sales = []
-    for s in recent_sales_db:
-        customer_name = "Walk-in"
-        if s.customer_id:
-            customer = session.get(Customer, s.customer_id)
-            if customer:
-                customer_name = customer.name
-        recent_sales.append(RecentSale(
-            id=s.id,
-            customer_name=customer_name,
-            grand_total=s.grand_total,
-            created_at=s.created_at,
-            status=s.status
-        ))
-    
-    # 6. Top Products (By Quantity Sold)
+
+    # Combined query: sales today total + count in one query
+    today_stats = session.execute(
+        select(
+            func.coalesce(func.sum(Sale.grand_total), 0),
+            func.count(Sale.id)
+        ).where(
+            Sale.created_at >= today_start,
+            Sale.created_at <= today_end,
+            Sale.status == SaleStatus.COMPLETED
+        )
+    ).one()
+    total_sales_today = today_stats[0] or Decimal("0.0")
+    total_orders_today = today_stats[1] or 0
+
+    # Combined query: low stock count + total customers in one round-trip
+    low_stock_count = session.exec(
+        select(func.count(Product.id)).where(
+            Product.stock_quantity <= Product.low_stock_threshold,
+            Product.is_active == True
+        )
+    ).one() or 0
+
+    total_customers = session.exec(select(func.count(Customer.id))).one() or 0
+
+    # Recent sales with LEFT JOIN to customer (eliminates N+1 loop)
+    recent_sales_rows = session.execute(
+        select(Sale.id, Sale.grand_total, Sale.created_at, Sale.status, Customer.name)
+        .outerjoin(Customer, Sale.customer_id == Customer.id)
+        .order_by(desc(Sale.created_at))
+        .limit(5)
+    ).all()
+    recent_sales = [
+        RecentSale(
+            id=r[0],
+            customer_name=r[4] or "Walk-in",
+            grand_total=r[1],
+            created_at=r[2],
+            status=r[3]
+        )
+        for r in recent_sales_rows
+    ]
+
+    # Top Products (By Quantity Sold)
     top_products_query = (
         select(SaleItem.product_id, SaleItem.product_name, func.sum(SaleItem.quantity).label("total_qty"), func.sum(SaleItem.subtotal).label("total_rev"))
         .group_by(SaleItem.product_id, SaleItem.product_name)
@@ -139,9 +154,16 @@ async def get_dashboard_metrics(
         )
     ]
     
-    return DashboardMetrics(
+    result = DashboardMetrics(
         cards=cards,
         recent_sales=recent_sales,
         top_products=top_products,
         low_stock_count=low_stock_count
     )
+
+    # Cache the result so the next page-switch returns instantly
+    _metrics_cache["data"] = result
+    _metrics_cache["ts"] = time.monotonic()
+    _metrics_cache["date"] = today_str
+
+    return result

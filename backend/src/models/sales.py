@@ -45,20 +45,20 @@ class SaleBase(SQLModel):
     discount_amount: Decimal = Field(default=0.0)
     grand_total: Decimal = Field(default=0.0)
     payment_method: PaymentMethod = Field(default=PaymentMethod.CASH)
-    status: SaleStatus = Field(default=SaleStatus.COMPLETED)
+    status: SaleStatus = Field(default=SaleStatus.COMPLETED, index=True)
 
 class Sale(SaleBase, table=True):
     __tablename__ = "sales"
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     
     # Relationships
     customer: Optional[Customer] = Relationship(back_populates="sales")
     items: List["SaleItem"] = Relationship(back_populates="sale")
 
 class SaleItemBase(SQLModel):
-    sale_id: Optional[int] = Field(default=None, foreign_key="sales.id")
-    product_id: Optional[int] = Field(default=None, foreign_key="products.id")
+    sale_id: Optional[int] = Field(default=None, foreign_key="sales.id", index=True)
+    product_id: Optional[int] = Field(default=None, foreign_key="products.id", index=True)
     product_name: str # Snapshot for historical data
     quantity: int = Field(default=1)
     unit_price: Decimal = Field(default=0.0) # Snapshot of selling price at time of sale

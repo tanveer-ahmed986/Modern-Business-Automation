@@ -12,21 +12,29 @@ class ReportService:
     def get_sales_report(db: Session, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Retrieves a summary of sales performance within a given date range.
+        Uses SQL aggregation instead of loading all rows into Python memory.
         """
-        # Base query for sales within range
-        query = select(Sale).where(between(Sale.created_at, start_date, end_date))
-        sales = db.exec(query).all()
-        
-        total_revenue = sum((sale.grand_total for sale in sales), Decimal("0.0"))
-        total_tax = sum((sale.tax_amount for sale in sales), Decimal("0.0"))
-        total_discount = sum((sale.discount_amount for sale in sales), Decimal("0.0"))
-        sale_count = len(sales)
-        
-        # Breakdown by payment method
-        payment_methods = {}
-        for sale in sales:
-            pm = sale.payment_method.value
-            payment_methods[pm] = payment_methods.get(pm, Decimal("0.0")) + sale.grand_total
+        # Aggregate totals at the DB level (avoids loading all Sale rows)
+        summary_row = db.execute(
+            select(
+                func.coalesce(func.sum(Sale.grand_total), 0),
+                func.coalesce(func.sum(Sale.tax_amount), 0),
+                func.coalesce(func.sum(Sale.discount_amount), 0),
+                func.count(Sale.id),
+            ).where(between(Sale.created_at, start_date, end_date))
+        ).one()
+        total_revenue = summary_row[0]
+        total_tax = summary_row[1]
+        total_discount = summary_row[2]
+        sale_count = summary_row[3]
+
+        # Breakdown by payment method (SQL aggregation)
+        pm_rows = db.execute(
+            select(Sale.payment_method, func.sum(Sale.grand_total))
+            .where(between(Sale.created_at, start_date, end_date))
+            .group_by(Sale.payment_method)
+        ).all()
+        payment_methods = {str(row[0]): row[1] for row in pm_rows}
             
         # Top products in this period
         product_query = (
@@ -85,15 +93,15 @@ class ReportService:
         """
         Premium only: Calculates Gross Profit based on Sales and COGS.
         """
-        # 1. Total Sales Revenue
-        sales_query = select(Sale).where(
-            and_(
-                between(Sale.created_at, start_date, end_date),
-                Sale.status == "completed"
+        # 1. Total Sales Revenue (SQL aggregation - avoids loading all rows)
+        total_revenue = db.execute(
+            select(func.coalesce(func.sum(Sale.grand_total), 0)).where(
+                and_(
+                    between(Sale.created_at, start_date, end_date),
+                    Sale.status == "completed"
+                )
             )
-        )
-        sales = db.exec(sales_query).all()
-        total_revenue = sum((sale.grand_total for sale in sales), Decimal("0.0"))
+        ).scalar() or Decimal("0.0")
         
         # 2. COGS (Cost of Goods Sold)
         # CRITICAL FIX: Use snapshotted cost_price from SaleItem (not current Product cost_price)
@@ -112,15 +120,15 @@ class ReportService:
         )
         total_cogs = db.exec(cogs_query).one() or Decimal("0.0")
         
-        # 3. Total Purchases (Cash Outflow)
-        purchases_query = select(Purchase).where(
-            and_(
-                between(Purchase.created_at, start_date, end_date),
-                Purchase.status == "received"
+        # 3. Total Purchases (SQL aggregation - avoids loading all rows)
+        total_purchases = db.execute(
+            select(func.coalesce(func.sum(Purchase.grand_total), 0)).where(
+                and_(
+                    between(Purchase.created_at, start_date, end_date),
+                    Purchase.status == "received"
+                )
             )
-        )
-        purchases = db.exec(purchases_query).all()
-        total_purchases = sum((p.grand_total for p in purchases), Decimal("0.0"))
+        ).scalar() or Decimal("0.0")
         
         gross_profit = total_revenue - total_cogs
         

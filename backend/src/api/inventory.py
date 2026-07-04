@@ -1,13 +1,15 @@
 from typing import Any, List, Optional, Union
 from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlmodel import Session, select, or_, text
+from sqlmodel import Session, select, or_, text, col, func
+from sqlalchemy.orm import selectinload
 from datetime import datetime
 
 from src.core.db import get_session
 from src.models.core import User, UserRole
 from src.models.inventory import (
     Category, CategoryCreate, CategoryRead,
-    Product, ProductCreate, ProductRead, ProductReadAdmin, ProductUpdate
+    Product, ProductCreate, ProductRead, ProductReadAdmin, ProductUpdate,
+    PaginationMeta
 )
 from src.core.auth import get_current_user
 
@@ -77,8 +79,11 @@ def delete_category(
     if not db_category:
         raise HTTPException(status_code=404, detail="Category not found")
     
-    # Check if category has products
-    if db_category.products:
+    # Check if category has products (count query avoids loading all products)
+    product_count = session.exec(
+        select(func.count(Product.id)).where(Product.category_id == id)
+    ).one()
+    if product_count > 0:
          raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Cannot delete category that has associated products"
@@ -90,64 +95,161 @@ def delete_category(
 
 # --- PRODUCTS ---
 
-@router.get("/products", response_model=List[Union[ProductReadAdmin, ProductRead]])
+@router.get("/products")
 def get_products(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
-    skip: int = 0,
-    limit: int = 100,
+    page: int = Query(1, ge=1, description="Page number (starts at 1)"),
+    page_size: int = Query(50, ge=1, le=200, description="Items per page (max 200)"),
     category_id: Optional[int] = None
 ) -> Any:
-    """Retrieve products with pagination and category filtering."""
-    statement = select(Product)
+    """Retrieve products with pagination and category filtering.
+
+    Returns paginated results with metadata.
+    Default: 50 items per page.
+    """
+    # Build base query
+    statement = select(Product).options(selectinload(Product.category))
+    count_statement = select(func.count(Product.id))
+
     if category_id:
         statement = statement.where(Product.category_id == category_id)
-    
-    products = session.exec(statement.offset(skip).limit(limit)).all()
-    
-    # RBAC logic: Sales users don't get cost_price
-    is_privileged = current_user.role in [UserRole.ADMIN, UserRole.MANAGER]
-    
-    if is_privileged:
-        return products
-    
-    # If not privileged, SQLModel/Pydantic will automatically strip cost_price 
-    # because of the response_model logic, but we can be explicit if needed.
-    return products
+        count_statement = count_statement.where(Product.category_id == category_id)
 
-@router.get("/products/search", response_model=List[Union[ProductReadAdmin, ProductRead]])
+    # Get total count
+    total_count = session.exec(count_statement).one()
+
+    # Calculate pagination
+    offset = (page - 1) * page_size
+    total_pages = (total_count + page_size - 1) // page_size
+
+    # Get paginated items
+    products = session.exec(statement.offset(offset).limit(page_size)).all()
+
+    return {
+        "items": products,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages
+        }
+    }
+
+@router.get("/products/search")
 def search_products(
     query: str,
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
-    limit: int = 20
+    page: int = Query(1, ge=1, description="Page number"),
+    page_size: int = Query(20, ge=1, le=100, description="Items per page (max 100)")
 ) -> Any:
-    """Search products using SQLite FTS5."""
-    # Using FTS5 virtual table for fast search
-    fts_statement = text("""
-        SELECT id FROM products_fts 
-        WHERE products_fts MATCH :query 
-        ORDER BY rank 
-        LIMIT :limit
-    """)
-    
-    # Prepare query for FTS5 (append * for prefix search)
-    fts_query = f"{query}*"
-    result_ids = session.execute(fts_statement, {"query": fts_query, "limit": limit}).scalars().all()
-    
-    if not result_ids:
-        # Fallback to simple ILIKE search if FTS5 yields no results or for very short queries
-        statement = select(Product).where(
-            or_(
-                Product.name.contains(query),
-                Product.barcode.contains(query)
-            )
-        ).limit(limit)
-        return session.exec(statement).all()
+    """Search products using SQLite FTS5 with LIKE fallback.
 
-    # Retrieve full product objects for the found IDs
-    statement = select(Product).where(Product.id.in_(result_ids))
-    return session.exec(statement).all()
+    Returns paginated search results with metadata.
+    """
+    if not query or not query.strip():
+        return {
+            "items": [],
+            "pagination": {
+                "page": 1,
+                "page_size": page_size,
+                "total_count": 0,
+                "total_pages": 0
+            }
+        }
+
+    query = query.strip()
+
+    # First try exact barcode match (fastest path for barcode scanners)
+    exact_match = session.exec(
+        select(Product).options(selectinload(Product.category)).where(Product.barcode == query)
+    ).first()
+    if exact_match:
+        return {
+            "items": [exact_match],
+            "pagination": {
+                "page": 1,
+                "page_size": page_size,
+                "total_count": 1,
+                "total_pages": 1
+            }
+        }
+
+    # Try FTS5 for text search (only for alphanumeric queries without special chars)
+    fts_safe = query.replace('"', '').replace("'", "").replace('-', ' ')
+    result_ids = []
+    if fts_safe.strip():
+        try:
+            # Get all matching IDs first (for count)
+            fts_statement = text("""
+                SELECT id FROM products_fts
+                WHERE products_fts MATCH :query
+                ORDER BY rank
+            """)
+            fts_query = f'"{fts_safe}"*'
+            all_ids = session.execute(
+                fts_statement, {"query": fts_query}
+            ).scalars().all()
+
+            if all_ids:
+                result_ids = all_ids
+        except Exception:
+            # FTS5 can fail on certain query patterns, fall through to LIKE
+            result_ids = []
+
+    if result_ids:
+        total_count = len(result_ids)
+        offset = (page - 1) * page_size
+        total_pages = (total_count + page_size - 1) // page_size
+
+        # Paginate the IDs
+        paginated_ids = result_ids[offset:offset + page_size]
+
+        statement = select(Product).options(selectinload(Product.category)).where(Product.id.in_(paginated_ids))
+        items = session.exec(statement).all()
+
+        return {
+            "items": items,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_count": total_count,
+                "total_pages": total_pages
+            }
+        }
+
+    # Fallback to LIKE search (handles barcodes with special chars, partial matches)
+    like_statement = select(Product).options(selectinload(Product.category)).where(
+        or_(
+            Product.name.contains(query),
+            Product.barcode.contains(query)
+        )
+    )
+
+    # Count total matches
+    count_statement = select(func.count(Product.id)).where(
+        or_(
+            Product.name.contains(query),
+            Product.barcode.contains(query)
+        )
+    )
+    total_count = session.exec(count_statement).one()
+
+    # Paginate
+    offset = (page - 1) * page_size
+    total_pages = (total_count + page_size - 1) // page_size
+    items = session.exec(like_statement.offset(offset).limit(page_size)).all()
+
+    return {
+        "items": items,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages
+        }
+    }
 
 @router.post("/products", response_model=ProductReadAdmin)
 def create_product(
@@ -157,6 +259,16 @@ def create_product(
     current_user: User = Depends(check_manager_role)
 ) -> Any:
     """Create a new product (Manager/Admin only)."""
+    # Check for duplicate product name (count avoids loading full row)
+    existing = session.exec(
+        select(func.count(Product.id)).where(Product.name == product_in.name)
+    ).one()
+    if existing > 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"A product with the name '{product_in.name}' already exists"
+        )
+
     db_product = Product.from_orm(product_in)
     session.add(db_product)
     session.commit()
@@ -190,6 +302,18 @@ def update_product(
         raise HTTPException(status_code=404, detail="Product not found")
     
     update_data = product_in.model_dump(exclude_unset=True)
+
+    # Check for duplicate product name on update (count avoids loading full row)
+    if "name" in update_data and update_data["name"] != db_product.name:
+        existing = session.exec(
+            select(func.count(Product.id)).where(Product.name == update_data["name"])
+        ).one()
+        if existing > 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"A product with the name '{update_data['name']}' already exists"
+            )
+
     for key, value in update_data.items():
         setattr(db_product, key, value)
     

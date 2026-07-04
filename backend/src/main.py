@@ -1,11 +1,13 @@
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-from src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases, reports, system, ai, users
+import asyncio
+from src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases, reports, system, ai, users, version
 from src.core.db import init_db, cleanup_connections
 from src.core.license import LicenseValidator, set_license_validator, LicenseValidationError
 from src.core.scheduler import start_scheduler, stop_scheduler
@@ -19,55 +21,104 @@ _FRONTEND_DIST = _PROJECT_DIR / "frontend" / "dist" # pre-built frontend
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Step 1: Validate license before database init
-    # Search for license in multiple locations
-    license_path = None
-    for candidate in [
-        _PROJECT_DIR / "mbas.license",
-        _BACKEND_DIR / "mbas.license",
-        Path("mbas.license"),
-    ]:
-        if candidate.exists():
-            license_path = candidate
-            break
+    # Check if license validation should be skipped (for beta testing)
+    import os
+    skip_license = os.environ.get("MBAS_SKIP_LICENSE", "0") == "1"
 
-    # Search for public key in multiple locations
-    public_key_path = None
-    for candidate in [
-        _SRC_DIR / "embedded" / "public_key.pem",
-        _BACKEND_DIR / "src" / "embedded" / "public_key.pem",
-        Path("backend/src/embedded/public_key.pem"),
-        Path("src/embedded/public_key.pem"),
-    ]:
-        if candidate.exists():
-            public_key_path = candidate
-            break
-
-    try:
-        if license_path and public_key_path:
-            validator = LicenseValidator(str(license_path), str(public_key_path))
-            license_data = validator.validate()
-            set_license_validator(validator)
-
-            print(f"License validated: {license_data.licensee} ({license_data.tier.upper()})")
-            if license_data.expiry_date:
-                print(f"License expires: {license_data.expiry_date.date()}")
-            else:
-                print("License: PERPETUAL")
-        else:
-            if not license_path:
-                print("License file not found - starting in Basic mode")
-            if not public_key_path:
-                print("Public key not found - starting in Basic mode")
-            validator = None
-
-    except LicenseValidationError as e:
-        print(f"\nLICENSE ERROR: {e}")
-        print("The application will start in Basic mode with core features.")
-        print("Contact your vendor for a valid license.\n")
+    if skip_license:
+        print("License validation skipped (Beta/Testing mode)")
+        print("Running with STANDARD tier features")
         validator = None
+    else:
+        # Search for license in multiple locations
+        license_path = None
+        for candidate in [
+            _PROJECT_DIR / "mbas.license",
+            _BACKEND_DIR / "mbas.license",
+            Path("mbas.license"),
+        ]:
+            if candidate.exists():
+                license_path = candidate
+                break
+
+        # Search for public key in multiple locations
+        public_key_path = None
+        for candidate in [
+            _SRC_DIR / "embedded" / "public_key.pem",
+            _BACKEND_DIR / "src" / "embedded" / "public_key.pem",
+            Path("backend/src/embedded/public_key.pem"),
+            Path("src/embedded/public_key.pem"),
+        ]:
+            if candidate.exists():
+                public_key_path = candidate
+                break
+
+        try:
+                if license_path and public_key_path:
+                    validator = LicenseValidator(str(license_path), str(public_key_path))
+                    license_data = validator.validate()
+                    set_license_validator(validator)
+
+                    print(f"License validated: {license_data.licensee} ({license_data.tier.upper()})")
+                    if license_data.expiry_date:
+                        print(f"License expires: {license_data.expiry_date.date()}")
+                    else:
+                        print("License: PERPETUAL")
+                else:
+                    if not license_path:
+                        print("License file not found - starting in Basic mode")
+                    if not public_key_path:
+                        print("Public key not found - starting in Basic mode")
+                    validator = None
+
+        except LicenseValidationError as e:
+            print(f"\nLICENSE ERROR: {e}")
+            print("The application will start in Basic mode with core features.")
+            print("Contact your vendor for a valid license.\n")
+            validator = None
 
     # Step 2: Initialize database tables on startup
     init_db()
+
+    # Step 2b: Ensure default admin user and settings exist
+    # (INSTALL_MBAS.bat bootstrap may have failed silently during install)
+    try:
+        from src.core.db import engine
+        from src.models.core import User, UserRole, Settings
+        from src.core.security import get_password_hash
+        from src.models.license import get_tier_features
+        from sqlmodel import Session, select
+
+        with Session(engine) as session:
+            # Ensure Settings exist
+            db_settings = session.get(Settings, 1)
+            if not db_settings:
+                print("Creating default system settings...")
+                db_settings = Settings(
+                    id=1,
+                    business_name="MBAS Demo Store",
+                    tax_rate=0.0,
+                    feature_flags=get_tier_features("basic").model_dump()
+                )
+                session.add(db_settings)
+
+            # Ensure admin user exists
+            admin = session.exec(
+                select(User).where(User.username == "admin")
+            ).first()
+            if not admin:
+                print("Creating default administrator account...")
+                admin = User(
+                    username="admin",
+                    full_name="System Administrator",
+                    role=UserRole.ADMIN,
+                    hashed_password=get_password_hash("admin123")
+                )
+                session.add(admin)
+
+            session.commit()
+    except Exception as e:
+        print(f"Warning: Failed to ensure default data: {e}")
 
     # Step 3: Load license features into settings
     if validator and validator.get_license_info():
@@ -99,8 +150,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MBAS API - Z&T Technologies",
-    version="2.0.0",
-    description="Modern Business Automation System - A Product of Z&T Technologies | State-of-the-Art Business Solutions | www.zttechnologies.org",
+    version="2.1.0",  # PWA Update
+    description="Modern Business Automation System - A Product of Z&T Technologies | State-of-the-Art Business Solutions | www.zttechnologies.org | Now with PWA support for cross-platform compatibility",
     contact={
         "name": "Z&T Technologies",
         "url": "https://www.zttechnologies.org",
@@ -109,14 +160,47 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration for Tauri (React frontend)
+# GZip compression - reduces JSON payload sizes by ~80%, critical for performance
+app.add_middleware(GZipMiddleware, minimum_size=500)
+
+# CORS configuration for PWA (supports local WiFi access)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, Tauri runs from a custom protocol (tauri://)
+    allow_origins=[
+        "http://localhost:5173",      # Vite dev server
+        "http://localhost:4173",      # Vite preview
+        "http://localhost:8000",      # PWA served from same origin
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:4173",
+        "http://127.0.0.1:8000",
+        # Allow local WiFi access (192.168.x.x for PWA on mobile devices)
+        "*"  # For simplicity, allow all origins (offline-first app = low security risk)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# SQLite write-serialization middleware
+# ---------------------------------------------------------------------------
+# SQLite allows only ONE writer at a time. Without serialization, concurrent
+# POST/PUT/DELETE requests race for the write lock; losers block for up to
+# busy_timeout (seconds) while holding a DB connection, which starves reads
+# and causes the UI to hang.  By funnelling all mutating HTTP methods through
+# a single asyncio.Lock we guarantee:
+#   1. Only one write request touches the DB at a time (no SQLITE_BUSY).
+#   2. Read requests (GET/HEAD/OPTIONS) are never blocked.
+#   3. Connections are short-lived (NullPool) so no pool exhaustion.
+# ---------------------------------------------------------------------------
+_sqlite_write_lock = asyncio.Lock()
+
+@app.middleware("http")
+async def serialize_write_requests(request: Request, call_next):
+    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
+        async with _sqlite_write_lock:
+            return await call_next(request)
+    return await call_next(request)
 
 # Include routers
 app.include_router(auth.router)
@@ -130,9 +214,10 @@ app.include_router(reports.router)
 app.include_router(system.router)
 app.include_router(ai.router)
 app.include_router(users.router)
+app.include_router(version.router)
 
 @app.get("/health")
-async def health_check():
+def health_check():
     """Enhanced health check endpoint for monitoring and auto-recovery."""
     try:
         # Check database connectivity
@@ -148,7 +233,7 @@ async def health_check():
                 "status": "healthy",
                 "timestamp": datetime.utcnow().isoformat(),
                 "database": "connected",
-                "version": "2.0.0",
+                "version": "2.0.5",
                 "vendor": "Z&T Technologies",
                 "website": "www.zttechnologies.org"
             }
@@ -161,7 +246,7 @@ async def health_check():
                 "timestamp": datetime.utcnow().isoformat(),
                 "database": "disconnected",
                 "error": str(e),
-                "version": "1.0.8"
+                "version": "2.0.5"
             }
         )
 
@@ -188,7 +273,11 @@ if _FRONTEND_DIST.exists() and (_FRONTEND_DIST / "index.html").exists():
         if full_path and file_path.exists() and file_path.is_file():
             return FileResponse(str(file_path))
         # Default: serve index.html for SPA routing
-        return FileResponse(str(_FRONTEND_DIST / "index.html"))
+        # no-cache ensures browser always gets latest after updates
+        return FileResponse(
+            str(_FRONTEND_DIST / "index.html"),
+            headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
 
     print(f"Serving frontend from {_FRONTEND_DIST}")
 else:
@@ -198,4 +287,4 @@ else:
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run("src.main:app", host="127.0.0.1", port=8000)

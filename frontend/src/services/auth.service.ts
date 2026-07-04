@@ -29,16 +29,14 @@ const checkBackendHealth = async (): Promise<boolean> => {
 // Login with retry logic and exponential backoff
 const login = async (username: string, password: string, retryCount = 0): Promise<AuthResponse> => {
   const MAX_RETRIES = 2;
-  const formData = new FormData();
-  formData.append('username', username);
-  formData.append('password', password);
+  // Use URLSearchParams for OAuth2 password flow (application/x-www-form-urlencoded)
+  // FormData with manual Content-Type can strip the multipart boundary, breaking parsing
+  const params = new URLSearchParams();
+  params.append('username', username);
+  params.append('password', password);
 
   try {
-    const response = await api.post<AuthResponse>('/auth/login', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post<AuthResponse>('/auth/login', params);
 
     if (response.data.access_token) {
       sessionStorage.setItem('mbas_token', response.data.access_token);

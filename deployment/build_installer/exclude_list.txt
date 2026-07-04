@@ -1,0 +1,16 @@
+__pycache__
+.pytest_cache
+tests
+*.pyc
+*.pyo
+*.db
+*.db-shm
+*.db-wal
+*.log
+backups
+secret.key
+data
+.git
+.gitignore
+node_modules
+.env

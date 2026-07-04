@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -63,9 +63,17 @@ export default function PurchasePage() {
 
   const currency = settings?.currency || "USD";
 
+  // Abort controller to cancel in-flight requests on unmount
+  const abortRef = useRef<AbortController | null>(null);
+
   useEffect(() => {
     loadSuppliers();
     loadSettings();
+    return () => {
+      // Cancel any pending requests when component unmounts
+      abortRef.current?.abort();
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    };
   }, []);
 
   const loadSettings = async () => {
@@ -86,19 +94,41 @@ export default function PurchasePage() {
     }
   };
 
-  const handleProductSearch = async (query: string) => {
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [selectedSearchIndex, setSelectedSearchIndex] = useState(-1);
+
+  const handleProductSearch = (query: string) => {
     setProductSearch(query);
-    if (query.length < 2) {
+    if (query.length < 1) {
       setSearchResults([]);
+      setSelectedSearchIndex(-1);
       return;
     }
 
-    try {
-      const results = await inventoryService.searchProducts(query);
-      setSearchResults(results);
-    } catch (error) {
-      console.error("Search failed", error);
-    }
+    // Clear previous timer
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+
+    // Cancel previous search request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    searchTimerRef.current = setTimeout(async () => {
+      try {
+        const response = await inventoryService.searchProducts(query, 1, 20, controller.signal);
+        if (controller.signal.aborted) return;
+        setSearchResults(response.items);
+        // Pre-select on exact barcode match so Enter adds it
+        if (response.items.length === 1 && response.items[0].barcode === query) {
+          setSelectedSearchIndex(0);
+        } else {
+          setSelectedSearchIndex(-1);
+        }
+      } catch (error: any) {
+        if (controller.signal.aborted) return;
+        console.error("Search failed", error);
+      }
+    }, 200);
   };
 
   const addToCart = (product: Product) => {
@@ -120,6 +150,7 @@ export default function PurchasePage() {
     }
     setProductSearch("");
     setSearchResults([]);
+    setSelectedSearchIndex(-1);
   };
 
   const removeFromCart = (productId: number) => {
@@ -235,14 +266,50 @@ export default function PurchasePage() {
                   className="pl-10"
                   value={productSearch}
                   onChange={(e) => handleProductSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      e.preventDefault();
+                      setSearchResults([]);
+                      setSelectedSearchIndex(-1);
+                      return;
+                    }
+                    if (searchResults.length === 0) return;
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setSelectedSearchIndex((prev) =>
+                        prev < searchResults.length - 1 ? prev + 1 : 0
+                      );
+                    } else if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setSelectedSearchIndex((prev) =>
+                        prev > 0 ? prev - 1 : searchResults.length - 1
+                      );
+                    } else if (e.key === "Enter") {
+                      e.preventDefault();
+                      const idx = selectedSearchIndex >= 0 ? selectedSearchIndex : 0;
+                      if (searchResults[idx]) {
+                        addToCart(searchResults[idx]);
+                      }
+                    }
+                  }}
                 />
                 {searchResults.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
-                    {searchResults.map((product) => (
+                    {searchResults.map((product, index) => (
                       <div
                         key={product.id}
-                        className="p-3 hover:bg-accent cursor-pointer flex justify-between items-center border-b last:border-0"
+                        ref={(el) => {
+                          if (index === selectedSearchIndex && el) {
+                            el.scrollIntoView({ block: "nearest" });
+                          }
+                        }}
+                        className={`p-3 cursor-pointer flex justify-between items-center border-b last:border-0 transition-colors ${
+                          index === selectedSearchIndex
+                            ? "bg-primary/20 ring-1 ring-primary/30"
+                            : "hover:bg-accent"
+                        }`}
                         onClick={() => addToCart(product)}
+                        onMouseEnter={() => setSelectedSearchIndex(index)}
                       >
                         <div>
                           <div className="font-medium">{product.name}</div>
@@ -360,12 +427,32 @@ export default function PurchasePage() {
               </div>
               <div className="space-y-2 pt-4">
                 <Label className="text-primary">Amount Paid</Label>
-                <Input 
-                  type="number" 
-                  className="text-right text-lg font-bold" 
+                <Input
+                  type="number"
+                  className="text-right text-lg font-bold"
                   value={paidAmount}
                   onChange={(e) => setPaidAmount(parseFloat(e.target.value) || 0)}
                 />
+              </div>
+              {/* Remaining Balance Display */}
+              <div className="pt-2 border-t space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-medium text-muted-foreground">Remaining to Pay</span>
+                  <span className={`text-lg font-bold ${
+                    grandTotal - paidAmount > 0 ? "text-destructive" : "text-green-600"
+                  }`}>
+                    {currency} {Math.max(0, grandTotal - paidAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                {grandTotal > 0 && paidAmount >= grandTotal && (
+                  <p className="text-xs text-green-600 font-medium text-center">Fully Paid</p>
+                )}
+                {grandTotal > 0 && paidAmount > 0 && paidAmount < grandTotal && (
+                  <p className="text-xs text-orange-500 font-medium text-center">Partial Payment - Balance will be added to supplier ledger</p>
+                )}
+                {grandTotal > 0 && paidAmount === 0 && (
+                  <p className="text-xs text-destructive font-medium text-center">Unpaid - Full amount will be added to supplier ledger</p>
+                )}
               </div>
               <div className="space-y-2 pt-2">
                 <Label>Notes</Label>

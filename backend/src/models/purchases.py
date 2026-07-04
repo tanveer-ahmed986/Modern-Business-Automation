@@ -47,7 +47,7 @@ class SupplierUpdate(SQLModel):
 
 # CRITICAL: Supplier Payment Tracking (Missing from initial implementation)
 class SupplierPaymentBase(SQLModel):
-    supplier_id: int = Field(foreign_key="suppliers.id")
+    supplier_id: int = Field(foreign_key="suppliers.id", index=True)
     amount: Decimal = Field(default=0.0)
     payment_method: str = Field(default="cash")  # cash, bank_transfer, check
     reference_number: Optional[str] = Field(default=None)
@@ -68,7 +68,7 @@ class SupplierPaymentRead(SupplierPaymentBase):
     created_at: datetime
 
 class PurchaseBase(SQLModel):
-    supplier_id: Optional[int] = Field(default=None, foreign_key="suppliers.id")
+    supplier_id: Optional[int] = Field(default=None, foreign_key="suppliers.id", index=True)
     user_id: int = Field(foreign_key="user.id")
     reference_number: Optional[str] = Field(default=None, index=True)
     total_amount: Decimal = Field(default=0.0)
@@ -83,7 +83,7 @@ class PurchaseBase(SQLModel):
 class Purchase(PurchaseBase, table=True):
     __tablename__ = "purchases"
     id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow, index=True)
     
     # Relationships
     supplier: Optional[Supplier] = Relationship(back_populates="purchases")

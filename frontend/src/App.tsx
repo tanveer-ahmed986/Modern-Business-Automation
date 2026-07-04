@@ -1,54 +1,66 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './features/auth/LoginPage';
-import DashboardPage from './features/dashboard/DashboardPage';
-import SettingsPage from './features/settings/SettingsPage';
-import ProductList from './features/inventory/ProductList';
-import { BillingPage } from './features/billing/BillingPage';
-import SupplierLedger from './features/suppliers/SupplierLedger';
-import PurchasePage from './features/purchases/PurchasePage';
-import ReportsPage from './features/reports/ReportsPage';
-import AIChatPanel from './features/ai/AIChatPanel';
-import AutomaticBackupPage from './features/settings/AutomaticBackupPage';
-import UsersPage from './features/users/UsersPage';
+import { Loader2 } from 'lucide-react';
 import ProtectedRoute from './components/routing/ProtectedRoute';
 import Layout from './components/layout/Layout';
 import { Toaster } from './components/ui/sonner';
 import CommandPalette from './components/layout/CommandPalette';
+
+// Lazy-load all page components so the initial bundle is small and
+// navigating between sections doesn't re-download already-cached chunks.
+const LoginPage = React.lazy(() => import('./features/auth/LoginPage'));
+const DashboardPage = React.lazy(() => import('./features/dashboard/DashboardPage'));
+const SettingsPage = React.lazy(() => import('./features/settings/SettingsPage'));
+const ProductList = React.lazy(() => import('./features/inventory/ProductList'));
+const BillingPage = React.lazy(() => import('./features/billing/BillingPage'));
+const SupplierLedger = React.lazy(() => import('./features/suppliers/SupplierLedger'));
+const PurchasePage = React.lazy(() => import('./features/purchases/PurchasePage'));
+const ReportsPage = React.lazy(() => import('./features/reports/ReportsPage'));
+const AIChatPanel = React.lazy(() => import('./features/ai/AIChatPanel'));
+const AutomaticBackupPage = React.lazy(() => import('./features/settings/AutomaticBackupPage'));
+const UsersPage = React.lazy(() => import('./features/users/UsersPage'));
+
+const PageLoader = () => (
+  <div className="flex items-center justify-center h-full min-h-[200px]">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 const App: React.FC = () => {
   return (
     <Router>
       <Toaster position="top-right" closeButton richColors />
       <CommandPalette />
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={<LoginPage />} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Routes (Wrapped in Layout) */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<Layout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
+          {/* Protected Routes (Wrapped in Layout) */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<Layout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
 
-            {/* Placeholder routes for other modules */}
-            <Route path="/inventory" element={<ProductList />} />
-            <Route path="/billing" element={<BillingPage />} />
-            <Route path="/suppliers" element={<SupplierLedger />} />
-            <Route path="/purchases/new" element={<PurchasePage />} />
-            <Route path="/reports" element={<ReportsPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/backup" element={<AutomaticBackupPage />} />
-            <Route path="/ai" element={<AIChatPanel />} />
+              {/* Placeholder routes for other modules */}
+              <Route path="/inventory" element={<ProductList />} />
+              <Route path="/billing" element={<BillingPage />} />
+              <Route path="/suppliers" element={<SupplierLedger />} />
+              <Route path="/purchases/new" element={<PurchasePage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/backup" element={<AutomaticBackupPage />} />
+              <Route path="/ai" element={<AIChatPanel />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Redirect root to dashboard or login */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        
-        {/* Catch-all route */}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          {/* Redirect root to dashboard or login */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+          {/* Catch-all route */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </Suspense>
     </Router>
   );
 };

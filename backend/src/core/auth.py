@@ -7,12 +7,21 @@ from sqlmodel import Session, select
 from src.core.db import get_session
 from src.models.core import User
 from src.core.config import SECRET_KEY
+import time
+import threading
 
 # JWT Configuration
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120  # 2 hours for enhanced security with auto-logout
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
+
+# In-memory user cache: {username: (User, timestamp)}
+# Avoids querying the users table on every single API request.
+# Protected by a lock since FastAPI handles concurrent requests.
+_user_cache: dict[str, tuple[User, float]] = {}
+_user_cache_lock = threading.Lock()
+_USER_CACHE_TTL = 60  # seconds
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Generate a JWT token for user sessions."""
@@ -55,11 +64,23 @@ def get_current_user(
     username = verify_token(token)
     if username is None:
         raise credentials_exception
-    
+
+    # Check in-memory cache first (avoids DB query on every request)
+    now = time.monotonic()
+    with _user_cache_lock:
+        cached = _user_cache.get(username)
+    if cached and (now - cached[1]) < _USER_CACHE_TTL:
+        return cached[0]
+
     statement = select(User).where(User.username == username)
     user = session.exec(statement).first()
-    
+
     if user is None:
+        with _user_cache_lock:
+            _user_cache.pop(username, None)
         raise credentials_exception
-        
+
+    # Cache the user object (detached from session via expire_on_commit=False)
+    with _user_cache_lock:
+        _user_cache[username] = (user, now)
     return user

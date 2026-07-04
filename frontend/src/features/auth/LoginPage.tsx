@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Clock, AlertCircle, RefreshCw } from 'lucide-react';
 import authService from '@/services/auth.service';
+import settingsService from '@/services/settings.service';
+import inventoryService from '@/services/inventory.service';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -28,8 +30,16 @@ const LoginPage: React.FC = () => {
     setError('');
     setLoading(true);
 
+    // Clear the expired flag from URL so it doesn't persist after retry
+    if (searchParams.get('expired') === 'true') {
+      navigate('/login', { replace: true });
+    }
+
     try {
       await authService.login(username, password);
+      // Pre-warm caches in parallel so first page loads instantly
+      settingsService.getSettings().catch(() => {});
+      inventoryService.getProducts().catch(() => {});
       navigate('/dashboard');
     } catch (err: any) {
       if (err.message === 'SERVER_TIMEOUT') {

@@ -1,0 +1,236 @@
+================================================================================
+  MBAS v2.0.6 - CMD Window Fix Summary
+  Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================
+
+PROBLEM IDENTIFIED
+================================================================================
+
+When MBAS v2.0.5 (or earlier) starts, a CMD console window appears and remains
+visible. This is unprofessional and can confuse users.
+
+ROOT CAUSE
+================================================================================
+
+The tray application (mbas_tray.py) was using python.exe to launch the uvicorn
+server. On Windows, python.exe ALWAYS shows a console window, even with the
+CREATE_NO_WINDOW flag.
+
+THE SOLUTION
+================================================================================
+
+Changed the launcher to use pythonw.exe instead of python.exe.
+
+pythonw.exe is a Windows-specific Python executable designed for GUI applications.
+It runs without ANY console window - perfect for background services like MBAS.
+
+TECHNICAL CHANGES
+================================================================================
+
+Files Modified:
+  1. scripts/mbas_tray.py
+  2. deployment/build_installer/scripts/mbas_tray.py
+
+Changes Made:
+  Line ~221: self.python_exe → self.pythonw_exe (uvicorn server)
+  Line ~234: self.python_exe → self.pythonw_exe (watchdog process)
+
+Code Changes:
+  BEFORE: [self.python_exe, "-m", "uvicorn", ...]
+  AFTER:  [self.pythonw_exe, "-m", "uvicorn", ...]
+
+Impact:
+  ✓ Server runs completely hidden
+  ✓ No CMD window visible
+  ✓ No performance impact
+  ✓ All functionality preserved
+  ✓ Logs still work normally
+
+================================================================================
+HOW TO APPLY THE FIX
+================================================================================
+
+OPTION 1: Build New Installer (Recommended)
+--------------------------------------------
+
+1. Run: REBUILD_INSTALLER_v2.0.6.bat
+
+   This will:
+   - Compile a new installer with version 2.0.6
+   - Include the fixed mbas_tray.py script
+   - Update all version numbers
+   - Create output in: output\MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+
+2. Test the new installer:
+   - Install on a test machine
+   - Verify no CMD window appears
+   - Test all functionality
+
+3. Deploy to users:
+   - Distribute the new installer
+   - Users can upgrade by reinstalling
+   - Data is preserved in C:\ProgramData\MBAS\
+
+OPTION 2: Quick Fix for Existing Installations
+-----------------------------------------------
+
+1. Run: FIX_HIDDEN_SERVER.bat as Administrator
+
+   This will:
+   - Locate your MBAS installation
+   - Backup the old mbas_tray.py
+   - Copy the fixed version
+   - Preserve all data and settings
+
+2. Restart MBAS
+
+3. Verify no CMD window appears
+
+================================================================================
+VERIFICATION STEPS
+================================================================================
+
+After applying the fix:
+
+1. Close MBAS completely
+   - Right-click system tray icon → Exit
+   - Or run STOP_MBAS.bat
+
+2. Start MBAS
+   - Use desktop shortcut
+   - Or Start Menu → MBAS
+
+3. Observe:
+   ✓ No CMD window should appear
+   ✓ System tray icon should appear within 5-10 seconds
+   ✓ Green icon indicates server is running
+   ✓ Browser should open automatically to http://localhost:8000
+
+4. Test functionality:
+   ✓ Login works
+   ✓ Dashboard loads
+   ✓ All modules accessible
+   ✓ Can create/edit records
+   ✓ Reports generate correctly
+
+================================================================================
+ROLLBACK PROCEDURE (If Needed)
+================================================================================
+
+If the fix causes issues:
+
+1. Locate backup: C:\Program Files\MBAS\scripts\mbas_tray.py.backup
+   (Created automatically by FIX_HIDDEN_SERVER.bat)
+
+2. Restore:
+   copy /Y mbas_tray.py.backup mbas_tray.py
+
+3. Restart MBAS
+
+4. Report issue to: zttechnologies12@gmail.com
+
+================================================================================
+FILES INCLUDED IN THIS FIX
+================================================================================
+
+New/Modified Files:
+  1. scripts/mbas_tray.py - Fixed launcher script
+  2. deployment/build_installer/scripts/mbas_tray.py - Fixed copy for installer
+  3. deployment/build_installer/MBAS_Installer_Professional_ZT.iss - Updated to v2.0.6
+  4. deployment/build_installer/REBUILD_INSTALLER_v2.0.6.bat - Build script
+  5. deployment/build_installer/FIX_HIDDEN_SERVER.bat - Quick fix script
+  6. deployment/build_installer/output/RELEASE_NOTES_v2.0.6.txt - Release notes
+  7. This file - FIX_SUMMARY_v2.0.6.txt
+
+================================================================================
+TESTING RESULTS CHECKLIST
+================================================================================
+
+Before deployment, verify:
+
+□ Installer builds successfully (no errors)
+□ Installer runs on clean Windows 10/11 machine
+□ Installation completes without errors
+□ Desktop shortcut created
+□ Start Menu entry created
+□ MBAS starts without CMD window
+□ System tray icon appears
+□ Browser opens automatically
+□ Login page loads
+□ Default credentials work (admin/admin123)
+□ Dashboard displays correctly
+□ All modules load (Inventory, Billing, Suppliers, etc.)
+□ Can create a test product
+□ Can create a test sale
+□ Report generation works
+□ Stop MBAS works from tray menu
+□ Start MBAS works from tray menu
+□ Uninstaller removes all files correctly
+□ Data preserved in ProgramData after reinstall
+
+================================================================================
+FREQUENTLY ASKED QUESTIONS
+================================================================================
+
+Q: Will this break existing installations?
+A: No. The fix only changes HOW the server starts, not WHAT it does.
+   All functionality, data, and settings are preserved.
+
+Q: Do users need to uninstall first?
+A: No. Users can either:
+   - Reinstall over existing installation (preserves data)
+   - Use FIX_HIDDEN_SERVER.bat for quick update
+
+Q: Will the server still run in the background?
+A: Yes! The server runs the same way, just without the visible window.
+
+Q: Can I still see logs?
+A: Yes! Logs are still written to C:\ProgramData\MBAS\logs\mbas_tray.log
+
+Q: What if pythonw.exe doesn't exist?
+A: The code has a fallback - if pythonw.exe is missing, it uses python.exe.
+   pythonw.exe is included in all standard Python installations.
+
+Q: Will performance be affected?
+A: No. pythonw.exe and python.exe have identical performance.
+   The only difference is console window visibility.
+
+Q: Is this compatible with Windows 11?
+A: Yes! This fix works on all Windows 10 and Windows 11 versions.
+
+Q: Can I revert to the old version?
+A: Yes. Use the backup created by FIX_HIDDEN_SERVER.bat, or reinstall v2.0.5.
+
+================================================================================
+SUPPORT AND CONTACT
+================================================================================
+
+If you need assistance:
+
+Email:   zttechnologies12@gmail.com
+Website: www.zttechnologies.org
+Company: Z&T Technologies
+
+When reporting issues, please include:
+  - MBAS version (v2.0.6)
+  - Windows version (10/11, build number)
+  - Error messages or screenshots
+  - Log file: C:\ProgramData\MBAS\logs\mbas_tray.log
+
+================================================================================
+CONCLUSION
+================================================================================
+
+This fix provides a more professional user experience by completely hiding
+the server console window. The implementation is simple, safe, and preserves
+all existing functionality.
+
+You can now confidently deploy MBAS to professional environments where a
+clean, polished appearance is essential.
+
+Thank you for using MBAS!
+
+Z&T Technologies - State-of-the-Art Business Solutions
+www.zttechnologies.org
+
+================================================================================

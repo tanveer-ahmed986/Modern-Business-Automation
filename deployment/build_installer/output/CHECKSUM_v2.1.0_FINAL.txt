@@ -1,0 +1,27 @@
+================================================================================
+MBAS v2.1.0 PWA Professional - FILE VERIFICATION
+================================================================================
+
+File: MBAS_v2.1.0_PWA_Professional_Setup.exe
+Size: 2.3 MB (2,411,520 bytes)
+Build Date: June 22, 2026
+
+SHA256:
+df1bd7e2c40270c47c2ae591780e18e511c10cc4c176e191c055190ee2c00d1d
+
+================================================================================
+VERIFY INTEGRITY
+================================================================================
+
+Windows Command:
+certutil -hashfile MBAS_v2.1.0_PWA_Professional_Setup.exe SHA256
+
+Expected:
+df1bd7e2c40270c47c2ae591780e18e511c10cc4c176e191c055190ee2c00d1d
+
+If hashes match: File is authentic
+If different: File corrupted - DO NOT INSTALL!
+
+================================================================================
+Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================

@@ -1,9 +1,9 @@
 ; MBAS - Modern Business Automation System
 ; Professional Windows Installer for Z&T Technologies
-; Version 2.0.2 - Fixed: installation hang, timeouts, offline support
+; Version 2.0.6 - Fixed: Hidden server background (no CMD window visible)
 
 #define MyAppName "MBAS - Modern Business Automation System"
-#define MyAppVersion "2.0.2"
+#define MyAppVersion "2.0.6"
 #define MyAppPublisher "Z&T Technologies"
 #define MyAppURL "https://www.zttechnologies.org"
 #define MyCompanySlogan "State-of-the-Art Business Solutions"
@@ -35,7 +35,7 @@ SolidCompression=yes
 WizardStyle=modern
 DisableWelcomePage=no
 
-; Privileges (requires admin for C:\Program Files)
+; Privileges (requires admin for C:\Program Files and ProgramData setup)
 PrivilegesRequired=admin
 PrivilegesRequiredOverridesAllowed=dialog
 
@@ -55,6 +55,8 @@ VersionInfoProductName={#MyAppName}
 
 ; Logging for troubleshooting
 SetupLogging=yes
+
+; Code Signing: Run SIGN_INSTALLER.ps1 after compilation to sign the output EXE
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -93,30 +95,42 @@ Source: "..\PROFESSIONAL_PACKAGE\docs\*"; DestDir: "{app}\docs"; Flags: ignoreve
 Source: "INSTALL_MBAS.bat"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Launcher scripts
+Source: "START_MBAS.vbs"; DestDir: "{app}"; Flags: ignoreversion
 Source: "START_MBAS_TRAY.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "START_MBAS_DIRECT.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "STOP_MBAS.bat"; DestDir: "{app}"; Flags: ignoreversion
 
+[Dirs]
+; Create writable data directories in ProgramData
+Name: "{commonappdata}\MBAS"; Permissions: users-modify
+Name: "{commonappdata}\MBAS\data"; Permissions: users-modify
+Name: "{commonappdata}\MBAS\data\config"; Permissions: users-modify
+Name: "{commonappdata}\MBAS\data\backups"; Permissions: users-modify
+Name: "{commonappdata}\MBAS\logs"; Permissions: users-modify
+
 [Icons]
-; Start Menu
-Name: "{group}\{#MyAppName}"; Filename: "{app}\START_MBAS_TRAY.bat"; IconFilename: "{app}\mbas_icon.ico"; Comment: "{#MyAppPublisher} - {#MyCompanySlogan}"
+; Start Menu - uses VBS launcher for silent start (no CMD window)
+Name: "{group}\{#MyAppName}"; Filename: "wscript.exe"; Parameters: """{app}\START_MBAS.vbs"""; WorkingDir: "{app}"; IconFilename: "{app}\mbas_icon.ico"; Comment: "{#MyAppPublisher} - {#MyCompanySlogan}"
 Name: "{group}\{#MyAppName} (Direct Mode)"; Filename: "{app}\START_MBAS_DIRECT.bat"; IconFilename: "{app}\mbas_icon.ico"
 Name: "{group}\Stop MBAS"; Filename: "{app}\STOP_MBAS.bat"; IconFilename: "{app}\mbas_icon.ico"
 Name: "{group}\Documentation"; Filename: "{app}\docs"; Comment: "MBAS Documentation"
 Name: "{group}\Uninstall"; Filename: "{uninstallexe}"
 
-; Desktop
-Name: "{autodesktop}\MBAS"; Filename: "{app}\START_MBAS_TRAY.bat"; IconFilename: "{app}\mbas_icon.ico"; Tasks: desktopicon; Comment: "{#MyAppPublisher} - {#MyCompanySlogan}"
+; Desktop - uses VBS launcher for silent start (no CMD window)
+Name: "{autodesktop}\MBAS"; Filename: "wscript.exe"; Parameters: """{app}\START_MBAS.vbs"""; WorkingDir: "{app}"; IconFilename: "{app}\mbas_icon.ico"; Tasks: desktopicon; Comment: "{#MyAppPublisher} - {#MyCompanySlogan}"
 
-; Startup
-Name: "{userstartup}\MBAS"; Filename: "{app}\START_MBAS_TRAY.bat"; Tasks: startupicon
+; Startup - uses VBS launcher for silent start
+Name: "{userstartup}\MBAS"; Filename: "wscript.exe"; Parameters: """{app}\START_MBAS.vbs"""; WorkingDir: "{app}"; Tasks: startupicon
 
 [Run]
 ; Install dependencies using the fixed batch script (no pause, with timeouts)
 Filename: "cmd.exe"; Parameters: "/C ""{app}\INSTALL_MBAS.bat"""; WorkingDir: "{app}"; StatusMsg: "Installing dependencies (this may take 2-5 minutes, please wait)..."; Flags: runhidden waituntilterminated
 
-; Launch MBAS
-Filename: "{app}\START_MBAS_TRAY.bat"; Description: "Launch MBAS"; Flags: postinstall skipifsilent nowait unchecked
+; Add firewall rule during installation (runs as admin already)
+Filename: "netsh.exe"; Parameters: "advfirewall firewall add rule name=""MBAS Server"" dir=in action=allow protocol=TCP localport=8000"; StatusMsg: "Configuring firewall..."; Flags: runhidden waituntilterminated
+
+; Launch MBAS silently (no CMD window)
+Filename: "wscript.exe"; Parameters: """{app}\START_MBAS.vbs"""; WorkingDir: "{app}"; Description: "Launch MBAS"; Flags: postinstall skipifsilent nowait shellexec
 
 [UninstallRun]
 ; Stop MBAS gracefully
@@ -125,7 +139,16 @@ Filename: "{app}\STOP_MBAS.bat"; Flags: runhidden skipifdoesntexist waituntilter
 ; Kill any remaining processes
 Filename: "cmd.exe"; Parameters: "/C taskkill /F /IM python.exe /T >nul 2>&1 & taskkill /F /IM pythonw.exe /T >nul 2>&1"; Flags: runhidden waituntilterminated
 
+; Remove firewall rule
+Filename: "netsh.exe"; Parameters: "advfirewall firewall delete rule name=""MBAS Server"""; Flags: runhidden waituntilterminated
+
 [UninstallDelete]
+; Clean up ProgramData (venv, data, logs)
+Type: filesandordirs; Name: "{commonappdata}\MBAS\venv"
+Type: filesandordirs; Name: "{commonappdata}\MBAS\data"
+Type: filesandordirs; Name: "{commonappdata}\MBAS\logs"
+Type: filesandordirs; Name: "{commonappdata}\MBAS"
+; Legacy cleanup
 Type: filesandordirs; Name: "{app}\venv"
 Type: filesandordirs; Name: "{app}\wheels"
 Type: filesandordirs; Name: "{app}\backend\__pycache__"
@@ -133,6 +156,8 @@ Type: filesandordirs; Name: "{app}\backend\src\__pycache__"
 Type: files; Name: "{app}\backend\*.log"
 Type: files; Name: "{app}\*.log"
 Type: files; Name: "{app}\install_log.txt"
+Type: files; Name: "{app}\venv_path.txt"
+; Legacy db location (no longer used, but clean up old installs)
 Type: files; Name: "{app}\backend\mbas_database.db*"
 Type: dirifempty; Name: "{app}\backend"
 Type: dirifempty; Name: "{app}\frontend"
@@ -195,6 +220,10 @@ begin
       'Slogan: State-of-the-Art Business Solutions' + #13#10 +
       'Website: www.zttechnologies.org' + #13#10 +
       'Email: zttechnologies12@gmail.com' + #13#10 + #13#10 +
+      'Data Location: C:\ProgramData\MBAS\' + #13#10 +
+      '  - Database: C:\ProgramData\MBAS\data\mbas_database.db' + #13#10 +
+      '  - Backups:  C:\ProgramData\MBAS\data\backups\' + #13#10 +
+      '  - Logs:     C:\ProgramData\MBAS\logs\' + #13#10 + #13#10 +
       'Thank you for choosing MBAS!' + #13#10 +
       'We are committed to providing you with the best business automation solution.' + #13#10 + #13#10 +
       'For support, documentation, and updates, visit:' + #13#10 +

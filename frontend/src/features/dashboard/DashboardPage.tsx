@@ -26,26 +26,49 @@ const DashboardPage: React.FC = () => {
   const branding = useBranding();
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  const fetchMetrics = async (signal?: AbortSignal) => {
+    setError(false);
+    setLoading(true);
+    try {
+      const data = await getDashboardMetrics(signal);
+      if (signal?.aborted) return;
+      setMetrics(data);
+    } catch (err: any) {
+      if (signal?.aborted) return;
+      console.error('Failed to fetch dashboard metrics:', err);
+      setError(true);
+    } finally {
+      if (!signal?.aborted) setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const data = await getDashboardMetrics();
-        setMetrics(data);
-      } catch (error) {
-        console.error('Failed to fetch dashboard metrics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
+    const controller = new AbortController();
+    fetchMetrics(controller.signal);
+    return () => { controller.abort(); };
   }, []);
 
-  if (loading) {
+  if (loading && !metrics) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error && !metrics) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <AlertTriangle className="h-12 w-12 text-amber-500" />
+        <p className="text-muted-foreground">Failed to load dashboard data.</p>
+        <button
+          onClick={() => fetchMetrics()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+        >
+          Retry
+        </button>
       </div>
     );
   }

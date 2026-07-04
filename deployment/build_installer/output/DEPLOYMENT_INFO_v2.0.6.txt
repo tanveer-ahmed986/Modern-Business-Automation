@@ -1,0 +1,385 @@
+================================================================================
+  MBAS v2.0.6 - Professional Edition
+  Deployment Package Information
+  Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================
+
+Build Date: July 4, 2026
+Version: 2.0.6
+Build Type: Professional Edition - Production Ready
+
+================================================================================
+INSTALLER FILE INFORMATION
+================================================================================
+
+Filename: MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+Location: deployment/build_installer/output/
+
+SHA256 Checksum:
+0ce6769b557eb1365686b55a7b430e9ea29125b87bb1b7580256131f118aab4d
+
+File Size: ~45-50 MB (compressed)
+Installed Size: ~120-150 MB
+
+Compression: LZMA2/Ultra64 (maximum compression)
+Architecture: x64 (64-bit Windows only)
+
+================================================================================
+WHAT'S NEW IN VERSION 2.0.6
+================================================================================
+
+✓ FIXED: Server now runs completely hidden in background
+  - No CMD window appears when MBAS starts
+  - Uses pythonw.exe for silent execution
+  - Professional, clean user experience
+
+✓ Enhanced logging for troubleshooting
+  - Better startup diagnostics
+  - Detailed error reporting
+
+✓ All functionality from v2.0.5 preserved
+  - Database compatibility maintained
+  - No breaking changes
+  - Safe upgrade path
+
+================================================================================
+SYSTEM REQUIREMENTS
+================================================================================
+
+Operating System:
+  - Windows 10 (64-bit) or later
+  - Windows 11 fully supported
+  - Windows Server 2016+ supported
+
+Prerequisites:
+  - Python 3.11 or 3.12 (64-bit)
+  - 500 MB free disk space
+  - 2 GB RAM (minimum)
+  - 4 GB RAM (recommended)
+  - Administrator privileges for installation
+
+Network:
+  - No internet connection required
+  - Runs completely offline
+  - Port 8000 (localhost only)
+
+================================================================================
+INSTALLATION INSTRUCTIONS
+================================================================================
+
+Fresh Installation:
+-------------------
+1. Ensure Python 3.11 or 3.12 is installed
+2. Run MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+3. Follow the installation wizard
+4. Wait for dependency installation (2-5 minutes)
+5. Launch MBAS when prompted
+6. Login with: admin / admin123
+7. IMPORTANT: Change password after first login
+
+Upgrade from v2.0.5 or earlier:
+-------------------------------
+Option A - Reinstall (Recommended):
+1. Uninstall previous version
+2. Install v2.0.6
+3. Data is preserved in C:\ProgramData\MBAS\
+
+Option B - Quick Fix:
+1. Extract the package
+2. Run FIX_HIDDEN_SERVER.bat as Administrator
+3. Restart MBAS
+
+================================================================================
+VERIFICATION STEPS
+================================================================================
+
+After installation, verify:
+
+□ MBAS icon appears on desktop
+□ Start Menu entry created
+□ Launch MBAS (no CMD window should appear)
+□ System tray icon appears within 10 seconds
+□ Tray icon turns green (server running)
+□ Browser opens to http://localhost:8000
+□ Login page loads
+□ Can login with admin/admin123
+□ Dashboard displays correctly
+□ All modules accessible
+□ Can create/edit records
+□ Reports generate successfully
+
+Troubleshooting:
+----------------
+If issues occur:
+1. Check logs: C:\ProgramData\MBAS\logs\mbas_tray.log
+2. Check firewall: Port 8000 allowed for localhost
+3. Verify Python: Run "python --version" in CMD
+4. Restart Windows
+5. Contact support: zttechnologies12@gmail.com
+
+================================================================================
+PACKAGE CONTENTS
+================================================================================
+
+Files Included:
+  - MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+  - RELEASE_NOTES_v2.0.6.txt
+  - DEPLOYMENT_INFO_v2.0.6.txt (this file)
+  - FIX_HIDDEN_SERVER.bat (optional quick fix)
+
+Bundled Components:
+  - Backend server (FastAPI + Uvicorn)
+  - Frontend application (React + Vite)
+  - Python dependencies (offline installation)
+  - System tray application (fixed)
+  - Documentation
+  - Sample data initialization scripts
+
+================================================================================
+DATA LOCATIONS (AFTER INSTALLATION)
+================================================================================
+
+Program Files:
+  C:\Program Files\MBAS\
+  - Application code (read-only)
+  - Scripts and executables
+  - Documentation
+
+User Data (ProgramData):
+  C:\ProgramData\MBAS\
+  ├── venv\                    # Python virtual environment
+  ├── data\
+  │   ├── mbas_database.db     # Main database
+  │   ├── backups\             # Automatic backups
+  │   └── config\              # Configuration files
+  └── logs\
+      ├── mbas_tray.log        # Tray app log
+      └── install_log.txt      # Installation log
+
+================================================================================
+DEFAULT CREDENTIALS
+================================================================================
+
+Username: admin
+Password: admin123
+
+IMPORTANT SECURITY NOTICE:
+- Change password immediately after first login
+- Create individual user accounts for staff
+- Set appropriate role-based permissions
+- Enable automatic backups
+- Review security settings
+
+================================================================================
+FEATURES INCLUDED
+================================================================================
+
+Core Modules:
+  ✓ Dashboard & Analytics
+  ✓ Inventory Management
+  ✓ Billing & Invoicing
+  ✓ Purchase Orders
+  ✓ Supplier Management
+  ✓ Customer Ledger
+  ✓ Multi-User Support
+  ✓ Role-Based Access Control
+
+Reporting:
+  ✓ Sales Reports
+  ✓ Inventory Reports
+  ✓ Financial Reports
+  ✓ Custom Date Ranges
+  ✓ Export to CSV
+
+System Features:
+  ✓ Automatic Database Backups
+  ✓ Manual Backup/Restore
+  ✓ User Management
+  ✓ Settings Configuration
+  ✓ Audit Logging
+  ✓ System Tray Integration
+  ✓ Offline Operation
+
+================================================================================
+LICENSING
+================================================================================
+
+Edition: Professional
+License Type: Perpetual
+Installation: Single PC
+
+For multi-PC deployments or enterprise licensing:
+  Contact: zttechnologies12@gmail.com
+  Website: www.zttechnologies.org
+
+================================================================================
+SUPPORT AND CONTACT
+================================================================================
+
+Company: Z&T Technologies
+Slogan: State-of-the-Art Business Solutions
+
+Website: www.zttechnologies.org
+Email: zttechnologies12@gmail.com
+Support Hours: Business hours (timezone varies)
+
+Documentation:
+  - Installation Guide: C:\Program Files\MBAS\docs\
+  - User Manual: See documentation folder
+  - Online Help: www.zttechnologies.org/support
+
+When requesting support, provide:
+  - MBAS version (2.0.6)
+  - Windows version and build
+  - Error messages or screenshots
+  - Log files from C:\ProgramData\MBAS\logs\
+
+================================================================================
+TECHNICAL SPECIFICATIONS
+================================================================================
+
+Backend:
+  - Python 3.11/3.12
+  - FastAPI 0.136.1
+  - Uvicorn 0.46.0
+  - SQLite database
+  - SQLAlchemy ORM
+
+Frontend:
+  - React 18
+  - TypeScript
+  - Vite build tool
+  - TailwindCSS
+  - Progressive Web App (PWA) ready
+
+Security:
+  - JWT authentication
+  - Password hashing (bcrypt)
+  - Role-based access control
+  - SQL injection protection
+  - XSS protection
+
+Performance:
+  - Fast startup (<10 seconds)
+  - Responsive UI
+  - Efficient database queries
+  - Minimal resource usage
+
+================================================================================
+KNOWN LIMITATIONS
+================================================================================
+
+Current Version:
+  - Single-user concurrent editing (multi-user read access supported)
+  - Maximum recommended database size: 2 GB
+  - Localhost access only (network access requires configuration)
+  - Windows only (no macOS/Linux support)
+
+Future Enhancements:
+  - Multi-user concurrent editing
+  - Network/cloud deployment options
+  - Mobile app integration
+  - Advanced analytics
+  - API integrations
+
+================================================================================
+CHANGELOG FROM v2.0.5
+================================================================================
+
+Fixed:
+  • CMD window now completely hidden when starting MBAS
+  • Server uses pythonw.exe for silent execution
+  • Improved startup logging and diagnostics
+
+Changed:
+  • Enhanced error reporting in tray application
+  • Better startup diagnostics
+
+Maintained:
+  • All existing functionality preserved
+  • Database schema unchanged
+  • Configuration compatibility maintained
+  • No breaking changes
+
+================================================================================
+DISTRIBUTION
+================================================================================
+
+Recommended Distribution Methods:
+  1. Direct download link
+  2. USB drive distribution
+  3. Network file share
+  4. Email attachment (if size permits)
+
+Checksum Verification:
+  Provide SHA256 hash to users for integrity verification:
+  0ce6769b557eb1365686b55a7b430e9ea29125b87bb1b7580256131f118aab4d
+
+  Users can verify with:
+  certutil -hashfile "MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe" SHA256
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+Pre-Deployment:
+  □ Test installer on clean Windows machine
+  □ Verify no CMD window appears on startup
+  □ Test all core functionality
+  □ Verify backup/restore works
+  □ Test multi-user access
+  □ Review security settings
+  □ Prepare user documentation
+  □ Create training materials
+
+During Deployment:
+  □ Communicate downtime (if upgrading)
+  □ Backup existing data
+  □ Install on client machines
+  □ Verify installation success
+  □ Test critical workflows
+  □ Provide user training
+  □ Document any issues
+
+Post-Deployment:
+  □ Monitor for issues
+  □ Collect user feedback
+  □ Address any problems
+  □ Update documentation
+  □ Plan next release
+
+================================================================================
+LEGAL NOTICE
+================================================================================
+
+Copyright (C) 2024-2026 Z&T Technologies
+All rights reserved.
+
+This software is provided "as is" without warranty of any kind, either
+expressed or implied, including but not limited to the implied warranties
+of merchantability and fitness for a particular purpose.
+
+Z&T Technologies shall not be liable for any damages whatsoever arising
+out of the use of or inability to use this software.
+
+================================================================================
+CONCLUSION
+================================================================================
+
+MBAS v2.0.6 is ready for production deployment. The hidden server fix
+provides a more professional user experience while maintaining all
+existing functionality.
+
+This release represents a commitment to quality and attention to detail
+that defines the Z&T Technologies brand.
+
+Thank you for choosing MBAS!
+
+Z&T Technologies - State-of-the-Art Business Solutions
+www.zttechnologies.org
+
+================================================================================
+Build completed: July 4, 2026
+Installer: MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+SHA256: 0ce6769b557eb1365686b55a7b430e9ea29125b87bb1b7580256131f118aab4d
+================================================================================

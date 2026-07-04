@@ -1,0 +1,21 @@
+{
+    "licensee": "Beta Tester - Production License",
+    "tier": "standard",
+    "type": "perpetual",
+    "issued_date": "2026-06-22",
+    "expiry_date": null,
+    "machine_id_hash": null,
+    "features": {
+        "dashboard": true,
+        "inventory": true,
+        "billing": true,
+        "customers": true,
+        "suppliers": true,
+        "purchases": true,
+        "advanced_reports": true,
+        "backup_restore": true,
+        "ai_assistant": false,
+        "premium_reports": false
+    },
+    "signature": "axwwIDHnXTwJ9fmGFigxgFvIfHJ2REc3Mi9YD2F/+S3FAuQtezRmW0RPD8xEmeI5Vb2CKz05M2Gnm9lqUDeDyuvLcly4DoSwhX4GCxQAN/CT5cdGyukzIPfxAhR3xBthEdLtAfgQmInbbU+kPJ31azLHKy3UT2ng0A2vA7ZwDmorRBT1Z4rAqAYzFQwhDloQ68W+jMD8fzXqvWOMsgeLbpio/ahKysPeEYOj3Q87eanaAJGBMeHCB9z3xsv6P8r8cE7d7ujjqf7gv/8zn816NHcHN+cjU8rp6xabch0+ycAjfBW5XTWV4jhY9mugkKeEUfKjJxJewk/BSSgJ5gNve1wmm1TDWhslmw/8ocClT1AXNZB6PeTKOk7mMkIBk4DDjkIJ8Rcy7l003alR1xmlvJD7QtBF9Y0QDKaKN/gC1iynQXBmvAe6vtvxjM99kFew98vnLRLESAEexm1X3Hs8csDrj/zGKQsPI/nCgqSHPKBVs/rPLmtSEIFj6dHwvaLs9tsXylsb1nTiLZyyivsjTuFOrJa2Ksns9IFAodKEGPsb1E4gjoA4zRcdJR4stXcMlxO1ncCsPvrtHV5ODnXim1f7WGagdqdQekigRYXRaJe+Kbrxo8kAw7sislncBp063htDgqbeC7J6TQ2OkCov51j6nyRA7fYYKAE0LKC309w="
+}

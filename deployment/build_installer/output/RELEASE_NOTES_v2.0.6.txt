@@ -1,0 +1,150 @@
+================================================================================
+  MBAS - Modern Business Automation System
+  Version 2.0.6 Release Notes
+  Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================
+
+Release Date: July 4, 2026
+Build Type: Professional Edition
+Installer: MBAS_Professional_Setup_v2.0.6_ZT_Technologies.exe
+
+================================================================================
+WHAT'S NEW IN VERSION 2.0.6
+================================================================================
+
+MAJOR FIX: Hidden Server Background Execution
+----------------------------------------------
+The server now runs completely hidden in the background with no visible
+console window. This provides a much more professional user experience.
+
+Technical Details:
+  - Changed server launcher to use pythonw.exe instead of python.exe
+  - pythonw.exe is the Windows GUI version that runs without a console
+  - Applied to both uvicorn server and watchdog processes
+  - No impact on functionality, only on visibility
+
+User Experience Improvements:
+  ✓ No CMD window appears when starting MBAS
+  ✓ Server runs silently in background
+  ✓ Clean, professional appearance
+  ✓ System tray icon remains fully functional
+  ✓ All features work exactly as before
+
+================================================================================
+UPGRADE OPTIONS
+================================================================================
+
+Option 1: Full Reinstall (Recommended)
+---------------------------------------
+1. Uninstall MBAS v2.0.5 (or earlier)
+2. Install MBAS v2.0.6
+3. Your data is preserved in C:\ProgramData\MBAS\
+
+Option 2: Quick Fix (For Existing Installations)
+-------------------------------------------------
+1. Download the v2.0.6 package
+2. Run FIX_HIDDEN_SERVER.bat as Administrator
+3. Restart MBAS
+4. Verify no CMD window appears
+
+================================================================================
+COMPATIBILITY
+================================================================================
+
+Operating System:
+  - Windows 10 or later (64-bit)
+  - Windows 11 fully supported
+
+Requirements:
+  - Python 3.11 or 3.12
+  - 500 MB disk space
+  - 2 GB RAM minimum
+
+Data Location:
+  - Database: C:\ProgramData\MBAS\data\mbas_database.db
+  - Backups:  C:\ProgramData\MBAS\data\backups\
+  - Logs:     C:\ProgramData\MBAS\logs\
+
+================================================================================
+CHANGELOG FROM v2.0.5 TO v2.0.6
+================================================================================
+
+Changed:
+  • Server launcher now uses pythonw.exe (silent execution)
+  • Watchdog monitor uses pythonw.exe (silent execution)
+  • Enhanced logging for troubleshooting startup issues
+
+Fixed:
+  • Visible CMD console window when starting MBAS
+  • Unprofessional appearance of background processes
+
+Maintained:
+  • All existing functionality preserved
+  • Database compatibility maintained
+  • Configuration files unchanged
+  • Performance characteristics identical
+
+================================================================================
+KNOWN ISSUES
+================================================================================
+
+None reported for this release.
+
+If you encounter any issues, please:
+  1. Check logs at: C:\ProgramData\MBAS\logs\mbas_tray.log
+  2. Contact support: zttechnologies12@gmail.com
+  3. Visit: www.zttechnologies.org
+
+================================================================================
+TESTING CHECKLIST
+================================================================================
+
+Before deploying to production, verify:
+
+□ MBAS starts without showing a CMD window
+□ System tray icon appears correctly
+□ Double-clicking tray icon opens browser
+□ Server starts and stops correctly from tray menu
+□ Database operations work normally
+□ Reports generate successfully
+□ Login/logout functionality works
+□ All modules accessible (Inventory, Billing, etc.)
+□ Backup/restore operations function correctly
+□ Multi-user access works if applicable
+
+================================================================================
+SUPPORT INFORMATION
+================================================================================
+
+Company: Z&T Technologies
+Website: www.zttechnologies.org
+Email:   zttechnologies12@gmail.com
+Slogan:  State-of-the-Art Business Solutions
+
+Documentation:
+  - User Guide: C:\Program Files\MBAS\docs\
+  - Quick Start: See QUICK_START_GUIDE.txt
+  - FAQ: See COMPANY_INFO.txt
+
+For technical support, please provide:
+  - MBAS version (2.0.6)
+  - Windows version
+  - Error messages (if any)
+  - Log files from C:\ProgramData\MBAS\logs\
+
+================================================================================
+THANK YOU
+================================================================================
+
+Thank you for choosing MBAS from Z&T Technologies!
+
+We are committed to providing you with the best business automation solution.
+This update reflects our dedication to delivering a professional, polished
+product that meets the highest standards.
+
+Your feedback is valuable. Please contact us with any suggestions or issues.
+
+Z&T Technologies - State-of-the-Art Business Solutions
+www.zttechnologies.org
+
+================================================================================

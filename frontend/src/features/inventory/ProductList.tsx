@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Plus, 
   Search, 
@@ -68,6 +68,7 @@ import {
 import authService from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useBranding } from '@/hooks/useBranding';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // Placeholder for the form modal - will be implemented in next step
 import ProductForm from './ProductForm';
@@ -77,9 +78,11 @@ const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+
   // Table state
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -93,21 +96,35 @@ const ProductList: React.FC = () => {
 
   const currentUser = authService.getCurrentUser();
   const isAdminOrManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchData = async () => {
-    setIsLoading(true);
+    // Cancel any previous in-flight request
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
-      const [productsData, categoriesData] = await Promise.all([
-        inventoryService.getProducts(),
-        inventoryService.getCategories()
+      // Only show full loading spinner on first load (no existing data)
+      if (products.length === 0) setIsLoading(true);
+      setLoadError(false);
+      const [productsResponse, categoriesData] = await Promise.all([
+        inventoryService.getProducts({ page: 1, page_size: 50 }, controller.signal),
+        inventoryService.getCategories(controller.signal)
       ]);
-      setProducts(productsData);
+      if (controller.signal.aborted) return;
+      setProducts(productsResponse.items);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch (error: any) {
+      if (controller.signal.aborted) return;
       console.error('Failed to fetch inventory data:', error);
-      toast.error('Could not load inventory data');
+      if (products.length === 0) {
+        setLoadError(true);
+      } else {
+        toast.error('Could not refresh inventory data.');
+      }
     } finally {
-      setIsLoading(false);
+      if (!controller.signal.aborted) setIsLoading(false);
     }
   };
 
@@ -136,8 +153,8 @@ const ProductList: React.FC = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const data = await inventoryService.getProducts();
-      setProducts(data);
+      const response = await inventoryService.getProducts({ page: 1, page_size: 50 });
+      setProducts(response.items);
       toast.success('Inventory refreshed');
     } catch (error) {
       toast.error('Failed to refresh inventory');
@@ -151,13 +168,13 @@ const ProductList: React.FC = () => {
       handleRefresh();
       return;
     }
-    
+
     setIsRefreshing(true);
     try {
-      const data = await inventoryService.searchProducts(searchQuery);
-      setProducts(data);
+      const response = await inventoryService.searchProducts(searchQuery, 1, 20);
+      setProducts(response.items);
     } catch (error) {
-      toast.error('Search failed');
+      toast.error('Search failed. Please try again.');
     } finally {
       setIsRefreshing(false);
     }
@@ -165,7 +182,45 @@ const ProductList: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    return () => { abortRef.current?.abort(); };
   }, []);
+
+  // Debounced auto-search using useDebounce hook
+  const searchAbortRef = useRef<AbortController | null>(null);
+  const hasSearchedRef = useRef(false);
+  useEffect(() => {
+    if (!debouncedSearchQuery.trim()) {
+      // If search cleared (but not initial mount), fetch all products
+      if (searchQuery === '' && hasSearchedRef.current) {
+        fetchData();
+      }
+      return;
+    }
+
+    // Mark that user has performed a search
+    hasSearchedRef.current = true;
+
+    // Cancel previous search request
+    searchAbortRef.current?.abort();
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+
+    setIsRefreshing(true);
+    inventoryService.searchProducts(debouncedSearchQuery, 1, 20, controller.signal)
+      .then((response) => {
+        if (!controller.signal.aborted) setProducts(response.items);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) toast.error('Search failed.');
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setIsRefreshing(false);
+      });
+
+    return () => {
+      searchAbortRef.current?.abort();
+    };
+  }, [debouncedSearchQuery]);
 
   const handleDelete = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
@@ -293,7 +348,7 @@ const ProductList: React.FC = () => {
         )
       },
     },
-  ], [isAdminOrManager, products]);
+  ], [isAdminOrManager, branding.currency]);
 
   const table = useReactTable({
     data: products,
@@ -312,11 +367,21 @@ const ProductList: React.FC = () => {
     },
   });
 
-  if (isLoading) {
+  if (isLoading && products.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
         <span className="ml-2 text-slate-500 font-medium">Loading inventory...</span>
+      </div>
+    );
+  }
+
+  if (loadError && products.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-4">
+        <AlertTriangle className="h-12 w-12 text-amber-500" />
+        <p className="text-muted-foreground">Could not load inventory data.</p>
+        <Button onClick={() => fetchData()}>Retry</Button>
       </div>
     );
   }

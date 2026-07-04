@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -51,15 +51,23 @@ const UsersPage: React.FC = () => {
     is_active: true,
   });
 
+  const abortRef = useRef<AbortController | null>(null);
+
   const fetchUsers = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const data = await usersService.getUsers();
+      if (controller.signal.aborted) return;
       setUsers(data);
     } catch (error: any) {
+      if (controller.signal.aborted) return;
       toast.error('Failed to load users: ' + (error.response?.data?.detail || error.message));
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
@@ -127,6 +135,7 @@ const UsersPage: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
+    return () => { abortRef.current?.abort(); };
   }, []);
 
   const getRoleIcon = (role: string) => {

@@ -1,0 +1,78 @@
+================================================================================
+  MBAS - Modern Business Automation System
+  Version 2.0.4
+  Z&T Technologies - State-of-the-Art Business Solutions
+  www.zttechnologies.org
+================================================================================
+
+QUICK START GUIDE
+=================
+
+PREREQUISITES
+-------------
+  - Windows 10 or Windows 11 (64-bit)
+  - Python 3.11 or 3.12 installed
+    Download from: https://www.python.org/downloads/
+    IMPORTANT: Check "Add Python to PATH" during Python installation!
+
+FIRST-TIME SETUP (One-Time Only)
+---------------------------------
+  1. Right-click INSTALL_ZT_CERTIFICATE.bat and select "Run as administrator"
+  2. This registers Z&T Technologies as a trusted publisher on your computer
+  3. You only need to do this ONCE per computer
+
+INSTALLATION
+------------
+  1. Run MBAS_Professional_Setup_v2.0.4_ZT_Technologies.exe
+  2. Click "Yes" when prompted for Administrator privileges
+  3. Follow the installation wizard
+  4. Wait for dependency installation to complete
+  5. MBAS will launch automatically after installation
+
+LAUNCHING MBAS
+--------------
+  - Double-click the "MBAS" icon on your Desktop
+  - Or find "MBAS" in the Start Menu
+  - The server starts in the background (system tray icon appears)
+  - Your browser will open automatically to http://localhost:8000
+
+DEFAULT LOGIN
+-------------
+  Username: admin
+  Password: admin123
+
+  *** IMPORTANT: Change your password after first login! ***
+
+DATA LOCATIONS
+--------------
+  Application:  C:\Program Files\MBAS\
+  Database:     C:\ProgramData\MBAS\data\mbas_database.db
+  Backups:      C:\ProgramData\MBAS\data\backups\
+  Logs:         C:\ProgramData\MBAS\logs\
+
+TROUBLESHOOTING
+---------------
+  If MBAS does not start:
+    1. Check that Python 3.11/3.12 is installed (python --version in CMD)
+    2. Check the log file at: C:\ProgramData\MBAS\logs\mbas_tray.log
+    3. Try "MBAS (Direct Mode)" from the Start Menu for visible errors
+    4. Run INSTALL_MBAS.bat from C:\Program Files\MBAS\ as Administrator
+
+  If port 8000 is in use:
+    1. Close any other MBAS instances
+    2. Run "Stop MBAS" from the Start Menu
+    3. Try launching again
+
+UNINSTALLING
+------------
+  Use "Add or Remove Programs" in Windows Settings
+  Or run the Uninstall shortcut from the Start Menu
+
+SUPPORT
+-------
+  Website: www.zttechnologies.org
+  Email:   zttechnologies12@gmail.com
+
+================================================================================
+  Copyright (C) 2024-2026 Z&T Technologies. All rights reserved.
+================================================================================

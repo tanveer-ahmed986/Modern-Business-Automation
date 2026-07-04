@@ -1,0 +1,21 @@
+{
+    "licensee": "Beta Tester",
+    "tier": "standard",
+    "type": "perpetual",
+    "issued_date": "2026-06-20",
+    "expiry_date": null,
+    "machine_id_hash": null,
+    "features": {
+        "dashboard": true,
+        "inventory": true,
+        "billing": true,
+        "customers": true,
+        "suppliers": true,
+        "purchases": true,
+        "advanced_reports": true,
+        "backup_restore": true,
+        "ai_assistant": false,
+        "premium_reports": false
+    },
+    "signature": "BETA_LICENSE_FOR_TESTING_ONLY_REPLACE_WITH_PRODUCTION_LICENSE_AFTER_BETA_TESTING_IS_COMPLETE"
+}

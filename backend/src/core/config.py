@@ -5,11 +5,16 @@ Handles SECRET_KEY generation and storage for JWT token signing.
 """
 
 import secrets
+import os
 from pathlib import Path
 
 
-# Configuration directory (will be created if it doesn't exist)
-CONFIG_DIR = Path("config")
+# Configuration directory - use ProgramData on Windows to avoid Program Files write restrictions
+_MBAS_DATA_DIR = Path(os.environ.get("MBAS_DATA_DIR", ""))
+if not _MBAS_DATA_DIR or not _MBAS_DATA_DIR.is_absolute():
+    _MBAS_DATA_DIR = Path(os.environ.get("ProgramData", "C:\\ProgramData")) / "MBAS" / "data"
+
+CONFIG_DIR = _MBAS_DATA_DIR / "config"
 SECRET_KEY_FILE = CONFIG_DIR / "secret.key"
 
 
@@ -25,8 +30,8 @@ def get_or_create_secret_key() -> str:
     Returns:
         str: The SECRET_KEY (64-byte URL-safe base64 string)
     """
-    # Create config directory if it doesn't exist
-    CONFIG_DIR.mkdir(exist_ok=True)
+    # Create config directory tree if it doesn't exist
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
     # Load existing key if available
     if SECRET_KEY_FILE.exists():

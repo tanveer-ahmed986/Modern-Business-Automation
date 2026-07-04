@@ -1,13 +1,17 @@
 import os
 import shutil
 import sqlite3
+from pathlib import Path
 from datetime import datetime
 from sqlmodel import Session, text
-from .db import engine, DB_FILE
+from .db import engine, DB_FILE, _DATA_DIR
+
+# Default backup dir alongside the database in ProgramData
+_DEFAULT_BACKUP_DIR = str(_DATA_DIR / "backups")
 
 class BackupUtility:
     @staticmethod
-    def create_backup(backup_dir: str = "backups") -> str:
+    def create_backup(backup_dir: str = _DEFAULT_BACKUP_DIR) -> str:
         """
         Creates a consistent backup of the SQLite database using VACUUM INTO.
         Returns the path to the created backup file.
@@ -54,7 +58,7 @@ class BackupUtility:
         return True
 
     @staticmethod
-    def list_backups(backup_dir: str = "backups") -> list:
+    def list_backups(backup_dir: str = _DEFAULT_BACKUP_DIR) -> list:
         """Returns a list of available backups in the directory."""
         if not os.path.exists(backup_dir):
             return []

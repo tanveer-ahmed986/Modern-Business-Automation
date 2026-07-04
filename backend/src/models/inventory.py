@@ -1,8 +1,23 @@
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Generic, TypeVar
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import datetime
 from pydantic import field_validator
 from decimal import Decimal
+
+# Generic type for pagination
+T = TypeVar('T')
+
+class PaginationMeta(SQLModel):
+    """Pagination metadata"""
+    page: int
+    page_size: int
+    total_count: int
+    total_pages: int
+
+class PaginatedResponse(SQLModel, Generic[T]):
+    """Generic paginated response"""
+    items: List[T]
+    pagination: PaginationMeta
 
 class CategoryBase(SQLModel):
     name: str = Field(index=True, unique=True)
@@ -21,13 +36,13 @@ class CategoryRead(CategoryBase):
     id: int
 
 class ProductBase(SQLModel):
-    name: str = Field(index=True)
-    category_id: Optional[int] = Field(default=None, foreign_key="categories.id")
+    name: str = Field(index=True, unique=True)
+    category_id: Optional[int] = Field(default=None, foreign_key="categories.id", index=True)
     barcode: str = Field(index=True, unique=True)
     selling_price: float = Field(default=0.0)  # Changed from Decimal to float
     stock_quantity: int = Field(default=0)
     low_stock_threshold: int = Field(default=5)
-    is_active: bool = Field(default=True)
+    is_active: bool = Field(default=True, index=True)
 
 class Product(ProductBase, table=True):
     __tablename__ = "products"

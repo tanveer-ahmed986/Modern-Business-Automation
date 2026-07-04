@@ -1,6 +1,7 @@
 from typing import Any, List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from sqlmodel import Session, select, func
+from sqlalchemy.orm import selectinload
 from datetime import datetime
 
 from src.core.db import get_session
@@ -22,20 +23,50 @@ def check_manager_role(current_user: User = Depends(get_current_user)):
         )
     return current_user
 
-@router.get("", response_model=List[PurchaseRead])
+@router.get("")
 def get_purchases(
     session: Session = Depends(get_session),
     current_user: User = Depends(check_manager_role),
-    supplier_id: Optional[int] = None,
-    skip: int = 0,
-    limit: int = 100
+    page: int = Query(1, ge=1, description="Page number (starts at 1)"),
+    page_size: int = Query(50, ge=1, le=200, description="Items per page (max 200)"),
+    supplier_id: Optional[int] = None
 ) -> Any:
-    """Retrieve all purchases with optional supplier filtering."""
-    statement = select(Purchase)
+    """Retrieve all purchases with pagination and optional supplier filtering.
+
+    Returns paginated results with metadata.
+    Default: 50 items per page, sorted by most recent first.
+    """
+    # Build query
+    statement = (
+        select(Purchase)
+        .options(selectinload(Purchase.items), selectinload(Purchase.supplier))
+        .order_by(Purchase.created_at.desc())
+    )
+    count_statement = select(func.count(Purchase.id))
+
     if supplier_id:
         statement = statement.where(Purchase.supplier_id == supplier_id)
-    
-    return session.exec(statement.offset(skip).limit(limit)).all()
+        count_statement = count_statement.where(Purchase.supplier_id == supplier_id)
+
+    # Get total count
+    total_count = session.exec(count_statement).one()
+
+    # Calculate pagination
+    offset = (page - 1) * page_size
+    total_pages = (total_count + page_size - 1) // page_size
+
+    # Get paginated items
+    purchases = session.exec(statement.offset(offset).limit(page_size)).all()
+
+    return {
+        "items": purchases,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages
+        }
+    }
 
 @router.post("", response_model=PurchaseRead)
 def create_purchase(

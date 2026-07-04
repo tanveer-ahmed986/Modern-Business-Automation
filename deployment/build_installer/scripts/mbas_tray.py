@@ -8,21 +8,62 @@ Z&T Technologies - State-of-the-Art Business Solutions
 
 import sys
 import subprocess
-import psutil
 import os
 import webbrowser
 from pathlib import Path
 from threading import Thread
 import time
+import traceback
+
+# Early error logging setup - critical for diagnosing pythonw.exe crashes
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_PROJECT_DIR = _SCRIPT_DIR.parent
+
+# All writable data goes to ProgramData to avoid Program Files write restrictions
+_MBAS_DATA_ROOT = Path(os.environ.get("ProgramData", "C:\\ProgramData")) / "MBAS"
+_LOG_DIR = _MBAS_DATA_ROOT / "logs"
+try:
+    _LOG_DIR.mkdir(parents=True, exist_ok=True)
+except OSError:
+    pass
+_CRASH_LOG = _LOG_DIR / "mbas_tray.log"
+
+# Venv location (ProgramData to avoid Program Files path issues)
+_VENV_DIR = _MBAS_DATA_ROOT / "venv"
+
+def _fatal_error(msg, exc=None):
+    """Write fatal error to log and show message box before exiting."""
+    error_text = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] FATAL: {msg}"
+    if exc:
+        error_text += f"\n{traceback.format_exc()}"
+    try:
+        with open(_CRASH_LOG, "a") as f:
+            f.write(error_text + "\n")
+    except:
+        pass
+    # Show error via Windows message box (works even from pythonw.exe)
+    try:
+        import ctypes
+        ctypes.windll.user32.MessageBoxW(
+            0,
+            f"MBAS failed to start:\n\n{msg}\n\nCheck log: {_CRASH_LOG}",
+            "MBAS Error",
+            0x10  # MB_ICONERROR
+        )
+    except:
+        pass
+    sys.exit(1)
+
+try:
+    import psutil
+except ImportError as e:
+    _fatal_error(f"Missing package 'psutil': {e}", e)
 
 try:
     import pystray
-    from PIL import Image, ImageDraw
-except ImportError:
-    print("Installing required packages (pystray, Pillow)...")
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "pystray", "Pillow"])
-    import pystray
-    from PIL import Image, ImageDraw
+    from PIL import Image, ImageDraw, ImageFont
+except ImportError as e:
+    _fatal_error(f"Missing package 'pystray' or 'Pillow': {e}", e)
 
 
 class MBASTrayApp:
@@ -37,28 +78,42 @@ class MBASTrayApp:
         self.backend_dir = self.project_dir / "backend"
         self.frontend_dir = self.project_dir / "frontend"
 
-        # Use the venv Python if available, otherwise system Python
-        venv_python = self.project_dir / "venv" / "Scripts" / "python.exe"
-        venv_pythonw = self.project_dir / "venv" / "Scripts" / "pythonw.exe"
+        # Venv in ProgramData (avoids Program Files path confusion)
+        venv_dir = _VENV_DIR
+        venv_python = venv_dir / "Scripts" / "python.exe"
+        venv_pythonw = venv_dir / "Scripts" / "pythonw.exe"
+
+        # Also check legacy location (in-app venv)
+        if not venv_python.exists():
+            venv_python = self.project_dir / "venv" / "Scripts" / "python.exe"
+            venv_pythonw = self.project_dir / "venv" / "Scripts" / "pythonw.exe"
+
         if venv_python.exists():
             self.python_exe = str(venv_python)
             self.pythonw_exe = str(venv_pythonw) if venv_pythonw.exists() else str(venv_python)
         else:
-            self.python_exe = sys.executable
-            self.pythonw_exe = sys.executable
+            _fatal_error(
+                f"Python virtual environment not found.\n\n"
+                f"Checked:\n"
+                f"  {_VENV_DIR / 'Scripts' / 'python.exe'}\n"
+                f"  {self.project_dir / 'venv' / 'Scripts' / 'python.exe'}\n\n"
+                f"Please run INSTALL_MBAS.bat as Administrator."
+            )
 
         self.watchdog_script = self.backend_dir / "watchdog.py"
 
         # In production, FastAPI serves both API and frontend on port 8000
-        # The frontend is pre-built in frontend/dist/ and served as static files
         self.backend_url = "http://127.0.0.1:8000"
-        self.app_url = self.backend_url  # Users access everything on port 8000
+        self.app_url = self.backend_url
 
         # Process tracking
         self.watchdog_process = None
 
-        # Log file
-        self.log_file = self.project_dir / "mbas_tray.log"
+        # Log file (in ProgramData, not Program Files)
+        self.log_file = _LOG_DIR / "mbas_tray.log"
+
+        # Icon file (use custom .ico if available)
+        self.icon_file = self.project_dir / "mbas_icon.ico"
 
     def log(self, msg):
         """Write to log file for troubleshooting."""
@@ -69,10 +124,18 @@ class MBASTrayApp:
             pass
 
     def create_icon_image(self, color="green"):
-        """Create system tray icon image"""
+        """Create system tray icon image."""
+        # Try to use the custom .ico file first
+        if color == "green" and self.icon_file.exists():
+            try:
+                return Image.open(str(self.icon_file))
+            except:
+                pass
+
+        # Fallback: generate a colored circle icon
         width = 64
         height = 64
-        image = Image.new('RGB', (width, height), color='white')
+        image = Image.new('RGBA', (width, height), (0, 0, 0, 0))
         dc = ImageDraw.Draw(image)
 
         if color == "green":
@@ -82,24 +145,37 @@ class MBASTrayApp:
         else:
             fill_color = (156, 163, 175)
 
-        dc.ellipse([8, 8, 56, 56], fill=fill_color, outline='black', width=2)
-        dc.text((20, 15), "M", fill='white')
+        # Draw filled circle with border
+        dc.ellipse([4, 4, 60, 60], fill=fill_color, outline=(255, 255, 255), width=3)
+
+        # Draw "M" letter
+        try:
+            font = ImageFont.truetype("arial.ttf", 30)
+            dc.text((17, 10), "M", fill='white', font=font)
+        except:
+            dc.text((22, 16), "M", fill='white')
 
         return image
 
     def is_server_running(self):
         """Check if server is already running on port 8000"""
+        # Use socket connect as primary check (works without admin)
+        import socket
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(1)
+            result = sock.connect_ex(('127.0.0.1', 8000))
+            sock.close()
+            return result == 0
+        except:
+            pass
+        # Fallback: psutil (may need admin on some systems)
         try:
             for conn in psutil.net_connections():
                 if conn.laddr.port == 8000 and conn.status == 'LISTEN':
                     return True
         except (psutil.AccessDenied, PermissionError):
-            # Fallback: try to connect
-            import socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            result = sock.connect_ex(('127.0.0.1', 8000))
-            sock.close()
-            return result == 0
+            pass
         return False
 
     def find_server_process(self):
@@ -120,14 +196,13 @@ class MBASTrayApp:
             self.log("Server already running")
             if icon:
                 icon.icon = self.create_icon_image("green")
-                icon.title = "MBAS - Running"
-                icon.notify("MBAS is already running!", "MBAS Server")
+                icon.title = "MBAS - Running (http://localhost:8000)"
             return
 
         try:
             if icon:
                 icon.icon = self.create_icon_image("gray")
-                icon.notify("Starting MBAS server...", "MBAS Server")
+                icon.title = "MBAS - Starting..."
 
             self.log(f"Starting server from {self.backend_dir}")
             self.log(f"Using Python: {self.python_exe}")
@@ -137,29 +212,20 @@ class MBASTrayApp:
             startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             startupinfo.wShowWindow = subprocess.SW_HIDE
 
-            # Always start uvicorn directly for fast startup
+            # Start uvicorn directly - no console window
+            # Use pythonw.exe to prevent any console window from appearing
             self.log("Starting uvicorn directly...")
+            self.log(f"Using pythonw: {self.pythonw_exe}")
             self.server_process = subprocess.Popen(
-                [self.python_exe, "-m", "uvicorn", "src.main:app",
-                 "--host", "127.0.0.1", "--port", "8000"],
+                [self.pythonw_exe, "-m", "uvicorn", "src.main:app",
+                 "--host", "127.0.0.1", "--port", "8000", "--workers", "1",
+                 "--timeout-keep-alive", "30"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 startupinfo=startupinfo,
                 cwd=str(self.backend_dir),
                 creationflags=subprocess.CREATE_NO_WINDOW
             )
-
-            # Optionally start watchdog for auto-restart monitoring
-            if self.watchdog_script.exists():
-                self.log("Starting watchdog monitor...")
-                self.watchdog_process = subprocess.Popen(
-                    [self.python_exe, str(self.watchdog_script)],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE,
-                    startupinfo=startupinfo,
-                    cwd=str(self.backend_dir),
-                    creationflags=subprocess.CREATE_NO_WINDOW
-                )
 
             # Wait for server to start (up to 30 seconds)
             self.log("Waiting for server to start...")
@@ -171,7 +237,7 @@ class MBASTrayApp:
                 if self.server_process.poll() is not None:
                     stderr = self.server_process.stderr.read().decode(errors='ignore')
                     self.log(f"Server process exited with code {self.server_process.returncode}")
-                    self.log(f"Server stderr: {stderr[:500]}")
+                    self.log(f"Server stderr: {stderr[:1000]}")
                     break
 
             if self.is_server_running():
@@ -179,34 +245,31 @@ class MBASTrayApp:
                 self.log("Server started successfully!")
                 if icon:
                     icon.icon = self.create_icon_image("green")
-                    icon.notify("MBAS is running!\nOpen: http://localhost:8000", "MBAS Server")
-                    icon.title = "MBAS - Running"
+                    icon.title = "MBAS - Running (http://localhost:8000)"
             else:
                 self.log("Server failed to start within timeout")
                 if icon:
                     icon.icon = self.create_icon_image("red")
-                    icon.notify("Server failed to start. Check mbas_tray.log", "MBAS Server")
-                    icon.title = "MBAS - Failed"
+                    icon.title = "MBAS - Failed to start"
+                    icon.notify("Server failed to start.\nCheck mbas_tray.log for details.", "MBAS Error")
 
         except Exception as e:
             self.is_running = False
-            self.log(f"Error starting server: {e}")
+            self.log(f"Error starting server: {e}\n{traceback.format_exc()}")
             if icon:
                 icon.icon = self.create_icon_image("red")
-                icon.notify(f"Failed to start: {str(e)}", "MBAS Server")
                 icon.title = "MBAS - Error"
+                icon.notify(f"Failed to start: {str(e)}", "MBAS Error")
 
     def stop_server(self, icon=None, item=None):
         """Stop MBAS server"""
         if not self.is_running and not self.is_server_running():
             if icon:
-                icon.notify("MBAS is not running!", "MBAS Server")
+                icon.notify("MBAS is not running.", "MBAS Server")
             return
 
         try:
             self.log("Stopping server...")
-            if icon:
-                icon.notify("Stopping MBAS...", "MBAS Server")
 
             # Stop direct server process
             if self.server_process:
@@ -253,13 +316,11 @@ class MBASTrayApp:
 
             if icon:
                 icon.icon = self.create_icon_image("red")
-                icon.notify("MBAS stopped", "MBAS Server")
                 icon.title = "MBAS - Stopped"
+                icon.notify("MBAS server stopped.", "MBAS Server")
 
         except Exception as e:
             self.log(f"Error stopping: {e}")
-            if icon:
-                icon.notify(f"Error stopping: {str(e)}", "MBAS Server")
 
     def open_browser(self, icon=None, item=None):
         """Open MBAS in browser"""
@@ -267,7 +328,11 @@ class MBASTrayApp:
             if icon:
                 icon.notify("Starting server first...", "MBAS Server")
             self.start_server(icon)
-            time.sleep(3)
+            # Wait for server to be ready
+            for _ in range(15):
+                time.sleep(1)
+                if self.is_server_running():
+                    break
 
         self.log(f"Opening browser: {self.app_url}")
         webbrowser.open(self.app_url)
@@ -278,7 +343,7 @@ class MBASTrayApp:
         status = "Running" if running else "Stopped"
         if icon:
             icon.notify(
-                f"Status: {status}\nURL: {self.app_url}\nLogin: admin / admin123",
+                f"Status: {status}\nURL: {self.app_url}",
                 "MBAS Server"
             )
 
@@ -310,13 +375,13 @@ class MBASTrayApp:
         if self.is_server_running():
             self.is_running = True
             icon_image = self.create_icon_image("green")
-            title = "MBAS - Running"
+            title = "MBAS - Running (http://localhost:8000)"
         else:
-            icon_image = self.create_icon_image("red")
+            icon_image = self.create_icon_image("gray")
             title = "MBAS - Starting..."
 
         self.icon = pystray.Icon(
-            "mbas",
+            "MBAS",
             icon_image,
             title,
             menu
@@ -344,5 +409,8 @@ class MBASTrayApp:
 
 
 if __name__ == "__main__":
-    app = MBASTrayApp()
-    app.run()
+    try:
+        app = MBASTrayApp()
+        app.run()
+    except Exception as e:
+        _fatal_error(f"Unhandled exception: {e}", e)

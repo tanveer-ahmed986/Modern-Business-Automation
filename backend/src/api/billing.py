@@ -1,6 +1,7 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlmodel import Session, select, or_, func
+from sqlalchemy.orm import selectinload
 from src.core.db import get_session
 from src.core.auth import get_current_user
 from src.models.core import User
@@ -37,17 +38,44 @@ def create_sale(
             detail=str(e)
         )
 
-@router.get("/sales", response_model=List[SaleRead])
+@router.get("/sales")
 def list_sales(
-    offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    page: int = Query(1, ge=1, description="Page number (starts at 1)"),
+    page_size: int = Query(50, ge=1, le=200, description="Items per page (max 200)"),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """List all sales with optional pagination."""
-    statement = select(Sale).order_by(Sale.created_at.desc()).offset(offset).limit(limit)
+    """List all sales with pagination.
+
+    Returns paginated results with metadata.
+    Default: 50 items per page, sorted by most recent first.
+    """
+    # Count total sales
+    total_count = session.exec(select(func.count(Sale.id))).one()
+
+    # Calculate pagination
+    offset = (page - 1) * page_size
+    total_pages = (total_count + page_size - 1) // page_size
+
+    # Get paginated sales
+    statement = (
+        select(Sale)
+        .options(selectinload(Sale.items), selectinload(Sale.customer))
+        .order_by(Sale.created_at.desc())
+        .offset(offset)
+        .limit(page_size)
+    )
     sales = session.exec(statement).all()
-    return sales
+
+    return {
+        "items": sales,
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": total_pages
+        }
+    }
 
 @router.get("/sales/{sale_id}", response_model=SaleRead)
 def get_sale(
@@ -82,6 +110,7 @@ def create_customer(
 @router.get("/customers", response_model=List[CustomerRead])
 def list_customers(
     search: Optional[str] = None,
+    limit: int = Query(default=200, le=500),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
@@ -94,5 +123,5 @@ def list_customers(
                 Customer.phone.contains(search)
             )
         )
-    customers = session.exec(statement).all()
+    customers = session.exec(statement.limit(limit)).all()
     return customers

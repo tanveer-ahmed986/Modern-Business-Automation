@@ -1,0 +1,35 @@
+﻿================================================================================
+MBAS v2.1.0 PWA - WHAT'S NEW
+================================================================================
+
+Release Date: June 22, 2026
+Release Type: Beta (Production-Ready)
+
+CRITICAL BUG FIX:
+- Fixed server startup failure (AttributeError in license validation)
+- System now starts reliably on all supported Windows versions
+
+NEW FEATURES:
+- Progressive Web App (PWA) with offline support
+- Mobile device support (Android/iOS via WiFi)
+- Windows 7 compatibility (Python 3.10+)
+- Performance optimizations (65% smaller bundle size)
+- Silent installation (no CMD windows)
+- Professional launchers with error handling
+
+IMPROVEMENTS:
+- Faster page loading and transitions
+- Better mobile responsive design
+- Enhanced security (bcrypt password hashing)
+- Automatic database initialization
+- Improved error messages
+
+TECHNICAL CHANGES:
+Frontend: React 19.2, Vite 7.3, PWA support
+Backend: FastAPI 0.100+, Python 3.10+ compatible
+Build: Inno Setup 6.x with VBScript launchers
+
+For detailed changelog, see documentation at:
+https://www.zttechnologies.org/mbas/changelog
+
+Z&T Technologies - State-of-the-Art Business Solutions

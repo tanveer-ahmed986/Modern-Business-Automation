@@ -181,11 +181,12 @@ def get_backup_stats(
     from pathlib import Path
 
     # Get database size
-    db_path = Path("database/mbas_database.db")
+    from src.core.db import DB_FILE, _DATA_DIR
+    db_path = Path(DB_FILE)
     db_size = db_path.stat().st_size if db_path.exists() else 0
 
     # Get backup directory size
-    backup_dir = Path("backups")
+    backup_dir = _DATA_DIR / "backups"
     backup_size = sum(f.stat().st_size for f in backup_dir.glob("*.db") if f.is_file())
 
     # Get backup count

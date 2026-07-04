@@ -1,0 +1,16 @@
+To get the hash for a customer's machine, they need to run this on their
+  computer:
+                                                                                                                          python -c "import platform, uuid, hashlib; parts=[platform.processor(), str(uuid.getnode()), platform.node()];
+print(hashlib.sha256('|'.join(parts).encode()).hexdigest())"                                                          
+  Or more readably, ask them to run this one-liner in CMD:
+
+  python -c "import platform,uuid,hashlib;
+  print(hashlib.sha256(('|'.join([platform.processor(),str(uuid.getnode()),platform.node()])).encode()).hexdigest())"
+
+  It generates a SHA-256 hash from:
+  - CPU identifier (platform.processor())
+  - MAC address (uuid.getnode())
+  - Computer name (platform.node())
+
+  The hash is unique per machine. You paste it into the "Machine ID" field when generating a hardware-locked license. If
+   the customer moves the license to a different computer, it won't validate.

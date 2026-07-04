@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   Card, 
   CardContent, 
@@ -34,29 +34,39 @@ const ReportsPage: React.FC = () => {
   const [salesReport, setSalesReport] = useState<SalesReport | null>(null);
   const [plReport, setPlReport] = useState<ProfitLossReport | null>(null);
   const [loading, setLoading] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchReports = async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     try {
       const sales = await reportsService.getSalesReport(startDate, endDate);
+      if (controller.signal.aborted) return;
       setSalesReport(sales);
-      
+
       try {
         const pl = await reportsService.getProfitLossReport(startDate, endDate);
+        if (controller.signal.aborted) return;
         setPlReport(pl);
       } catch (err: any) {
+        if (controller.signal.aborted) return;
         console.warn("P&L report not available (likely non-premium tier)", err);
         setPlReport(null);
       }
     } catch (error: any) {
+      if (controller.signal.aborted) return;
       toast.error("Failed to load reports: " + (error.response?.data?.detail || error.message));
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchReports();
+    return () => { abortRef.current?.abort(); };
   }, []);
 
   const handleExport = () => {
