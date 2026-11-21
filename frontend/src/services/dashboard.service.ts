@@ -30,41 +30,30 @@ export interface DashboardMetrics {
   low_stock_count: number;
 }
 
-// Cache dashboard metrics so switching away and back loads instantly.
-// Invalidated after 60s so data stays reasonably fresh while preventing refetch storms.
-let _metricsCache: { data: DashboardMetrics; ts: number } | null = null;
-const _CACHE_TTL = 60_000;
-
-// Deduplicate concurrent calls (e.g. StrictMode double-mount)
-let _inflight: Promise<DashboardMetrics> | null = null;
-
+// Caching/dedup is handled by TanStack Query (queryKey: ['dashboard-metrics']);
+// this is now a plain fetcher.
 export const getDashboardMetrics = async (signal?: AbortSignal): Promise<DashboardMetrics> => {
-  if (_metricsCache && Date.now() - _metricsCache.ts < _CACHE_TTL) {
-    return _metricsCache.data;
-  }
-  // Return stale cache immediately if available (stale-while-revalidate)
-  // The caller gets instant data; next call after TTL will fetch fresh data.
-  if (_metricsCache) {
-    // Trigger background refresh (non-blocking)
-    if (!_inflight) {
-      _inflight = api.get<DashboardMetrics>('/dashboard/metrics', { signal })
-        .then((response) => {
-          _metricsCache = { data: response.data, ts: Date.now() };
-          return response.data;
-        })
-        .catch(() => _metricsCache!.data)
-        .finally(() => { _inflight = null; });
-    }
-    return _metricsCache.data;
-  }
-  if (_inflight) return _inflight;
+  const response = await api.get<DashboardMetrics>('/dashboard/metrics', { signal });
+  return response.data;
+};
 
-  _inflight = api.get<DashboardMetrics>('/dashboard/metrics', { signal })
-    .then((response) => {
-      _metricsCache = { data: response.data, ts: Date.now() };
-      return response.data;
-    })
-    .finally(() => { _inflight = null; });
+export interface DailyRevenuePoint {
+  date: string;
+  revenue: number | string;
+}
 
-  return _inflight;
+export interface PaymentMethodTotal {
+  method: string;
+  total: number | string;
+  count: number;
+}
+
+export interface DashboardTrends {
+  daily_revenue: DailyRevenuePoint[];
+  payment_breakdown: PaymentMethodTotal[];
+}
+
+export const getDashboardTrends = async (signal?: AbortSignal): Promise<DashboardTrends> => {
+  const response = await api.get<DashboardTrends>('/dashboard/trends', { signal });
+  return response.data;
 };

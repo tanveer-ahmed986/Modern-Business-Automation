@@ -1,30 +1,17 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  Plus, 
-  Search, 
-  MoreHorizontal, 
-  Edit, 
-  Trash2, 
+import React, { useState, useMemo } from 'react';
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
   AlertTriangle,
-  ArrowUpDown,
   RefreshCcw,
   Loader2,
   Settings2
 } from 'lucide-react';
-import type {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-} from "@tanstack/react-table";
-import {
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,14 +23,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DataTable } from "@/components/ui/data-table";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -63,31 +53,28 @@ import { cn } from "@/lib/utils";
 import {
   inventoryService,
   type Product,
-  type Category
 } from '@/services/inventory.service';
 import authService from '@/services/auth.service';
 import { toast } from 'sonner';
 import { useBranding } from '@/hooks/useBranding';
 import { useDebounce } from '@/hooks/useDebounce';
 
-// Placeholder for the form modal - will be implemented in next step
 import ProductForm from './ProductForm';
+
+const PAGE_SIZE_OPTIONS = [25, 50, 100];
 
 const ProductList: React.FC = () => {
   const branding = useBranding();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const debouncedSearchQuery = useDebounce(searchQuery, 500);
+  const queryClient = useQueryClient();
 
-  // Table state
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  
+  // Server-side pagination + filter state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [categoryId, setCategoryId] = useState<number | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 400);
+  const isSearching = debouncedSearchQuery.trim().length > 0;
+
   // Modal state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>(undefined);
@@ -96,143 +83,82 @@ const ProductList: React.FC = () => {
 
   const currentUser = authService.getCurrentUser();
   const isAdminOrManager = currentUser?.role === 'admin' || currentUser?.role === 'manager';
-  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchData = async () => {
-    // Cancel any previous in-flight request
-    abortRef.current?.abort();
-    const controller = new AbortController();
-    abortRef.current = controller;
+  // --- Queries (TanStack Query replaces the old service-level TTL caches) ---
+  const categoriesQuery = useQuery({
+    queryKey: ['categories'],
+    queryFn: ({ signal }) => inventoryService.getCategories(signal),
+  });
 
-    try {
-      // Only show full loading spinner on first load (no existing data)
-      if (products.length === 0) setIsLoading(true);
-      setLoadError(false);
-      const [productsResponse, categoriesData] = await Promise.all([
-        inventoryService.getProducts({ page: 1, page_size: 50 }, controller.signal),
-        inventoryService.getCategories(controller.signal)
-      ]);
-      if (controller.signal.aborted) return;
-      setProducts(productsResponse.items);
-      setCategories(categoriesData);
-    } catch (error: any) {
-      if (controller.signal.aborted) return;
-      console.error('Failed to fetch inventory data:', error);
-      if (products.length === 0) {
-        setLoadError(true);
-      } else {
-        toast.error('Could not refresh inventory data.');
-      }
-    } finally {
-      if (!controller.signal.aborted) setIsLoading(false);
-    }
+  const productsQuery = useQuery({
+    queryKey: ['products', { page, pageSize, categoryId }],
+    queryFn: ({ signal }) =>
+      inventoryService.getProducts({ page, page_size: pageSize, category_id: categoryId }, signal),
+    placeholderData: keepPreviousData, // table stays filled while paging
+    enabled: !isSearching,
+  });
+
+  const searchResultsQuery = useQuery({
+    queryKey: ['product-search', debouncedSearchQuery],
+    // Inventory management view: include deactivated products in search
+    queryFn: ({ signal }) =>
+      inventoryService.searchProducts(debouncedSearchQuery, 1, 50, signal, true),
+    enabled: isSearching,
+  });
+
+  const activeQuery = isSearching ? searchResultsQuery : productsQuery;
+  const products = activeQuery.data?.items ?? [];
+  const pagination = productsQuery.data?.pagination;
+  const totalPages = pagination?.total_pages ?? 1;
+
+  const invalidateProducts = () => {
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['product-search'] });
   };
 
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-    try {
-      const newCat = await inventoryService.createCategory(newCategoryName);
-      setCategories([...categories, newCat]);
+  // --- Mutations ---
+  const deleteProductMutation = useMutation({
+    mutationFn: (id: number) => inventoryService.deleteProduct(id),
+    onSuccess: (result) => {
+      toast.success(
+        result.soft_deleted
+          ? 'Product has sales history — deactivated instead of deleted'
+          : 'Product deleted successfully'
+      );
+      invalidateProducts();
+    },
+    onError: () => toast.error('Failed to delete product'),
+  });
+
+  const addCategoryMutation = useMutation({
+    mutationFn: (name: string) => inventoryService.createCategory(name),
+    onSuccess: () => {
       setNewCategoryName('');
       toast.success('Category created');
-    } catch (error) {
-      toast.error('Failed to create category');
-    }
-  };
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: () => toast.error('Failed to create category'),
+  });
 
-  const handleDeleteCategory = async (id: number) => {
-    try {
-      await inventoryService.deleteCategory(id);
-      setCategories(categories.filter(c => c.id !== id));
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: number) => inventoryService.deleteCategory(id),
+    onSuccess: (_data, id) => {
       toast.success('Category deleted');
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Failed to delete category');
-    }
+      if (categoryId === id) setCategoryId(undefined);
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (error: any) =>
+      toast.error(error.response?.data?.detail || 'Failed to delete category'),
+  });
+
+  const [deleteTarget, setDeleteTarget] = useState<Product | undefined>(undefined);
+
+  const confirmDelete = () => {
+    if (deleteTarget) deleteProductMutation.mutate(deleteTarget.id);
+    setDeleteTarget(undefined);
   };
 
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      const response = await inventoryService.getProducts({ page: 1, page_size: 50 });
-      setProducts(response.items);
-      toast.success('Inventory refreshed');
-    } catch (error) {
-      toast.error('Failed to refresh inventory');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      handleRefresh();
-      return;
-    }
-
-    setIsRefreshing(true);
-    try {
-      const response = await inventoryService.searchProducts(searchQuery, 1, 20);
-      setProducts(response.items);
-    } catch (error) {
-      toast.error('Search failed. Please try again.');
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    return () => { abortRef.current?.abort(); };
-  }, []);
-
-  // Debounced auto-search using useDebounce hook
-  const searchAbortRef = useRef<AbortController | null>(null);
-  const hasSearchedRef = useRef(false);
-  useEffect(() => {
-    if (!debouncedSearchQuery.trim()) {
-      // If search cleared (but not initial mount), fetch all products
-      if (searchQuery === '' && hasSearchedRef.current) {
-        fetchData();
-      }
-      return;
-    }
-
-    // Mark that user has performed a search
-    hasSearchedRef.current = true;
-
-    // Cancel previous search request
-    searchAbortRef.current?.abort();
-    const controller = new AbortController();
-    searchAbortRef.current = controller;
-
-    setIsRefreshing(true);
-    inventoryService.searchProducts(debouncedSearchQuery, 1, 20, controller.signal)
-      .then((response) => {
-        if (!controller.signal.aborted) setProducts(response.items);
-      })
-      .catch(() => {
-        if (!controller.signal.aborted) toast.error('Search failed.');
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setIsRefreshing(false);
-      });
-
-    return () => {
-      searchAbortRef.current?.abort();
-    };
-  }, [debouncedSearchQuery]);
-
-  const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this product?')) {
-      try {
-        await inventoryService.deleteProduct(id);
-        setProducts(products.filter(p => p.id !== id));
-        toast.success('Product deleted successfully');
-      } catch (error) {
-        toast.error('Failed to delete product');
-      }
-    }
-  };
+  const categories = categoriesQuery.data ?? [];
 
   const columns: ColumnDef<Product>[] = useMemo(() => [
     {
@@ -242,17 +168,7 @@ const ProductList: React.FC = () => {
     },
     {
       accessorKey: "name",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Product Name
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: "Product Name",
       cell: ({ row }) => (
         <div className="flex flex-col">
           <span className="font-medium">{row.getValue("name")}</span>
@@ -267,7 +183,7 @@ const ProductList: React.FC = () => {
         const stock = row.getValue("stock_quantity") as number;
         const threshold = row.original.low_stock_threshold;
         const isLow = stock <= threshold;
-        
+
         return (
           <div className="flex items-center">
             <span className={isLow ? "text-red-600 font-bold" : ""}>{stock}</span>
@@ -328,16 +244,23 @@ const ProductList: React.FC = () => {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => {
-                setSelectedProduct(product);
-                setIsFormOpen(true);
+                // Defer to the next tick: opening a Dialog synchronously from
+                // a DropdownMenuItem races Radix's body pointer-events lock
+                // between the closing menu and the opening dialog, leaving
+                // the whole page unclickable (document.body stuck at
+                // `pointer-events: none`) until the dropdown fully unmounts.
+                setTimeout(() => {
+                  setSelectedProduct(product);
+                  setIsFormOpen(true);
+                }, 0);
               }}>
                 <Edit className="mr-2 h-4 w-4" />
                 Edit Product
               </DropdownMenuItem>
               {isAdminOrManager && (
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   className="text-red-600 focus:text-red-600"
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => setTimeout(() => setDeleteTarget(product), 0)}
                 >
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Product
@@ -350,24 +273,10 @@ const ProductList: React.FC = () => {
     },
   ], [isAdminOrManager, branding.currency]);
 
-  const table = useReactTable({
-    data: products,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-    },
-  });
+  const isInitialLoading = activeQuery.isLoading && products.length === 0;
+  const isRefreshing = activeQuery.isFetching && !activeQuery.isLoading;
 
-  if (isLoading && products.length === 0) {
+  if (isInitialLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
@@ -376,12 +285,12 @@ const ProductList: React.FC = () => {
     );
   }
 
-  if (loadError && products.length === 0) {
+  if (activeQuery.isError && products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <AlertTriangle className="h-12 w-12 text-amber-500" />
         <p className="text-muted-foreground">Could not load inventory data.</p>
-        <Button onClick={() => fetchData()}>Retry</Button>
+        <Button onClick={() => activeQuery.refetch()}>Retry</Button>
       </div>
     );
   }
@@ -394,7 +303,7 @@ const ProductList: React.FC = () => {
           <p className="text-muted-foreground">Manage your products, categories, and track stock levels.</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handleRefresh} disabled={isRefreshing}>
+          <Button variant="outline" size="icon" onClick={() => activeQuery.refetch()} disabled={isRefreshing}>
             <RefreshCcw className={cn("h-4 w-4", isRefreshing && "animate-spin")} />
           </Button>
           <Button onClick={() => {
@@ -427,23 +336,28 @@ const ProductList: React.FC = () => {
                 </DialogHeader>
                 <div className="space-y-4 py-4">
                   <div className="flex items-center gap-2">
-                    <Input 
-                      placeholder="Category name..." 
+                    <Input
+                      placeholder="Category name..."
                       value={newCategoryName}
                       onChange={(e) => setNewCategoryName(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                      onKeyDown={(e) => e.key === 'Enter' && newCategoryName.trim() && addCategoryMutation.mutate(newCategoryName.trim())}
                     />
-                    <Button onClick={handleAddCategory}>Add</Button>
+                    <Button
+                      onClick={() => newCategoryName.trim() && addCategoryMutation.mutate(newCategoryName.trim())}
+                      disabled={addCategoryMutation.isPending}
+                    >
+                      Add
+                    </Button>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto space-y-2">
                     {categories.map(cat => (
                       <div key={cat.id} className="flex items-center justify-between p-2 rounded-md border">
                         <span>{cat.name}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteCategory(cat.id)}
+                          onClick={() => deleteCategoryMutation.mutate(cat.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -456,25 +370,27 @@ const ProductList: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant={categoryId === undefined ? "secondary" : "ghost"}
                 className="w-full justify-start font-normal"
-                onClick={() => setColumnFilters([])}
+                onClick={() => { setCategoryId(undefined); setPage(1); }}
               >
                 All Products
-                <Badge variant="secondary" className="ml-auto">{products.length}</Badge>
+                {pagination && categoryId === undefined && (
+                  <Badge variant="secondary" className="ml-auto">{pagination.total_count}</Badge>
+                )}
               </Button>
               {categories.map(category => (
-                <Button 
-                  key={category.id} 
-                  variant="ghost" 
+                <Button
+                  key={category.id}
+                  variant={categoryId === category.id ? "secondary" : "ghost"}
                   className="w-full justify-start font-normal"
-                  onClick={() => setColumnFilters([{ id: 'name', value: category.name }])} // Note: This logic depends on cell rendering or we filter products array
+                  onClick={() => { setCategoryId(category.id); setPage(1); setSearchQuery(''); }}
                 >
                   {category.name}
-                  <Badge variant="secondary" className="ml-auto">
-                    {products.filter(p => p.category_id === category.id).length}
-                  </Badge>
+                  {pagination && categoryId === category.id && (
+                    <Badge variant="secondary" className="ml-auto">{pagination.total_count}</Badge>
+                  )}
                 </Button>
               ))}
             </div>
@@ -487,7 +403,9 @@ const ProductList: React.FC = () => {
               <div>
                 <CardTitle className="text-lg font-bold">Product List</CardTitle>
                 <CardDescription>
-                  {table.getFilteredRowModel().rows.length} products found
+                  {isSearching
+                    ? `${searchResultsQuery.data?.pagination.total_count ?? 0} search results`
+                    : `${pagination?.total_count ?? 0} products`}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -498,97 +416,60 @@ const ProductList: React.FC = () => {
                     className="pl-8 w-[200px] md:w-[250px] h-9"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   />
                 </div>
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead key={header.id}>
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        )
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={columns.length} className="h-24 text-center">
-                        No products found.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="flex-1 text-sm text-muted-foreground">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
+            <DataTable
+              columns={columns}
+              data={products}
+              isLoading={activeQuery.isLoading}
+              page={page}
+              pageCount={isSearching ? 1 : totalPages}
+              onPageChange={setPage}
+              pageSize={isSearching ? undefined : pageSize}
+              onPageSizeChange={isSearching ? undefined : (size) => { setPageSize(size); setPage(1); }}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              totalCount={isSearching ? searchResultsQuery.data?.pagination.total_count : pagination?.total_count}
+              emptyTitle="No products found."
+              emptyDescription={isSearching ? "Try a different search term." : "Add your first product to get started."}
+            />
           </CardContent>
         </Card>
       </div>
 
       {isFormOpen && (
-        <ProductForm 
+        <ProductForm
           isOpen={isFormOpen}
           onClose={() => setIsFormOpen(false)}
           product={selectedProduct}
           categories={categories}
           onSuccess={() => {
             setIsFormOpen(false);
-            fetchData();
+            invalidateProducts();
           }}
         />
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(undefined)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{deleteTarget?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              If this product has sales history it will be deactivated instead of deleted.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

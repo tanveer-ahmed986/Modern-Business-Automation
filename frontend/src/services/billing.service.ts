@@ -33,17 +33,28 @@ export interface SaleItem {
 
 export interface Sale {
   id: number;
+  invoice_number: string;
   customer_id?: number;
   user_id: number;
-  total_amount: number;
-  tax_amount: number;
-  discount_amount: number;
-  grand_total: number;
+  total_amount: number | string;
+  tax_amount: number | string;
+  discount_amount: number | string;
+  grand_total: number | string;
   payment_method: string;
   status: string;
   created_at: string;
   items: SaleItem[];
   customer?: Customer;
+}
+
+export interface PaginatedSales {
+  items: Sale[];
+  pagination: {
+    page: number;
+    page_size: number;
+    total_count: number;
+    total_pages: number;
+  };
 }
 
 export const billingService = {
@@ -52,8 +63,13 @@ export const billingService = {
     return response.data;
   },
 
-  getSales: async (params?: { offset?: number; limit?: number }): Promise<Sale[]> => {
-    const response = await api.get<Sale[]>("/billing/sales", { params });
+  getSales: async (params?: { page?: number; page_size?: number }): Promise<PaginatedSales> => {
+    const response = await api.get<PaginatedSales>("/billing/sales", { params });
+    return response.data;
+  },
+
+  refundSale: async (saleId: number): Promise<Sale> => {
+    const response = await api.post<Sale>(`/billing/sales/${saleId}/refund`);
     return response.data;
   },
 

@@ -16,6 +16,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  if (authService.mustChangePassword() && location.pathname !== '/change-password') {
+    return <Navigate to="/change-password" replace />;
+  }
+
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Role not authorized, so redirect to home/dashboard
     return <Navigate to="/dashboard" replace />;

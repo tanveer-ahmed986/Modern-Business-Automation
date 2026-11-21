@@ -53,16 +53,31 @@ class ReportsService {
     return response.data;
   }
 
-  getExportSalesUrl(startDate?: string, endDate?: string): string {
-    const baseUrl = (api.defaults.baseURL || "").replace(/\/$/, "");
-    const params = new URLSearchParams();
-    if (startDate) params.append("start_date", startDate);
-    if (endDate) params.append("end_date", endDate);
-    
-    const token = localStorage.getItem("token");
-    if (token) params.append("token", token); // Note: Backend usually expects Bearer in header, but for simple link downloads we might need a workaround or handle it in frontend
-    
-    return `${baseUrl}/reports/export/sales?${params.toString()}`;
+  /**
+   * Download the sales CSV via an authenticated request (Bearer header from
+   * the api interceptor) and save it through a temporary anchor element.
+   * Replaces the old window.open approach, which leaked the token in the URL,
+   * read the wrong storage key (always 401), and was intercepted by the
+   * service worker's SPA navigation fallback.
+   */
+  async downloadSalesCsv(startDate?: string, endDate?: string): Promise<void> {
+    const params: Record<string, string> = {};
+    if (startDate) params.start_date = startDate;
+    if (endDate) params.end_date = endDate;
+
+    const response = await api.get("/reports/export/sales", {
+      params,
+      responseType: "blob",
+    });
+
+    const url = URL.createObjectURL(response.data as Blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `sales_report_${startDate || "start"}_${endDate || "end"}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 }
 

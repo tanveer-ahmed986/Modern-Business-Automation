@@ -69,9 +69,13 @@ const ReportsPage: React.FC = () => {
     return () => { abortRef.current?.abort(); };
   }, []);
 
-  const handleExport = () => {
-    const url = reportsService.getExportSalesUrl(startDate, endDate);
-    window.open(url, "_blank");
+  const handleExport = async () => {
+    try {
+      await reportsService.downloadSalesCsv(startDate, endDate);
+      toast.success("Sales report downloaded");
+    } catch (error: any) {
+      toast.error("Export failed: " + (error.response?.data?.detail || error.message));
+    }
   };
 
   return (

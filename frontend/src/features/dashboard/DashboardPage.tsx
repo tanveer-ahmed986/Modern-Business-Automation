@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { 
   DollarSign, 
   ShoppingCart, 
@@ -9,9 +10,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { getDashboardMetrics } from '@/services/dashboard.service';
-import type { DashboardMetrics } from '@/services/dashboard.service';
+import { getDashboardMetrics, getDashboardTrends } from '@/services/dashboard.service';
+import type { DashboardMetrics, DashboardTrends } from '@/services/dashboard.service';
 import { LowStockWidget } from './LowStockWidget';
+import { SalesTrendChart } from './SalesTrendChart';
+import { PaymentBreakdownChart } from './PaymentBreakdownChart';
 import { useBranding } from '@/hooks/useBranding';
 
 const IconMap: Record<string, React.ComponentType<any>> = {
@@ -24,31 +27,17 @@ const IconMap: Record<string, React.ComponentType<any>> = {
 
 const DashboardPage: React.FC = () => {
   const branding = useBranding();
-  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { data: metrics, isLoading: loading, isError: error, refetch } = useQuery<DashboardMetrics>({
+    queryKey: ['dashboard-metrics'],
+    queryFn: ({ signal }) => getDashboardMetrics(signal),
+    staleTime: 15_000, // dashboard should feel fresh; server also caches for 10s
+  });
 
-  const fetchMetrics = async (signal?: AbortSignal) => {
-    setError(false);
-    setLoading(true);
-    try {
-      const data = await getDashboardMetrics(signal);
-      if (signal?.aborted) return;
-      setMetrics(data);
-    } catch (err: any) {
-      if (signal?.aborted) return;
-      console.error('Failed to fetch dashboard metrics:', err);
-      setError(true);
-    } finally {
-      if (!signal?.aborted) setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const controller = new AbortController();
-    fetchMetrics(controller.signal);
-    return () => { controller.abort(); };
-  }, []);
+  const { data: trends } = useQuery<DashboardTrends>({
+    queryKey: ['dashboard-trends'],
+    queryFn: ({ signal }) => getDashboardTrends(signal),
+    staleTime: 15_000,
+  });
 
   if (loading && !metrics) {
     return (
@@ -64,7 +53,7 @@ const DashboardPage: React.FC = () => {
         <AlertTriangle className="h-12 w-12 text-amber-500" />
         <p className="text-muted-foreground">Failed to load dashboard data.</p>
         <button
-          onClick={() => fetchMetrics()}
+          onClick={() => refetch()}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
         >
           Retry
@@ -105,6 +94,35 @@ const DashboardPage: React.FC = () => {
             </Card>
           );
         })}
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Sales Trend</CardTitle>
+            <CardDescription>Revenue over the last 30 days.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {trends ? (
+              <SalesTrendChart data={trends.daily_revenue} currency={branding.currency} />
+            ) : (
+              <div className="h-[260px]" />
+            )}
+          </CardContent>
+        </Card>
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Payment Methods</CardTitle>
+            <CardDescription>Share of revenue by payment type (30 days).</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {trends ? (
+              <PaymentBreakdownChart data={trends.payment_breakdown} currency={branding.currency} />
+            ) : (
+              <div className="h-[220px]" />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

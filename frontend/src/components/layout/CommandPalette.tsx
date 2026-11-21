@@ -37,7 +37,16 @@ const CommandPalette: React.FC = () => {
       }
     };
     document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+
+    // Allows the TopBar's search button to open the palette without
+    // threading open-state through the component tree.
+    const openHandler = () => setOpen(true);
+    window.addEventListener("mbas:open-command-palette", openHandler);
+
+    return () => {
+      document.removeEventListener("keydown", down);
+      window.removeEventListener("mbas:open-command-palette", openHandler);
+    };
   }, []);
 
   const handleSelect = useCallback((path: string) => {

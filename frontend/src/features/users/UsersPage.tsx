@@ -33,6 +33,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Users, UserPlus, Edit, Trash2, RefreshCw, Shield, User as UserIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import usersService, { type User, type UserCreate } from '@/services/users.service';
@@ -42,6 +52,7 @@ const UsersPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
   const [formData, setFormData] = useState<UserCreate>({
     username: '',
@@ -103,17 +114,16 @@ const UsersPage: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (user: User) => {
-    if (!confirm(`Are you sure you want to delete user "${user.username}"?`)) {
-      return;
-    }
-
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await usersService.deleteUser(user.id);
+      await usersService.deleteUser(deleteTarget.id);
       toast.success('User deleted successfully');
       fetchUsers();
     } catch (error: any) {
       toast.error('Delete failed: ' + (error.response?.data?.detail || error.message));
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -354,7 +364,7 @@ const UsersPage: React.FC = () => {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(user)}
+                          onClick={() => setDeleteTarget(user)}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -368,6 +378,23 @@ const UsersPage: React.FC = () => {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user "{deleteTarget?.username}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently removes their account and login access. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

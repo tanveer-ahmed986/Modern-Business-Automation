@@ -1,22 +1,24 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Settings, 
-  LogOut, 
-  Users, 
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Settings,
+  Users,
   BarChart3,
   Database,
   BrainCircuit,
   Loader2,
   Truck,
-  FileDown
+  FileDown,
+  History,
+  ChevronsLeft,
+  ChevronsRight,
+  Boxes,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import authService from '@/services/auth.service';
-import { Button } from '@/components/ui/button';
 import useBranding from '@/hooks/useBranding';
 import { useFeatureFlags } from '@/hooks/useFeatureFlag';
 
@@ -28,10 +30,11 @@ interface SidebarItem {
   feature?: string;
 }
 
-const sidebarItems: SidebarItem[] = [
+export const sidebarItems: SidebarItem[] = [
   { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, feature: 'dashboard' },
   { name: 'Inventory', path: '/inventory', icon: Package, roles: ['admin', 'manager'], feature: 'inventory' },
   { name: 'Billing', path: '/billing', icon: ShoppingCart, feature: 'billing' },
+  { name: 'Sales History', path: '/sales', icon: History, feature: 'billing' },
   { name: 'Suppliers', path: '/suppliers', icon: Truck, roles: ['admin', 'manager'], feature: 'suppliers' },
   { name: 'Purchases', path: '/purchases/new', icon: FileDown, roles: ['admin', 'manager'], feature: 'purchases' },
   { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['admin', 'manager'], feature: 'advanced_reports' },
@@ -41,87 +44,89 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Settings', path: '/settings', icon: Settings, roles: ['admin'] },
 ];
 
+const COLLAPSE_KEY = 'mbas_sidebar_collapsed';
+
 const Sidebar: React.FC = () => {
   const user = authService.getCurrentUser();
-  const navigate = useNavigate();
   const { businessName, isLoading } = useBranding();
   const featureFlags = useFeatureFlags();
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === 'true');
 
-  const handleLogout = () => {
-    authService.logout();
-    navigate('/login');
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSE_KEY, String(next));
+      return next;
+    });
   };
 
-  const filteredItems = sidebarItems.filter(item => {
-    // Check role-based access
+  const filteredItems = sidebarItems.filter((item) => {
     if (item.roles && user && !item.roles.includes(user.role)) return false;
-
-    // Check feature flag (if specified)
     if (item.feature && !featureFlags[item.feature]) return false;
-
     return true;
   });
 
   return (
-    <div className="flex flex-col h-full w-64 bg-slate-900 text-white shadow-xl">
-      <div className="p-6">
+    <aside
+      className={cn(
+        'flex flex-col h-full shrink-0 bg-card border-r border-border transition-[width] duration-200',
+        collapsed ? 'w-[72px]' : 'w-64'
+      )}
+    >
+      <div className={cn('flex items-center gap-2 h-16 px-4 border-b border-border', collapsed && 'justify-center px-0')}>
         {isLoading ? (
-          <div className="flex items-center space-x-2">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-            <span className="text-xl font-bold tracking-tight text-slate-400">Loading...</span>
-          </div>
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         ) : (
           <>
-            <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
-              {businessName}
-            </h1>
-            <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">
-              Automation System
-            </p>
+            <div className="flex items-center justify-center h-8 w-8 rounded-md bg-primary text-primary-foreground shrink-0">
+              <Boxes className="h-4 w-4" />
+            </div>
+            {!collapsed && (
+              <div className="min-w-0">
+                <p className="text-sm font-semibold tracking-tight truncate">{businessName}</p>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Automation System</p>
+              </div>
+            )}
           </>
         )}
       </div>
 
-      <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
         {filteredItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            title={collapsed ? item.name : undefined}
             className={({ isActive }) =>
               cn(
-                "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group",
-                isActive 
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20" 
-                  : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                collapsed && 'justify-center px-0',
+                isActive
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               )
             }
           >
-            <item.icon className={cn(
-              "mr-3 h-5 w-5 transition-colors",
-              "group-hover:text-blue-400"
-            )} />
-            {item.name}
+            <item.icon className="h-[18px] w-[18px] shrink-0" />
+            {!collapsed && <span className="truncate">{item.name}</span>}
           </NavLink>
         ))}
       </nav>
 
-      <div className="p-4 border-t border-slate-800">
-        <div className="flex items-center px-4 py-3 mb-4 rounded-lg bg-slate-800/50">
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{user?.full_name || user?.username}</p>
-            <p className="text-xs text-slate-400 truncate capitalize">{user?.role}</p>
-          </div>
-        </div>
-        <Button 
-          variant="ghost" 
-          className="w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800"
-          onClick={handleLogout}
+      <div className="p-2 border-t border-border">
+        <button
+          onClick={toggleCollapsed}
+          className={cn(
+            'flex items-center gap-2 w-full px-3 py-2 text-sm text-muted-foreground rounded-md hover:bg-accent hover:text-accent-foreground transition-colors',
+            collapsed && 'justify-center px-0'
+          )}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <LogOut className="mr-3 h-5 w-5" />
-          Sign Out
-        </Button>
+          {collapsed ? <ChevronsRight className="h-4 w-4" /> : <ChevronsLeft className="h-4 w-4" />}
+          {!collapsed && <span>Collapse</span>}
+        </button>
       </div>
-    </div>
+    </aside>
   );
 };
 

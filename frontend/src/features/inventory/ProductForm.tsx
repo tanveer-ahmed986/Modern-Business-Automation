@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
   DialogFooter,
   DialogDescription
 } from "@/components/ui/dialog";
@@ -36,6 +39,31 @@ interface ProductFormProps {
   onSuccess: () => void;
 }
 
+const productSchema = z.object({
+  name: z.string().min(1, 'Product name is required'),
+  barcode: z.string().min(1, 'Barcode / SKU is required'),
+  category_id: z.string().optional(),
+  cost_price: z.coerce.number().min(0, 'Cost price cannot be negative'),
+  selling_price: z.coerce.number().min(0.01, 'Selling price must be greater than 0'),
+  stock_quantity: z.coerce.number().int('Stock must be a whole number').min(0, 'Stock cannot be negative'),
+  low_stock_threshold: z.coerce.number().int('Must be a whole number').min(0, 'Cannot be negative'),
+  is_active: z.boolean(),
+});
+
+type ProductFormInput = z.input<typeof productSchema>;
+type ProductFormOutput = z.output<typeof productSchema>;
+
+const emptyDefaults: ProductFormInput = {
+  name: '',
+  barcode: '',
+  category_id: '',
+  cost_price: 0,
+  selling_price: 0,
+  stock_quantity: 0,
+  low_stock_threshold: 5,
+  is_active: true,
+};
+
 const ProductForm: React.FC<ProductFormProps> = ({
   isOpen,
   onClose,
@@ -44,21 +72,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
   onSuccess
 }) => {
   const branding = useBranding();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    barcode: '',
-    category_id: '',
-    cost_price: 0,
-    selling_price: 0,
-    stock_quantity: 0,
-    low_stock_threshold: 5,
-    is_active: true
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormInput, any, ProductFormOutput>({
+    resolver: zodResolver(productSchema),
+    defaultValues: emptyDefaults,
   });
 
   useEffect(() => {
     if (product) {
-      setFormData({
+      reset({
         name: product.name,
         barcode: product.barcode,
         category_id: product.category_id?.toString() || '',
@@ -66,39 +95,18 @@ const ProductForm: React.FC<ProductFormProps> = ({
         selling_price: Number(product.selling_price),
         stock_quantity: product.stock_quantity,
         low_stock_threshold: product.low_stock_threshold,
-        is_active: product.is_active
+        is_active: product.is_active,
       });
     } else {
-      setFormData({
-        name: '',
-        barcode: '',
-        category_id: '',
-        cost_price: 0,
-        selling_price: 0,
-        stock_quantity: 0,
-        low_stock_threshold: 5,
-        is_active: true
-      });
+      reset(emptyDefaults);
     }
-  }, [product, isOpen]);
+  }, [product, isOpen, reset]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : 
-              type === 'number' ? parseFloat(value) : value
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  const onSubmit = async (values: ProductFormOutput) => {
     try {
       const payload = {
-        ...formData,
-        category_id: formData.category_id ? parseInt(formData.category_id) : undefined
+        ...values,
+        category_id: values.category_id ? parseInt(values.category_id) : undefined,
       };
 
       if (product) {
@@ -113,14 +121,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
       console.error('Failed to save product:', error);
       const detail = error.response?.data?.detail;
       toast.error(detail || 'Failed to save product. Barcode might already exist.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-探索-md overflow-y-auto max-h-[90vh]">
+      <DialogContent className="sm:max-w-md overflow-y-auto max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{product ? 'Edit Product' : 'Add New Product'}</DialogTitle>
           <DialogDescription>
@@ -128,37 +134,35 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 space-y-2">
               <Label htmlFor="name">Product Name</Label>
-              <Input 
-                id="name" 
-                name="name" 
-                value={formData.name} 
-                onChange={handleChange} 
-                required 
+              <Input
+                id="name"
+                {...register('name')}
                 placeholder="e.g. Wireless Mouse"
+                aria-invalid={!!errors.name}
               />
+              {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
             </div>
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="barcode">Barcode / SKU</Label>
-              <Input 
-                id="barcode" 
-                name="barcode" 
-                value={formData.barcode} 
-                onChange={handleChange} 
-                required 
+              <Input
+                id="barcode"
+                {...register('barcode')}
                 placeholder="Unique identifier"
+                aria-invalid={!!errors.barcode}
               />
+              {errors.barcode && <p className="text-xs text-destructive">{errors.barcode.message}</p>}
             </div>
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="category_id">Category</Label>
-              <Select 
-                value={formData.category_id} 
-                onValueChange={(val) => setFormData(prev => ({ ...prev, category_id: val }))}
+              <Select
+                value={watch('category_id')}
+                onValueChange={(val) => setValue('category_id', val)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
@@ -175,64 +179,61 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="cost_price">Cost Price ({branding.currency})</Label>
-              <Input 
-                id="cost_price" 
-                name="cost_price" 
-                type="number" 
+              <Input
+                id="cost_price"
+                type="number"
                 step="0.01"
-                value={formData.cost_price} 
-                onChange={handleChange} 
-                required 
+                {...register('cost_price')}
+                aria-invalid={!!errors.cost_price}
               />
+              {errors.cost_price && <p className="text-xs text-destructive">{errors.cost_price.message}</p>}
             </div>
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="selling_price">Selling Price ({branding.currency})</Label>
-              <Input 
-                id="selling_price" 
-                name="selling_price" 
-                type="number" 
+              <Input
+                id="selling_price"
+                type="number"
                 step="0.01"
-                value={formData.selling_price} 
-                onChange={handleChange} 
-                required 
+                {...register('selling_price')}
+                aria-invalid={!!errors.selling_price}
               />
+              {errors.selling_price && <p className="text-xs text-destructive">{errors.selling_price.message}</p>}
             </div>
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="stock_quantity">Current Stock</Label>
-              <Input 
-                id="stock_quantity" 
-                name="stock_quantity" 
-                type="number" 
-                value={formData.stock_quantity} 
-                onChange={handleChange} 
-                required 
+              <Input
+                id="stock_quantity"
+                type="number"
+                {...register('stock_quantity')}
+                aria-invalid={!!errors.stock_quantity}
               />
+              {errors.stock_quantity && <p className="text-xs text-destructive">{errors.stock_quantity.message}</p>}
             </div>
 
             <div className="col-span-1 space-y-2">
               <Label htmlFor="low_stock_threshold">Low Stock Alert at</Label>
-              <Input 
-                id="low_stock_threshold" 
-                name="low_stock_threshold" 
-                type="number" 
-                value={formData.low_stock_threshold} 
-                onChange={handleChange} 
-                required 
+              <Input
+                id="low_stock_threshold"
+                type="number"
+                {...register('low_stock_threshold')}
+                aria-invalid={!!errors.low_stock_threshold}
               />
+              {errors.low_stock_threshold && (
+                <p className="text-xs text-destructive">{errors.low_stock_threshold.message}</p>
+              )}
             </div>
-            
+
             <div className="col-span-2 flex items-center space-x-2 pt-2">
-              <input 
-                id="is_active" 
-                name="is_active" 
-                type="checkbox" 
+              <input
+                id="is_active"
+                type="checkbox"
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                checked={formData.is_active} 
-                onChange={handleChange} 
+                checked={watch('is_active')}
+                onChange={(e) => setValue('is_active', e.target.checked)}
               />
-              <Label htmlFor="is_active" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+              <Label htmlFor="is_active" className="text-sm font-medium leading-none">
                 Product is active and available for sale
               </Label>
             </div>

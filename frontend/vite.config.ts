@@ -45,39 +45,22 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Precache the app shell (JS/CSS/HTML/icons) for instant loads and
+        // offline shell availability. API responses are NEVER cached: business
+        // data (stock, sales, settings) must always come from the local
+        // backend. The previous runtimeCaching rules cached every backend GET
+        // for 30 days (the NetworkFirst "/api/*" rule matched no real route),
+        // which served stale data and doubled request traffic on every
+        // navigation — a primary cause of the tab-switch hangs.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
-        runtimeCaching: [
-          {
-            urlPattern: /^https?:\/\/(localhost|192\.168\.\d+\.\d+|127\.0\.0\.1):8000\/api\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'mbas-api-cache',
-              networkTimeoutSeconds: 10,
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 // 1 hour
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https?:\/\/(localhost|192\.168\.\d+\.\d+|127\.0\.0\.1):8000\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'mbas-assets-cache',
-              expiration: {
-                maxEntries: 100,
-                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
-              }
-            }
-          }
+        // Don't let the SPA navigation fallback hijack direct requests to
+        // backend routes (CSV downloads, API docs, health checks).
+        navigateFallbackDenylist: [
+          /^\/(auth|settings|inventory|billing|dashboard|suppliers|purchases|reports|system|ai|users|health|version|docs|redoc|openapi\.json)/
         ]
       },
       devOptions: {
-        enabled: true, // Enable PWA in dev mode for testing
-        type: 'module'
+        enabled: false // No SW in dev: avoids cache confusion while debugging
       }
     })
   ],
@@ -85,6 +68,40 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  server: {
+    // Dev-only proxy: the app uses relative API URLs (same-origin in
+    // production where FastAPI serves the built frontend). In dev, forward
+    // backend routes from the Vite server to uvicorn on 127.0.0.1:8000.
+    //
+    // Several of these path prefixes (/dashboard, /billing, /settings,
+    // /reports, /users, /inventory, /suppliers, /purchases) are ALSO
+    // frontend SPA route names. Without `bypass`, a hard navigation or
+    // refresh on one of those pages matches the proxy rule and gets
+    // forwarded to the backend instead of Vite's own index.html — the
+    // backend then serves its production `dist/index.html` static-file
+    // fallback (hashed asset paths that don't exist under `vite dev`),
+    // producing a blank page. `bypass` lets navigation requests
+    // (Accept: text/html) fall through to Vite's SPA handling, while
+    // actual API/XHR calls still proxy to the backend.
+    proxy: Object.fromEntries(
+      [
+        '/auth', '/settings', '/inventory', '/billing', '/dashboard',
+        '/suppliers', '/purchases', '/reports', '/system', '/ai',
+        '/users', '/version', '/health'
+      ].map((route) => [
+        route,
+        {
+          target: 'http://127.0.0.1:8000',
+          changeOrigin: true,
+          bypass: (req: import('http').IncomingMessage) => {
+            if (req.headers.accept?.includes('text/html')) {
+              return req.url;
+            }
+          },
+        },
+      ])
+    ),
   },
   build: {
     rollupOptions: {

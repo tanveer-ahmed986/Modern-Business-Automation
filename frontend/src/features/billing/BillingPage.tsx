@@ -10,21 +10,35 @@ import {
 import { Separator } from "../../components/ui/separator";
 import { Badge } from "../../components/ui/badge";
 import { toast } from "sonner";
-import { 
-  Search, Plus, Minus, Trash2, User, CreditCard, Banknote, 
-  Smartphone, Receipt, X, CheckCircle2 
+import {
+  Search, Plus, Minus, Trash2, User, CreditCard, Banknote,
+  Smartphone, Receipt, X, CheckCircle2, PauseCircle, History
 } from "lucide-react";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription
+} from "../../components/ui/dialog";
 
-import { useCalculator } from "./useCalculator";
+import { useCalculator, type CartItem } from "./useCalculator";
 import { billingService, type Customer, type Sale } from "../../services/billing.service";
 import { inventoryService, type Product } from "../../services/inventory.service";
 import { InvoiceTemplate } from "./InvoiceTemplate";
 
+const HELD_SALES_STORAGE_KEY = "mbas_held_sales";
+
+interface HeldSale {
+  holdId: string;
+  heldAt: number;
+  items: CartItem[];
+  discount: number;
+  customer: Customer | null;
+  paymentMethod: "cash" | "card" | "transfer" | "credit";
+}
+
 const BillingPage: React.FC = () => {
-  const { 
-    items, addItem, removeItem, updateQuantity, clearCart,
-    subtotal, taxAmount, discount, setDiscount, total, 
-    taxRate, currency 
+  const {
+    items, addItem, removeItem, updateQuantity, clearCart, loadCart,
+    subtotal, taxAmount, discount, setDiscount, total,
+    taxRate, currency
   } = useCalculator();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,8 +50,30 @@ const BillingPage: React.FC = () => {
   const [customerSearch, setCustomerSearch] = useState("");
   
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card" | "transfer" | "credit">("cash");
+  const [cashTendered, setCashTendered] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [completedSale, setCompletedSale] = useState<Sale | null>(null);
+
+  const [heldSales, setHeldSales] = useState<HeldSale[]>(() => {
+    try {
+      const raw = localStorage.getItem(HELD_SALES_STORAGE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [isHeldDialogOpen, setIsHeldDialogOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(HELD_SALES_STORAGE_KEY, JSON.stringify(heldSales));
+  }, [heldSales]);
+
+  const tenderedAmount = parseFloat(cashTendered) || 0;
+  const changeDue = tenderedAmount - total;
+  // Cash tendered is only a convenience for calculating change - it's optional.
+  // Only block checkout when the cashier has actually typed an amount that's
+  // short of the total; an empty field must never block "Complete Sale".
+  const cashInsufficient = paymentMethod === "cash" && items.length > 0 && cashTendered !== "" && tenderedAmount < total;
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -129,6 +165,10 @@ const BillingPage: React.FC = () => {
       toast.error("Cart is empty");
       return;
     }
+    if (cashInsufficient) {
+      toast.error("Cash received is less than the total due");
+      return;
+    }
 
     setIsProcessing(true);
     try {
@@ -143,12 +183,66 @@ const BillingPage: React.FC = () => {
       toast.success("Sale completed successfully!");
       clearCart();
       setSelectedCustomer(null);
+      setCashTendered("");
     } catch (error: any) {
       toast.error(error.response?.data?.detail || "Failed to process sale");
     } finally {
       setIsProcessing(false);
     }
   };
+
+  const handleHoldSale = () => {
+    if (items.length === 0) {
+      toast.error("Cart is empty");
+      return;
+    }
+    const held: HeldSale = {
+      holdId: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      heldAt: Date.now(),
+      items,
+      discount,
+      customer: selectedCustomer,
+      paymentMethod,
+    };
+    setHeldSales((prev) => [held, ...prev]);
+    loadCart([], 0);
+    setSelectedCustomer(null);
+    setPaymentMethod("cash");
+    setCashTendered("");
+    toast.success("Sale held — resume it anytime from \"Held Sales\"");
+    searchInputRef.current?.focus();
+  };
+
+  const handleResumeSale = (holdId: string) => {
+    if (items.length > 0) {
+      toast.error("Complete or hold the current sale before resuming another one");
+      return;
+    }
+    const held = heldSales.find((h) => h.holdId === holdId);
+    if (!held) return;
+    loadCart(held.items, held.discount);
+    setSelectedCustomer(held.customer);
+    setPaymentMethod(held.paymentMethod);
+    setHeldSales((prev) => prev.filter((h) => h.holdId !== holdId));
+    setIsHeldDialogOpen(false);
+    toast.success("Sale resumed");
+  };
+
+  const handleDeleteHeldSale = (holdId: string) => {
+    setHeldSales((prev) => prev.filter((h) => h.holdId !== holdId));
+  };
+
+  // Keyboard-first checkout: Ctrl/Cmd+Enter completes the sale from anywhere on the page.
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey) && !completedSale) {
+        e.preventDefault();
+        handleCompleteSale();
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleCompleteSale, completedSale]);
 
   if (completedSale) {
     return (
@@ -180,7 +274,7 @@ const BillingPage: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden">
       <div className="flex-1 flex overflow-hidden p-6 gap-6">
         
         {/* Left Side: Product Search and Cart */}
@@ -269,7 +363,23 @@ const BillingPage: React.FC = () => {
             <CardHeader className="py-4">
               <div className="flex justify-between items-center">
                 <CardTitle className="text-lg">Current Sale Items</CardTitle>
-                <Badge variant="outline">{items.length} Items</Badge>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleHoldSale}
+                    disabled={items.length === 0 || isProcessing}
+                  >
+                    <PauseCircle className="mr-2 h-4 w-4" /> Hold Sale
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setIsHeldDialogOpen(true)}>
+                    <History className="mr-2 h-4 w-4" /> Held Sales
+                    {heldSales.length > 0 && (
+                      <Badge variant="secondary" className="ml-2">{heldSales.length}</Badge>
+                    )}
+                  </Button>
+                  <Badge variant="outline">{items.length} Items</Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="flex-1 overflow-auto p-0">
@@ -426,31 +536,31 @@ const BillingPage: React.FC = () => {
               <div className="space-y-2">
                 <label className="text-xs font-medium text-muted-foreground uppercase">Payment Method</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button 
-                    variant={paymentMethod === "cash" ? "default" : "outline"} 
+                  <Button
+                    variant={paymentMethod === "cash" ? "default" : "outline"}
                     className="justify-start"
                     onClick={() => setPaymentMethod("cash")}
                   >
                     <Banknote className="mr-2 h-4 w-4" /> Cash
                   </Button>
-                  <Button 
+                  <Button
                     variant={paymentMethod === "card" ? "default" : "outline"}
                     className="justify-start"
-                    onClick={() => setPaymentMethod("card")}
+                    onClick={() => { setPaymentMethod("card"); setCashTendered(""); }}
                   >
                     <CreditCard className="mr-2 h-4 w-4" /> Card
                   </Button>
-                  <Button 
+                  <Button
                     variant={paymentMethod === "transfer" ? "default" : "outline"}
                     className="justify-start"
-                    onClick={() => setPaymentMethod("transfer")}
+                    onClick={() => { setPaymentMethod("transfer"); setCashTendered(""); }}
                   >
                     <Smartphone className="mr-2 h-4 w-4" /> Transfer
                   </Button>
-                  <Button 
+                  <Button
                     variant={paymentMethod === "credit" ? "default" : "outline"}
                     className="justify-start"
-                    onClick={() => setPaymentMethod("credit")}
+                    onClick={() => { setPaymentMethod("credit"); setCashTendered(""); }}
                   >
                     <User className="mr-2 h-4 w-4" /> Credit
                   </Button>
@@ -487,14 +597,41 @@ const BillingPage: React.FC = () => {
                     {currency} {total.toFixed(2)}
                   </span>
                 </div>
+
+                {paymentMethod === "cash" && (
+                  <div className="space-y-2 pt-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-muted-foreground">Cash Received</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">{currency}</span>
+                        <Input
+                          type="number"
+                          className="h-8 w-24 text-right"
+                          value={cashTendered}
+                          onChange={(e) => setCashTendered(e.target.value)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center text-sm font-medium">
+                      <span className={cashInsufficient ? "text-destructive" : "text-muted-foreground"}>
+                        {cashInsufficient ? "Amount Due" : "Change Due"}
+                      </span>
+                      <span className={cashInsufficient ? "text-destructive" : "text-emerald-600"}>
+                        {currency} {Math.abs(changeDue).toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
             <CardFooter className="p-4 pt-0 shrink-0 border-t bg-background">
               <Button
                 className="w-full h-14 text-lg font-bold"
                 size="lg"
-                disabled={items.length === 0 || isProcessing}
+                disabled={items.length === 0 || isProcessing || cashInsufficient}
                 onClick={handleCompleteSale}
+                title="Ctrl+Enter to complete sale"
               >
                 {isProcessing ? "Processing..." : "Complete Sale"}
               </Button>
@@ -502,6 +639,49 @@ const BillingPage: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      <Dialog open={isHeldDialogOpen} onOpenChange={setIsHeldDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Held Sales</DialogTitle>
+            <DialogDescription>
+              Resume a parked sale to continue checkout, or remove it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="max-h-96 overflow-y-auto space-y-2">
+            {heldSales.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">
+                No held sales.
+              </p>
+            ) : (
+              heldSales.map((h) => {
+                const heldSubtotal = h.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+                return (
+                  <div key={h.holdId} className="flex items-center justify-between p-3 border rounded-md">
+                    <div>
+                      <p className="font-medium text-sm">{h.customer?.name || "Walk-in"}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {h.items.length} item{h.items.length !== 1 ? "s" : ""} · {currency} {heldSubtotal.toFixed(2)} · held {new Date(h.heldAt).toLocaleTimeString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" onClick={() => handleResumeSale(h.holdId)}>Resume</Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive h-8 w-8"
+                        onClick={() => handleDeleteHeldSale(h.holdId)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

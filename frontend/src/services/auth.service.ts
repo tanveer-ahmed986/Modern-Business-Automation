@@ -7,6 +7,7 @@ export interface User {
   full_name: string | null;
   role: 'admin' | 'manager' | 'sales';
   is_active: boolean;
+  must_change_password: boolean;
   created_at: string;
 }
 
@@ -14,6 +15,7 @@ export interface AuthResponse {
   access_token: string;
   token_type: string;
   user: User;
+  must_change_password: boolean;
 }
 
 // Helper function to check if backend is reachable
@@ -41,6 +43,7 @@ const login = async (username: string, password: string, retryCount = 0): Promis
     if (response.data.access_token) {
       sessionStorage.setItem('mbas_token', response.data.access_token);
       sessionStorage.setItem('mbas_user', JSON.stringify(response.data.user));
+      sessionStorage.setItem('mbas_must_change_password', String(response.data.must_change_password));
     }
 
     return response.data;
@@ -75,6 +78,19 @@ const login = async (username: string, password: string, retryCount = 0): Promis
 const logout = () => {
   sessionStorage.removeItem('mbas_token');
   sessionStorage.removeItem('mbas_user');
+  sessionStorage.removeItem('mbas_must_change_password');
+};
+
+const mustChangePassword = (): boolean => {
+  return sessionStorage.getItem('mbas_must_change_password') === 'true';
+};
+
+const changePassword = async (currentPassword: string, newPassword: string): Promise<void> => {
+  await api.post('/users/me/change-password', {
+    current_password: currentPassword,
+    new_password: newPassword,
+  });
+  sessionStorage.setItem('mbas_must_change_password', 'false');
 };
 
 const getCurrentUser = (): User | null => {
@@ -99,6 +115,8 @@ const authService = {
   logout,
   getCurrentUser,
   isAuthenticated,
+  mustChangePassword,
+  changePassword,
 };
 
 export default authService;

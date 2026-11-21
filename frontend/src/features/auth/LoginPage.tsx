@@ -36,7 +36,11 @@ const LoginPage: React.FC = () => {
     }
 
     try {
-      await authService.login(username, password);
+      const result = await authService.login(username, password);
+      if (result.must_change_password) {
+        navigate('/change-password');
+        return;
+      }
       // Pre-warm caches in parallel so first page loads instantly
       settingsService.getSettings().catch(() => {});
       inventoryService.getProducts().catch(() => {});

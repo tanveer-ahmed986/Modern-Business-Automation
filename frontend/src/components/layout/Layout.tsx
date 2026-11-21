@@ -1,26 +1,23 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
+import TopBar from './TopBar';
 import { OfflineBanner } from './OfflineBanner';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 const Layout: React.FC = () => {
   return (
-    <div className="flex h-screen bg-slate-100 overflow-hidden font-sans antialiased text-slate-900">
+    <div className="flex h-screen bg-background overflow-hidden font-sans antialiased">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto relative">
-        {/* Offline/Online Status Banner */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <TopBar />
         <OfflineBanner />
-
-        <div className="p-8 lg:p-12">
-          {/* Subtle glassmorphism decorative elements */}
-          <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-blue-500/5 blur-3xl rounded-full translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 -z-10 w-96 h-96 bg-emerald-500/5 blur-3xl rounded-full -translate-x-1/2 translate-y-1/2" />
-
-          <div className="max-w-7xl mx-auto animate-in fade-in duration-700">
+        <main className="flex-1 overflow-y-auto">
+          <ErrorBoundary>
             <Outlet />
-          </div>
-        </div>
-      </main>
+          </ErrorBoundary>
+        </main>
+      </div>
     </div>
   );
 };

@@ -213,14 +213,6 @@ export const InvoiceTemplate: React.FC<InvoiceTemplateProps> = ({ sale, printFor
           This is a computer-generated invoice. No signature required.
         </p>
       </div>
-      
-      {/* Footer */}
-      <div className="mt-20 text-center border-t border-gray-100 pt-8">
-        <p className="text-sm font-medium">Thank you for your business!</p>
-        <p className="text-xs text-gray-400 mt-1 italic">
-          This is a computer-generated invoice. No signature required.
-        </p>
-      </div>
     </div>
   );
 

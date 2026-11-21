@@ -61,6 +61,13 @@ export const useCalculator = () => {
     setDiscount(0);
   };
 
+  // Replaces the cart contents wholesale (used to resume a held sale) rather
+  // than merging item-by-item like addItem does.
+  const loadCart = (newItems: CartItem[], newDiscount: number) => {
+    setItems(newItems);
+    setDiscount(newDiscount);
+  };
+
   return {
     items,
     discount,
@@ -72,6 +79,7 @@ export const useCalculator = () => {
     updateQuantity,
     setDiscount,
     clearCart,
+    loadCart,
     taxRate: settings?.tax_rate || 0,
     currency: settings?.currency || "USD",
   };
