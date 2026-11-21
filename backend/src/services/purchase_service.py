@@ -7,6 +7,9 @@ from src.models.purchases import (
     PurchaseStatus, PaymentStatus, Supplier
 )
 from src.models.inventory import Product
+from src.models.stock import StockMovementReason
+from src.services.stock_service import record_stock_movement
+from src.services.sale_service import money
 from datetime import datetime
 
 class PurchaseService:
@@ -24,7 +27,8 @@ class PurchaseService:
 
         # 2. Prepare items and update stock
         purchase_items: List[PurchaseItem] = []
-        total_amount = Decimal("0.0")
+        touched_products: List[tuple] = []  # (product, qty) for ledger entries
+        total_amount = Decimal("0.00")
 
         for item_in in purchase_in.items:
             product = session.get(Product, item_in.product_id)
@@ -40,9 +44,10 @@ class PurchaseService:
             product.cost_price = item_in.cost_price
             product.updated_at = datetime.utcnow()
             session.add(product)
+            touched_products.append((product, item_in.quantity))
 
-            # Calculate subtotal
-            subtotal = item_in.cost_price * item_in.quantity
+            # Calculate subtotal (quantized Decimal money)
+            subtotal = money(money(item_in.cost_price) * item_in.quantity)
             total_amount += subtotal
 
             # Create purchase item record
@@ -56,7 +61,7 @@ class PurchaseService:
             purchase_items.append(purchase_item)
 
         # 3. Final calculations
-        grand_total = (total_amount + purchase_in.tax_amount) - purchase_in.discount_amount
+        grand_total = money(total_amount + money(purchase_in.tax_amount) - money(purchase_in.discount_amount))
         
         # Determine payment status
         payment_status = PaymentStatus.PAID
@@ -92,9 +97,18 @@ class PurchaseService:
         session.add(db_purchase)
         session.flush()
 
-        # 6. Save items
+        # 6. Save items + stock ledger entries referencing the purchase
         for item in purchase_items:
             item.purchase_id = db_purchase.id
             session.add(item)
+        for product, qty in touched_products:
+            record_stock_movement(
+                session, product,
+                change=qty,
+                reason=StockMovementReason.PURCHASE,
+                user_id=user_id,
+                reference_type="purchase",
+                reference_id=db_purchase.id,
+            )
 
         return db_purchase

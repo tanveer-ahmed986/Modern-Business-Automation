@@ -90,19 +90,22 @@ class TestSaleAtomicity:
 class TestConcurrentSales:
     """Test concurrent sales of the same product."""
 
-    def test_concurrent_sales_same_product(self, engine, settings, admin_user, category):
-        """Two simultaneous sales of 5 units, stock=8 → one succeeds, one fails."""
-        # Create a fresh product in database with stock=8
+    def test_concurrent_sales_same_product(self, file_engine):
+        """Two simultaneous sales of 5 units, stock=8 → one succeeds, one fails.
+
+        Uses the file-based WAL engine: the invoice-sequence UPSERT at the
+        start of create_sale acquires SQLite's write lock, serializing the
+        two sales; the second then sees the reduced stock and is rejected.
+        """
+        engine = file_engine
         with Session(engine) as setup_session:
             product = Product(
                 name="Concurrent Test Product",
-                sku="CONC-001",
-                category_id=category.id,
+                barcode="CONC-001",
                 selling_price=100.0,
                 cost_price=50.0,
                 stock_quantity=8,
-                reorder_level=5,
-                unit="pcs"
+                low_stock_threshold=5
             )
             setup_session.add(product)
             setup_session.commit()
@@ -129,8 +132,8 @@ class TestConcurrentSales:
                 results["errors"].append(str(e))
 
         # Create two threads that attempt to sell simultaneously
-        thread1 = threading.Thread(target=attempt_sale, args=(engine, product_id, admin_user.id))
-        thread2 = threading.Thread(target=attempt_sale, args=(engine, product_id, admin_user.id))
+        thread1 = threading.Thread(target=attempt_sale, args=(engine, product_id, 1))
+        thread2 = threading.Thread(target=attempt_sale, args=(engine, product_id, 1))
 
         # Start both threads
         thread1.start()
@@ -152,19 +155,18 @@ class TestConcurrentSales:
             # One sale succeeded (5 units), so stock should be 8 - 5 = 3
             assert product.stock_quantity == 3
 
-    def test_sequential_vs_concurrent_stock_consistency(self, engine, settings, admin_user, category):
+    def test_sequential_vs_concurrent_stock_consistency(self, file_engine):
         """Verify that stock deduction is consistent regardless of concurrency."""
+        engine = file_engine
         # Create product with sufficient stock
         with Session(engine) as setup_session:
             product = Product(
                 name="Sequential Test Product",
-                sku="SEQ-001",
-                category_id=category.id,
+                barcode="SEQ-001",
                 selling_price=100.0,
                 cost_price=50.0,
                 stock_quantity=100,
-                reorder_level=10,
-                unit="pcs"
+                low_stock_threshold=10
             )
             setup_session.add(product)
             setup_session.commit()
@@ -191,7 +193,7 @@ class TestConcurrentSales:
                 pass  # Some may fail due to race conditions
 
         for _ in range(10):
-            t = threading.Thread(target=make_sale, args=(engine, product_id, admin_user.id))
+            t = threading.Thread(target=make_sale, args=(engine, product_id, 1))
             threads.append(t)
             t.start()
 
@@ -209,8 +211,25 @@ class TestConcurrentSales:
 class TestTransactionIsolation:
     """Test transaction isolation levels."""
 
-    def test_uncommitted_changes_not_visible(self, engine, settings, admin_user, product):
-        """Changes in one session should not be visible to another until committed."""
+    def test_uncommitted_changes_not_visible(self, file_engine):
+        """Changes in one session should not be visible to another until committed.
+
+        Needs the file-based WAL engine: the in-memory StaticPool engine
+        shares a single connection, so isolation cannot be observed on it.
+        """
+        engine = file_engine
+        with Session(engine) as setup_session:
+            product = Product(
+                name="Isolation Test Product",
+                barcode="ISO-001",
+                selling_price=10.0,
+                cost_price=5.0,
+                stock_quantity=50,
+                low_stock_threshold=5
+            )
+            setup_session.add(product)
+            setup_session.commit()
+            setup_session.refresh(product)
         product_id = product.id
         original_stock = product.stock_quantity
 

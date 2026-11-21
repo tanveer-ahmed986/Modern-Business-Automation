@@ -43,10 +43,13 @@ def update_settings(
     if not db_settings:
         raise HTTPException(status_code=404, detail="Settings not found")
 
-    # Update only fields that are provided, excluding readonly fields
+    # Update only fields that are provided, excluding readonly/license-derived
+    # fields. feature_flags is NEVER settable here: it must come from the
+    # license at runtime (see core/features.py) or an Admin could use this
+    # endpoint to self-upgrade their tier.
     update_data = settings_in.model_dump(
         exclude_unset=True,
-        exclude={"id", "created_at", "updated_at"}
+        exclude={"id", "created_at", "updated_at", "feature_flags"}
     )
     for key, value in update_data.items():
         setattr(db_settings, key, value)

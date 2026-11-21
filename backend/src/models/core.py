@@ -17,6 +17,7 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     hashed_password: str
+    must_change_password: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     last_login: Optional[datetime] = None
 
@@ -25,6 +26,7 @@ class UserCreate(UserBase):
 
 class UserRead(UserBase):
     id: int
+    must_change_password: bool
     created_at: datetime
 
 class Settings(SQLModel, table=True):

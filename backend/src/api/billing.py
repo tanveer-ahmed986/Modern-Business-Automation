@@ -4,15 +4,25 @@ from sqlmodel import Session, select, or_, func
 from sqlalchemy.orm import selectinload
 from src.core.db import get_session
 from src.core.auth import get_current_user
-from src.models.core import User
+from src.models.core import User, UserRole
 from src.models.sales import (
     Sale, SaleCreate, SaleRead,
     Customer, CustomerCreate, CustomerRead,
     SaleItem
 )
 from src.services.sale_service import SaleService
+from src.core.features import check_feature
 
 router = APIRouter(prefix="/billing", tags=["billing"])
+
+def check_manager_role(current_user: User = Depends(get_current_user)):
+    """Refunds are restricted to Managers and Administrators."""
+    if current_user.role not in [UserRole.ADMIN, UserRole.MANAGER]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation restricted to Managers and Administrators"
+        )
+    return current_user
 
 # --- Sales Endpoints ---
 
@@ -20,7 +30,8 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 def create_sale(
     sale_in: SaleCreate,
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    _billing_enabled: bool = Depends(check_feature("billing"))
 ):
     """Process a new sale and deduct stock."""
     try:
@@ -67,8 +78,14 @@ def list_sales(
     )
     sales = session.exec(statement).all()
 
+    # Materialize each row as a SaleRead instance (not raw ORM objects)
+    # before returning: without a declared response_model, FastAPI's
+    # jsonable_encoder serializes plain pydantic model instances correctly,
+    # but round-tripping SaleRead through a generic PaginatedResponse[SaleRead]
+    # response_model silently drops the items/customer relationship fields
+    # (a SQLModel + pydantic-generics serialization quirk) — this sidesteps it.
     return {
-        "items": sales,
+        "items": [SaleRead.model_validate(s) for s in sales],
         "pagination": {
             "page": page,
             "page_size": page_size,
@@ -91,6 +108,29 @@ def get_sale(
             detail="Sale not found"
         )
     return sale
+
+@router.post("/sales/{sale_id}/refund", response_model=SaleRead)
+def refund_sale(
+    sale_id: int,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(check_manager_role)
+):
+    """Refund a completed sale: restores stock (with ledger entries) and
+    marks the sale REFUNDED. Manager/Admin only."""
+    try:
+        sale = SaleService.refund_sale(session, sale_id, current_user.id)
+        session.commit()
+        session.refresh(sale)
+        return sale
+    except HTTPException as e:
+        session.rollback()
+        raise e
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
 # --- Customer Endpoints ---
 

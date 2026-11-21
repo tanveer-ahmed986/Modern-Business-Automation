@@ -11,6 +11,10 @@ from src.models.inventory import (
     Product, ProductCreate, ProductRead, ProductReadAdmin, ProductUpdate,
     PaginationMeta
 )
+from src.models.stock import StockMovement, StockMovementRead, StockMovementReason
+from src.models.sales import SaleItem
+from src.models.purchases import PurchaseItem
+from src.services.stock_service import record_stock_movement
 from src.core.auth import get_current_user
 
 router = APIRouter(prefix="/inventory", tags=["inventory"])
@@ -101,20 +105,25 @@ def get_products(
     current_user: User = Depends(get_current_user),
     page: int = Query(1, ge=1, description="Page number (starts at 1)"),
     page_size: int = Query(50, ge=1, le=200, description="Items per page (max 200)"),
-    category_id: Optional[int] = None
+    category_id: Optional[int] = None,
+    is_active: Optional[bool] = Query(None, description="Filter by active state (omit for all)")
 ) -> Any:
-    """Retrieve products with pagination and category filtering.
+    """Retrieve products with pagination, category and active-state filtering.
 
     Returns paginated results with metadata.
     Default: 50 items per page.
     """
     # Build base query
-    statement = select(Product).options(selectinload(Product.category))
+    statement = select(Product).options(selectinload(Product.category)).order_by(Product.name)
     count_statement = select(func.count(Product.id))
 
     if category_id:
         statement = statement.where(Product.category_id == category_id)
         count_statement = count_statement.where(Product.category_id == category_id)
+
+    if is_active is not None:
+        statement = statement.where(Product.is_active == is_active)
+        count_statement = count_statement.where(Product.is_active == is_active)
 
     # Get total count
     total_count = session.exec(count_statement).one()
@@ -142,10 +151,13 @@ def search_products(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
     page: int = Query(1, ge=1, description="Page number"),
-    page_size: int = Query(20, ge=1, le=100, description="Items per page (max 100)")
+    page_size: int = Query(20, ge=1, le=100, description="Items per page (max 100)"),
+    include_inactive: bool = Query(False, description="Include deactivated products (inventory management views)")
 ) -> Any:
     """Search products using SQLite FTS5 with LIKE fallback.
 
+    By default only active products are returned (POS flows); pass
+    include_inactive=true for inventory-management views.
     Returns paginated search results with metadata.
     """
     if not query or not query.strip():
@@ -162,9 +174,10 @@ def search_products(
     query = query.strip()
 
     # First try exact barcode match (fastest path for barcode scanners)
-    exact_match = session.exec(
-        select(Product).options(selectinload(Product.category)).where(Product.barcode == query)
-    ).first()
+    exact_statement = select(Product).options(selectinload(Product.category)).where(Product.barcode == query)
+    if not include_inactive:
+        exact_statement = exact_statement.where(Product.is_active == True)
+    exact_match = session.exec(exact_statement).first()
     if exact_match:
         return {
             "items": [exact_match],
@@ -197,6 +210,13 @@ def search_products(
         except Exception:
             # FTS5 can fail on certain query patterns, fall through to LIKE
             result_ids = []
+
+    # FTS index doesn't know about active state — filter the id list
+    if result_ids and not include_inactive:
+        active_ids = set(session.exec(
+            select(Product.id).where(Product.id.in_(result_ids), Product.is_active == True)
+        ).all())
+        result_ids = [i for i in result_ids if i in active_ids]
 
     if result_ids:
         total_count = len(result_ids)
@@ -234,6 +254,10 @@ def search_products(
             Product.barcode.contains(query)
         )
     )
+
+    if not include_inactive:
+        like_statement = like_statement.where(Product.is_active == True)
+        count_statement = count_statement.where(Product.is_active == True)
     total_count = session.exec(count_statement).one()
 
     # Paginate
@@ -249,6 +273,42 @@ def search_products(
             "total_count": total_count,
             "total_pages": total_pages
         }
+    }
+
+@router.get("/products/{id}/movements")
+def get_product_movements(
+    *,
+    session: Session = Depends(get_session),
+    id: int,
+    current_user: User = Depends(check_manager_role),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=200)
+) -> Any:
+    """Stock movement history (audit ledger) for a product, newest first.
+    Manager/Admin only."""
+    if not session.get(Product, id):
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    total_count = session.exec(
+        select(func.count(StockMovement.id)).where(StockMovement.product_id == id)
+    ).one()
+    offset = (page - 1) * page_size
+    movements = session.exec(
+        select(StockMovement)
+        .where(StockMovement.product_id == id)
+        .order_by(StockMovement.created_at.desc(), StockMovement.id.desc())
+        .offset(offset)
+        .limit(page_size)
+    ).all()
+
+    return {
+        "items": [StockMovementRead.model_validate(m) for m in movements],
+        "pagination": {
+            "page": page,
+            "page_size": page_size,
+            "total_count": total_count,
+            "total_pages": (total_count + page_size - 1) // page_size,
+        },
     }
 
 @router.post("/products", response_model=ProductReadAdmin)
@@ -271,6 +331,18 @@ def create_product(
 
     db_product = Product.from_orm(product_in)
     session.add(db_product)
+    session.flush()  # assign id before writing the ledger entry
+
+    # Opening stock goes into the audit ledger
+    if db_product.stock_quantity:
+        record_stock_movement(
+            session, db_product,
+            change=db_product.stock_quantity,
+            reason=StockMovementReason.INITIAL,
+            user_id=current_user.id,
+            note="Opening stock at product creation",
+        )
+
     session.commit()
     session.refresh(db_product)
     return db_product
@@ -314,11 +386,24 @@ def update_product(
                 detail=f"A product with the name '{update_data['name']}' already exists"
             )
 
+    old_stock = db_product.stock_quantity
+
     for key, value in update_data.items():
         setattr(db_product, key, value)
-    
+
     db_product.updated_at = datetime.utcnow()
     session.add(db_product)
+
+    # Manual stock edits are audited as adjustments
+    if "stock_quantity" in update_data and db_product.stock_quantity != old_stock:
+        record_stock_movement(
+            session, db_product,
+            change=db_product.stock_quantity - old_stock,
+            reason=StockMovementReason.ADJUSTMENT,
+            user_id=current_user.id,
+            note=f"Manual adjustment: {old_stock} -> {db_product.stock_quantity}",
+        )
+
     session.commit()
     session.refresh(db_product)
     return db_product
@@ -330,11 +415,38 @@ def delete_product(
     id: int,
     current_user: User = Depends(check_manager_role)
 ) -> Any:
-    """Delete a product (Manager/Admin only)."""
+    """Delete a product (Manager/Admin only).
+
+    If the product is referenced by any sale or purchase, it is SOFT-deleted
+    (deactivated) so historical invoices keep their foreign keys intact.
+    Only never-sold, never-purchased products are physically removed.
+    """
     db_product = session.get(Product, id)
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
-        
+
+    sale_refs = session.exec(
+        select(func.count(SaleItem.id)).where(SaleItem.product_id == id)
+    ).one()
+    purchase_refs = session.exec(
+        select(func.count(PurchaseItem.id)).where(PurchaseItem.product_id == id)
+    ).one()
+
+    if sale_refs > 0 or purchase_refs > 0:
+        db_product.is_active = False
+        db_product.updated_at = datetime.utcnow()
+        session.add(db_product)
+        session.commit()
+        return {
+            "message": "Product has sales/purchase history and was deactivated instead of deleted",
+            "soft_deleted": True,
+        }
+
+    # No transactional history: remove ledger rows (initial/adjustment) then the product
+    for movement in session.exec(
+        select(StockMovement).where(StockMovement.product_id == id)
+    ).all():
+        session.delete(movement)
     session.delete(db_product)
     session.commit()
-    return {"message": "Product deleted successfully"}
+    return {"message": "Product deleted successfully", "soft_deleted": False}

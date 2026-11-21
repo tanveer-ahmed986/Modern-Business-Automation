@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Any, Union
 from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, select
 from src.core.db import get_session
@@ -21,7 +21,15 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login", auto_error=False)
 # Protected by a lock since FastAPI handles concurrent requests.
 _user_cache: dict[str, tuple[User, float]] = {}
 _user_cache_lock = threading.Lock()
-_USER_CACHE_TTL = 60  # seconds
+_USER_CACHE_TTL = 30  # seconds - short enough that a role/is_active edit
+# takes effect quickly even if invalidate_user_cache() is missed somewhere.
+
+def invalidate_user_cache(username: str) -> None:
+    """Flush a cached user immediately after an admin changes their account
+    (role, active flag, password, username) so the change takes effect on
+    their very next request instead of waiting out the TTL."""
+    with _user_cache_lock:
+        _user_cache.pop(username, None)
 
 def create_access_token(subject: Union[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """Generate a JWT token for user sessions."""
@@ -43,24 +51,24 @@ def verify_token(token: str) -> Optional[str]:
         return None
 
 def get_current_user(
-    request: Request,
     token: Optional[str] = Depends(oauth2_scheme),
     session: Session = Depends(get_session)
 ) -> User:
-    """Dependency to retrieve the current authenticated user from a token (header or query)."""
-    # Fallback to query parameter if header is missing (useful for download links)
-    if not token:
-        token = request.query_params.get("token")
-        
+    """Dependency to retrieve the current authenticated user from the Authorization header."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    
+    inactive_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="This account has been deactivated",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
     if not token:
         raise credentials_exception
-        
+
     username = verify_token(token)
     if username is None:
         raise credentials_exception
@@ -70,6 +78,8 @@ def get_current_user(
     with _user_cache_lock:
         cached = _user_cache.get(username)
     if cached and (now - cached[1]) < _USER_CACHE_TTL:
+        if not cached[0].is_active:
+            raise inactive_exception
         return cached[0]
 
     statement = select(User).where(User.username == username)
@@ -79,6 +89,11 @@ def get_current_user(
         with _user_cache_lock:
             _user_cache.pop(username, None)
         raise credentials_exception
+
+    if not user.is_active:
+        with _user_cache_lock:
+            _user_cache.pop(username, None)
+        raise inactive_exception
 
     # Cache the user object (detached from session via expire_on_commit=False)
     with _user_cache_lock:

@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-import os
 from sqlmodel import Session
 from typing import List, Dict, Any
 from pydantic import BaseModel
@@ -54,15 +53,19 @@ def restore_backup(
     Restore the database from a backup file.
     Note: Requires process restart or database reconnection.
     """
-    backup_dir = "backups"
-    backup_path = os.path.join(backup_dir, backup_filename)
-    
-    if not os.path.exists(backup_path):
+    # Whitelist against the actual backup listing rather than trusting the
+    # client-supplied filename directly: os.path.join("backups", filename)
+    # with an unsanitized filename allows path traversal (e.g.
+    # "../../../ProgramData/..."), and "backups" was also the wrong,
+    # CWD-relative directory instead of the real ProgramData backups dir.
+    known_backups = {b["filename"]: b["path"] for b in BackupUtility.list_backups()}
+    if backup_filename not in known_backups:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Backup file not found."
         )
-        
+    backup_path = known_backups[backup_filename]
+
     try:
         success = BackupUtility.restore_backup(backup_path)
         if success:

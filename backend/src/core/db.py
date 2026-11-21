@@ -10,6 +10,7 @@ from src.models.inventory import Category, Product
 from src.models.sales import Customer, Sale, SaleItem
 from src.models.purchases import Supplier, Purchase, PurchaseItem, SupplierPayment
 from src.models.ai_analytics import AIAnalytics
+from src.models.stock import StockMovement, InvoiceSequence
 
 # Database file path - use ProgramData on Windows to avoid Program Files write restrictions
 _DATA_DIR = Path(os.environ.get("MBAS_DATA_DIR", ""))
@@ -22,33 +23,30 @@ DB_FILE = str(_DATA_DIR / "mbas_database.db")
 DB_URL = f"sqlite:///{DB_FILE}"
 
 # ---------------------------------------------------------------------------
-# Connection pool strategy: tiny QueuePool with write serialization
+# Connection pool strategy: QueuePool(5+5) with WAL concurrency
 # ---------------------------------------------------------------------------
-# Why QueuePool(1+2) instead of NullPool:
-#   NullPool created a FRESH connection per request, which destroyed SQLite's
-#   64 MB page cache every time. On laptops (especially with HDD), every query
-#   hit disk, causing 50-200ms per call and visible freezes on page switches.
+# WAL mode allows any number of concurrent readers plus one writer, so a
+# pool of persistent connections is safe and keeps SQLite's page cache warm.
 #
-#   QueuePool keeps 1 persistent connection whose page cache stays warm in RAM.
-#   Reads that previously took 100ms+ (cold disk) now take < 1ms (warm cache).
+# The previous pool_size=1 + max_overflow=2 capped the app at 3 concurrent
+# queries. A page navigation fires 2-4 parallel GETs (plus service-worker
+# revalidations before the SW fix), so the 4th query waited pool_timeout
+# seconds and then failed with a 500 — the axios retry/backoff on top of
+# that is what users experienced as a multi-second "hang" on tab switches.
 #
-# Why this doesn't deadlock (unlike the old pool_size=5+5):
-#   - Writes are serialized by the asyncio.Lock middleware in main.py,
-#     so only ONE write ever touches the DB at a time (no SQLITE_BUSY).
-#   - pool_timeout=5 means a waiting request fails fast instead of hanging
-#     for 30 seconds.
-#   - busy_timeout=3000 is a short safety net, not the primary mechanism.
+# Write serialization is handled where it belongs: SQLite's own write lock
+# with busy_timeout=5000 queues concurrent writers instead of erroring.
 # ---------------------------------------------------------------------------
 engine = create_engine(
     DB_URL,
     connect_args={
         "check_same_thread": False,
-        "timeout": 5.0,             # Fail fast on lock (writes are serialized by middleware)
+        "timeout": 5.0,              # DBAPI-level lock wait (matches busy_timeout)
     },
     poolclass=QueuePool,
-    pool_size=1,                     # 1 persistent connection (warm page cache)
-    max_overflow=2,                  # Allow up to 3 total under burst
-    pool_timeout=5,                  # Wait max 5s for a connection (fail fast)
+    pool_size=5,                     # Persistent connections (warm page cache, parallel reads)
+    max_overflow=5,                  # Up to 10 total under burst
+    pool_timeout=10,                 # Wait max 10s for a connection
     pool_pre_ping=True,              # Verify connection is alive before checkout
     pool_recycle=3600,               # Recycle every 60 minutes
     echo=False,
@@ -64,14 +62,32 @@ def _set_sqlite_pragmas(dbapi_conn, connection_record):
     cursor.execute("PRAGMA cache_size=-65536;")        # 64 MB page cache (stays warm in pool)
     cursor.execute("PRAGMA temp_store=MEMORY;")
     cursor.execute("PRAGMA mmap_size=67108864;")        # 64 MB memory-mapped I/O
-    cursor.execute("PRAGMA busy_timeout=3000;")         # 3s safety net (writes serialized by middleware)
+    cursor.execute("PRAGMA busy_timeout=5000;")         # Queue concurrent writers (WAL single-writer)
     cursor.execute("PRAGMA wal_autocheckpoint=1000;")   # Checkpoint every 1000 pages
     cursor.execute("PRAGMA foreign_keys=ON;")
     cursor.close()
 
+def _ensure_column(session: Session, table: str, column: str, ddl_type: str, default_sql: str) -> None:
+    """Additively add a column to an existing table if missing.
+
+    SQLModel.metadata.create_all() only creates missing TABLES, not missing
+    COLUMNS on tables that already exist in a customer's deployed database.
+    Alembic adoption is deferred to Phase 5, so new columns on existing
+    tables are migrated here with a plain idempotent ALTER TABLE.
+    """
+    existing = {row[1] for row in session.exec(text(f"PRAGMA table_info({table});")).all()}
+    if column not in existing:
+        session.exec(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type} DEFAULT {default_sql};"))
+
 def init_db():
     """Initialize database and create tables."""
     SQLModel.metadata.create_all(engine)
+
+    # Additive column migrations for existing databases (new tables are
+    # handled by create_all above; this covers new columns on old tables).
+    with Session(engine) as session:
+        _ensure_column(session, "user", "must_change_password", "BOOLEAN", "0")
+        session.commit()
 
     # Ensure critical performance indexes exist on existing databases.
     # CREATE INDEX IF NOT EXISTS is safe to run on every startup.
@@ -97,6 +113,8 @@ def init_db():
             "CREATE INDEX IF NOT EXISTS ix_products_name ON products(name);",
             # Product barcode index for exact-match search
             "CREATE INDEX IF NOT EXISTS ix_products_barcode ON products(barcode);",
+            # Stock ledger: per-product history queries sorted by time
+            "CREATE INDEX IF NOT EXISTS ix_stock_movements_product_created ON stock_movements(product_id, created_at);",
         ]
         for idx_sql in _indexes:
             session.exec(text(idx_sql))

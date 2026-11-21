@@ -1,23 +1,32 @@
-from fastapi import Depends, HTTPException, status
-from sqlmodel import Session, select
+from fastapi import HTTPException, status
+from sqlmodel import Session
 from datetime import datetime
-from src.core.db import get_session
-from src.models.core import Settings
 from src.core.license import get_license_validator
+from src.models.license import get_tier_features
 
-def get_current_settings(session: Session = Depends(get_session)) -> Settings:
-    """Dependency to retrieve the singleton settings row."""
-    statement = select(Settings).where(Settings.id == 1)
-    settings = session.exec(statement).first()
-    if not settings:
-        # Fallback if DB not bootstrapped correctly
-        return Settings(id=1, feature_flags={})
-    return settings
+
+def get_effective_feature_flags() -> dict:
+    """The AUTHORITATIVE source of truth for feature gating.
+
+    Feature flags are derived from the signed license at runtime, never
+    from the mutable `settings.feature_flags` DB column — that column is
+    only a display mirror (refreshed from the license at startup) and must
+    never be trusted for enforcement, since `PUT /settings/` is reachable
+    by an Admin and would otherwise let anyone self-upgrade their tier.
+    """
+    validator = get_license_validator()
+    if validator:
+        license_info = validator.get_license_info()
+        if license_info:
+            if license_info.expiry_date and datetime.utcnow() > license_info.expiry_date:
+                return get_tier_features("basic").model_dump()
+            return license_info.features.model_dump()
+    return get_tier_features("basic").model_dump()
+
 
 def check_feature(feature_name: str):
     """Dependency factory to verify if a feature is enabled in the current tier."""
-    def feature_checker(settings: Settings = Depends(get_current_settings)):
-        # Check if license is still valid (not expired)
+    def feature_checker():
         validator = get_license_validator()
         if validator:
             license_info = validator.get_license_info()
@@ -28,8 +37,7 @@ def check_feature(feature_name: str):
                         detail="License expired. Please renew your license to continue using this feature."
                     )
 
-        # Check feature flag
-        flags = settings.feature_flags or {}
+        flags = get_effective_feature_flags()
         if not flags.get(feature_name, False):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -38,10 +46,12 @@ def check_feature(feature_name: str):
         return True
     return feature_checker
 
+
 def is_feature_enabled(session: Session, feature_name: str) -> bool:
-    """Check if a feature is enabled without raising an exception."""
-    settings = session.exec(select(Settings).where(Settings.id == 1)).first()
-    if not settings:
-        return False
-    flags = settings.feature_flags or {}
+    """Check if a feature is enabled without raising an exception.
+
+    `session` is accepted for call-site compatibility but is unused: the
+    license is the only authoritative source, same as check_feature().
+    """
+    flags = get_effective_feature_flags()
     return flags.get(feature_name, False)

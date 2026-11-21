@@ -77,13 +77,13 @@ class SaleItem(SaleItemBase, table=True):
 
 class SaleItemCreate(SQLModel):
     product_id: int
-    quantity: int
+    quantity: int = Field(gt=0)  # reject zero/negative quantities at validation
 
 class SaleCreate(SQLModel):
     customer_id: Optional[int] = None
-    items: List[SaleItemCreate]
+    items: List[SaleItemCreate] = Field(min_length=1)  # a sale needs items
     payment_method: PaymentMethod = PaymentMethod.CASH
-    discount_amount: Decimal = Decimal("0.0")
+    discount_amount: Decimal = Field(default=Decimal("0.0"), ge=0)
 
 class SaleRead(SaleBase):
     id: int

@@ -9,6 +9,7 @@ import time
 
 from src.core.db import get_session
 from src.core.auth import get_current_user
+from src.core.timeutils import local_day_utc_bounds, local_today, local_range_utc_bounds, local_date_key
 from src.models.core import User, UserRole, Settings
 from src.models.sales import Sale, SaleItem, SaleStatus
 from src.models.inventory import Product, Category
@@ -55,7 +56,7 @@ def get_dashboard_metrics(
 ):
     # Return cached metrics if fresh (absorbs rapid page switches without hitting DB)
     now = time.monotonic()
-    today_str = str(date.today())
+    today_str = str(local_today())
     if (
         _metrics_cache["data"]
         and (now - _metrics_cache["ts"]) < _METRICS_TTL
@@ -67,9 +68,10 @@ def get_dashboard_metrics(
     settings = session.get(Settings, 1)
     currency = settings.currency if settings else "USD"
 
-    # Today's Range
-    today_start = datetime.combine(date.today(), datetime.min.time())
-    today_end = datetime.combine(date.today(), datetime.max.time())
+    # Today's range: the BUSINESS-LOCAL calendar day converted to UTC bounds
+    # (timestamps are stored as naive UTC; comparing them against a local
+    # date boundary shifted "today" by the UTC offset)
+    today_start, today_end = local_day_utc_bounds()
 
     # Combined query: sales today total + count in one query
     today_stats = session.execute(
@@ -78,7 +80,7 @@ def get_dashboard_metrics(
             func.count(Sale.id)
         ).where(
             Sale.created_at >= today_start,
-            Sale.created_at <= today_end,
+            Sale.created_at < today_end,
             Sale.status == SaleStatus.COMPLETED
         )
     ).one()
@@ -165,5 +167,84 @@ def get_dashboard_metrics(
     _metrics_cache["data"] = result
     _metrics_cache["ts"] = time.monotonic()
     _metrics_cache["date"] = today_str
+
+    return result
+
+
+# ---------------------------------------------------------------------------
+# Trends: last 30 local days of revenue + payment-method breakdown, for the
+# dashboard charts. Cached the same way as /metrics.
+# ---------------------------------------------------------------------------
+_TRENDS_DAYS = 30
+_trends_cache: dict = {"data": None, "ts": 0.0, "date": ""}
+
+class DailyRevenuePoint(BaseModel):
+    date: str  # YYYY-MM-DD, business-local day
+    revenue: Decimal
+
+class PaymentMethodTotal(BaseModel):
+    method: str
+    total: Decimal
+    count: int
+
+class DashboardTrends(BaseModel):
+    daily_revenue: List[DailyRevenuePoint]
+    payment_breakdown: List[PaymentMethodTotal]
+
+@router.get("/trends", response_model=DashboardTrends)
+def get_dashboard_trends(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    now = time.monotonic()
+    today_str = str(local_today())
+    if (
+        _trends_cache["data"]
+        and (now - _trends_cache["ts"]) < _METRICS_TTL
+        and _trends_cache["date"] == today_str
+    ):
+        return _trends_cache["data"]
+
+    start, end = local_range_utc_bounds(None, None, default_days=_TRENDS_DAYS - 1)
+
+    rows = session.execute(
+        select(Sale.created_at, Sale.grand_total, Sale.payment_method).where(
+            Sale.created_at >= start,
+            Sale.created_at < end,
+            Sale.status == SaleStatus.COMPLETED,
+        )
+    ).all()
+
+    # Pre-seed every local day in the window so the chart has no gaps on
+    # days with zero sales.
+    today = local_today()
+    revenue_by_day: dict = {
+        (today - timedelta(days=offset)).isoformat(): Decimal("0.0")
+        for offset in range(_TRENDS_DAYS - 1, -1, -1)
+    }
+    payment_totals: dict = {}
+
+    for created_at, grand_total, payment_method in rows:
+        day_key = datetime.strptime(local_date_key(created_at), "%Y%m%d").date().isoformat()
+        if day_key in revenue_by_day:
+            revenue_by_day[day_key] += grand_total
+
+        bucket = payment_totals.setdefault(payment_method, {"total": Decimal("0.0"), "count": 0})
+        bucket["total"] += grand_total
+        bucket["count"] += 1
+
+    result = DashboardTrends(
+        daily_revenue=[
+            DailyRevenuePoint(date=day, revenue=revenue) for day, revenue in revenue_by_day.items()
+        ],
+        payment_breakdown=[
+            PaymentMethodTotal(method=method, total=v["total"], count=v["count"])
+            for method, v in sorted(payment_totals.items(), key=lambda kv: kv[1]["total"], reverse=True)
+        ],
+    )
+
+    _trends_cache["data"] = result
+    _trends_cache["ts"] = time.monotonic()
+    _trends_cache["date"] = today_str
 
     return result

@@ -232,8 +232,10 @@ class TestLicenseTampering:
         with open(signed_license["path"], 'r') as f:
             data = json.load(f)
 
-        data["tier"] = "premium"  # Try to upgrade
-        data["features"]["ai_assistant"] = True  # Enable premium features
+        # The signed fixture is already "premium" — change tier and licensee
+        # to values that actually differ so the signature must break
+        data["tier"] = "basic"
+        data["licensee"] = "Tampered Company"
 
         # Write back without re-signing
         with open(signed_license["path"], 'w') as f:

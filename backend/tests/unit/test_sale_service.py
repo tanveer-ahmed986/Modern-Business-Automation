@@ -200,7 +200,7 @@ class TestCostPriceSnapshot:
 class TestTaxCalculation:
     """Test tax calculation accuracy."""
 
-    def test_tax_calculation_basic(self, session, admin_user, product):
+    def test_tax_calculation_basic(self, session, settings, admin_user, product):
         """Subtotal=100, tax_rate=15% → tax_amount=15, total=115."""
         # Set tax rate to 15%
         settings = session.get(Settings, 1)
@@ -226,7 +226,7 @@ class TestTaxCalculation:
         assert sale.tax_amount == Decimal("15.0")
         assert sale.grand_total == Decimal("115.0")
 
-    def test_tax_calculation_zero_rate(self, session, admin_user, product):
+    def test_tax_calculation_zero_rate(self, session, settings, admin_user, product):
         """Verify tax calculation works with 0% tax rate."""
         settings = session.get(Settings, 1)
         settings.tax_rate = 0.0
@@ -254,8 +254,8 @@ class TestTaxCalculation:
 class TestDiscountCalculation:
     """Test discount calculation accuracy."""
 
-    def test_discount_calculation(self, session, admin_user, product):
-        """Subtotal=100, discount=10, tax=15% → total=(100-10)*1.15=103.5."""
+    def test_discount_calculation(self, session, settings, admin_user, product):
+        """Subtotal=100, discount=10, tax 15% on subtotal → total=100+15-10=105."""
         settings = session.get(Settings, 1)
         settings.tax_rate = 15.0
         session.add(settings)
@@ -282,7 +282,7 @@ class TestDiscountCalculation:
         assert sale.discount_amount == Decimal("10.0")
         assert sale.grand_total == expected_grand_total
 
-    def test_discount_larger_than_subtotal(self, session, admin_user, product):
+    def test_discount_larger_than_subtotal(self, session, settings, admin_user, product):
         """Discount larger than subtotal should result in negative or zero grand total."""
         settings = session.get(Settings, 1)
         settings.tax_rate = 0.0

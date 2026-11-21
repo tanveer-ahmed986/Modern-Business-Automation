@@ -6,7 +6,6 @@ from fastapi.responses import FileResponse, JSONResponse
 from contextlib import asynccontextmanager
 from pathlib import Path
 from datetime import datetime
-import asyncio
 from src.api import auth, settings, inventory, billing, dashboard, suppliers, purchases, reports, system, ai, users, version
 from src.core.db import init_db, cleanup_connections
 from src.core.license import LicenseValidator, set_license_validator, LicenseValidationError
@@ -108,12 +107,17 @@ async def lifespan(app: FastAPI):
                 select(User).where(User.username == "admin")
             ).first()
             if not admin:
-                print("Creating default administrator account...")
+                print("=" * 70)
+                print("[SECURITY] No administrator account found.")
+                print("[SECURITY] Creating default account admin/admin123.")
+                print("[SECURITY] You MUST change this password on first login.")
+                print("=" * 70)
                 admin = User(
                     username="admin",
                     full_name="System Administrator",
                     role=UserRole.ADMIN,
-                    hashed_password=get_password_hash("admin123")
+                    hashed_password=get_password_hash("admin123"),
+                    must_change_password=True
                 )
                 session.add(admin)
 
@@ -178,44 +182,28 @@ app = FastAPI(
 # GZip compression - reduces JSON payload sizes by ~80%, critical for performance
 app.add_middleware(GZipMiddleware, minimum_size=500)
 
-# CORS configuration for PWA (supports local WiFi access)
+# CORS: only needed for the Vite dev server (different port). In production
+# the backend serves the built frontend from the same origin, so no
+# cross-origin requests occur and no wildcard is required.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",      # Vite dev server
         "http://localhost:4173",      # Vite preview
-        "http://localhost:8000",      # PWA served from same origin
         "http://127.0.0.1:5173",
         "http://127.0.0.1:4173",
-        "http://127.0.0.1:8000",
-        # Allow local WiFi access (192.168.x.x for PWA on mobile devices)
-        "*"  # For simplicity, allow all origins (offline-first app = low security risk)
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ---------------------------------------------------------------------------
-# SQLite write-serialization middleware
-# ---------------------------------------------------------------------------
-# SQLite allows only ONE writer at a time. Without serialization, concurrent
-# POST/PUT/DELETE requests race for the write lock; losers block for up to
-# busy_timeout (seconds) while holding a DB connection, which starves reads
-# and causes the UI to hang.  By funnelling all mutating HTTP methods through
-# a single asyncio.Lock we guarantee:
-#   1. Only one write request touches the DB at a time (no SQLITE_BUSY).
-#   2. Read requests (GET/HEAD/OPTIONS) are never blocked.
-#   3. Connections are short-lived (NullPool) so no pool exhaustion.
-# ---------------------------------------------------------------------------
-_sqlite_write_lock = asyncio.Lock()
-
-@app.middleware("http")
-async def serialize_write_requests(request: Request, call_next):
-    if request.method in ("POST", "PUT", "DELETE", "PATCH"):
-        async with _sqlite_write_lock:
-            return await call_next(request)
-    return await call_next(request)
+# NOTE: the former per-request asyncio write-lock middleware was removed.
+# It held a single global lock for the full duration of every POST/PUT/DELETE
+# (including multi-second VACUUM INTO backups), blocking all other writes.
+# Write serialization is now handled by SQLite itself: WAL mode allows
+# parallel readers, and busy_timeout=5000 (see core/db.py) queues concurrent
+# writers instead of failing.
 
 # Include routers
 app.include_router(auth.router)
@@ -301,5 +289,14 @@ else:
         return {"message": "MBAS Backend API is running. Frontend not found - use http://localhost:5173 if running frontend dev server."}
 
 if __name__ == "__main__":
+    import os
     import uvicorn
-    uvicorn.run("src.main:app", host="127.0.0.1", port=8000)
+
+    # Bind to localhost only by default. LAN access is an explicit opt-in
+    # (MBAS_HOST=0.0.0.0) so a business doesn't unknowingly expose the POS
+    # backend to its whole network without also opening a firewall rule for it.
+    host = os.environ.get("MBAS_HOST", "127.0.0.1")
+    if host != "127.0.0.1":
+        print(f"[WARNING] Binding to {host} — this exposes MBAS to your LAN.")
+        print("[WARNING] Ensure your firewall only allows trusted devices on port 8000.")
+    uvicorn.run("src.main:app", host=host, port=8000)

@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from sqlmodel import Session, select, func, between, and_
+from sqlmodel import Session, select, func, and_
 from datetime import datetime
 from decimal import Decimal
 from ..models.sales import Sale, SaleItem
@@ -12,8 +12,10 @@ class ReportService:
     def get_sales_report(db: Session, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Retrieves a summary of sales performance within a given date range.
+        Bounds are naive-UTC; start inclusive, end EXCLUSIVE (half-open range).
         Uses SQL aggregation instead of loading all rows into Python memory.
         """
+        in_range = and_(Sale.created_at >= start_date, Sale.created_at < end_date)
         # Aggregate totals at the DB level (avoids loading all Sale rows)
         summary_row = db.execute(
             select(
@@ -21,7 +23,7 @@ class ReportService:
                 func.coalesce(func.sum(Sale.tax_amount), 0),
                 func.coalesce(func.sum(Sale.discount_amount), 0),
                 func.count(Sale.id),
-            ).where(between(Sale.created_at, start_date, end_date))
+            ).where(in_range)
         ).one()
         total_revenue = summary_row[0]
         total_tax = summary_row[1]
@@ -31,10 +33,15 @@ class ReportService:
         # Breakdown by payment method (SQL aggregation)
         pm_rows = db.execute(
             select(Sale.payment_method, func.sum(Sale.grand_total))
-            .where(between(Sale.created_at, start_date, end_date))
+            .where(in_range)
             .group_by(Sale.payment_method)
         ).all()
-        payment_methods = {str(row[0]): row[1] for row in pm_rows}
+        # Normalize keys to the enum VALUES ("cash", "card", ...) — raw rows can
+        # surface either the enum member or its stored name depending on driver
+        payment_methods = {
+            (row[0].value if hasattr(row[0], "value") else str(row[0]).lower()): row[1]
+            for row in pm_rows
+        }
             
         # Top products in this period
         product_query = (
@@ -44,7 +51,7 @@ class ReportService:
                 func.sum(SaleItem.subtotal).label("total_revenue")
             )
             .join(Sale)
-            .where(between(Sale.created_at, start_date, end_date))
+            .where(in_range)
             .group_by(SaleItem.product_name)
             .order_by(func.sum(SaleItem.quantity).desc())
             .limit(10)
@@ -60,7 +67,7 @@ class ReportService:
             .join(Sale)
             .join(Product, SaleItem.product_id == Product.id)
             .join(Category, Product.category_id == Category.id)
-            .where(between(Sale.created_at, start_date, end_date))
+            .where(in_range)
             .group_by(Category.name)
             .order_by(func.sum(SaleItem.subtotal).desc())
         )
@@ -92,12 +99,15 @@ class ReportService:
     def get_profit_loss_report(db: Session, start_date: datetime, end_date: datetime) -> Dict[str, Any]:
         """
         Premium only: Calculates Gross Profit based on Sales and COGS.
+        Bounds are naive-UTC; start inclusive, end EXCLUSIVE (half-open range).
         """
+        in_range = and_(Sale.created_at >= start_date, Sale.created_at < end_date)
+
         # 1. Total Sales Revenue (SQL aggregation - avoids loading all rows)
         total_revenue = db.execute(
             select(func.coalesce(func.sum(Sale.grand_total), 0)).where(
                 and_(
-                    between(Sale.created_at, start_date, end_date),
+                    in_range,
                     Sale.status == "completed"
                 )
             )
@@ -113,7 +123,7 @@ class ReportService:
             .join(Sale)
             .where(
                 and_(
-                    between(Sale.created_at, start_date, end_date),
+                    in_range,
                     Sale.status == "completed"
                 )
             )
@@ -124,7 +134,8 @@ class ReportService:
         total_purchases = db.execute(
             select(func.coalesce(func.sum(Purchase.grand_total), 0)).where(
                 and_(
-                    between(Purchase.created_at, start_date, end_date),
+                    Purchase.created_at >= start_date,
+                    Purchase.created_at < end_date,
                     Purchase.status == "received"
                 )
             )

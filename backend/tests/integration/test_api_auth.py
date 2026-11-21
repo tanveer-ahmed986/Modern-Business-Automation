@@ -93,8 +93,8 @@ class TestTokenValidation:
 class TestRoleBasedAccessControl:
     """Test RBAC enforcement across different endpoints."""
 
-    def test_admin_can_access_admin_endpoints(self, client: TestClient, admin_user):
-        """Admin user can access admin-only endpoints like /settings."""
+    def test_admin_can_access_admin_endpoints(self, client: TestClient, admin_user, settings):
+        """Admin user can read and update /settings."""
         # Login as admin
         login_response = client.post(
             "/auth/login",
@@ -103,13 +103,19 @@ class TestRoleBasedAccessControl:
         token = login_response.json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
-        # Access admin endpoint
+        # Read settings (any authenticated user) and update (admin only)
         response = client.get("/settings/", headers=headers)
-
         assert response.status_code == 200
 
-    def test_sales_user_cannot_access_admin_endpoints(self, client: TestClient, sales_user):
-        """Sales user cannot access admin-only endpoints like /settings → 403."""
+        response = client.put(
+            "/settings/",
+            json={"business_name": "Updated Store"},
+            headers=headers
+        )
+        assert response.status_code == 200
+
+    def test_sales_user_cannot_access_admin_endpoints(self, client: TestClient, sales_user, settings):
+        """Sales user cannot UPDATE settings → 403 (reading is allowed for branding)."""
         # Login as sales user
         login_response = client.post(
             "/auth/login",
@@ -118,9 +124,12 @@ class TestRoleBasedAccessControl:
         token = login_response.json()["access_token"]
         headers = {"Authorization": f"Bearer {token}"}
 
-        # Try to access admin endpoint
-        response = client.get("/settings/", headers=headers)
-
+        # Settings write is admin-only
+        response = client.put(
+            "/settings/",
+            json={"business_name": "Hacked Store"},
+            headers=headers
+        )
         assert response.status_code == 403
 
     def test_manager_can_access_manager_endpoints(self, client: TestClient, manager_user):
@@ -179,7 +188,7 @@ class TestUserManagement:
             "username": "newuser",
             "full_name": "New User",
             "password": "password123",
-            "role": "sales_user"
+            "role": "sales"
         }
 
         response = client.post("/users/", json=new_user_data, headers=auth_headers)
@@ -231,7 +240,7 @@ class TestPasswordSecurity:
             "username": "hashtest",
             "full_name": "Hash Test",
             "password": "plaintext123",
-            "role": "sales_user"
+            "role": "sales"
         }
 
         create_response = client.post("/users/", json=new_user_data, headers=auth_headers)

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from typing import List
 from ..core.db import get_session
-from ..core.auth import get_current_user
-from ..core.security import get_password_hash
+from ..core.auth import get_current_user, invalidate_user_cache
+from ..core.security import get_password_hash, verify_password
 from ..models.core import User, UserCreate, UserRead, UserRole
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -89,19 +90,28 @@ def update_user(
                 detail="Cannot deactivate your own account"
             )
 
+    old_username = db_user.username
+
     # Update user fields
     db_user.username = user_data.username
     db_user.full_name = user_data.full_name
     db_user.role = user_data.role
     db_user.is_active = user_data.is_active
 
-    # Only update password if provided
+    # Only update password if provided. An admin-driven reset forces the
+    # user to pick a new password on their next login.
     if user_data.password:
         db_user.hashed_password = get_password_hash(user_data.password)
+        db_user.must_change_password = True
 
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
+
+    # Flush the in-memory auth cache so the role/active/password change
+    # takes effect immediately instead of waiting out the cache TTL.
+    invalidate_user_cache(old_username)
+    invalidate_user_cache(db_user.username)
 
     return db_user
 
@@ -129,5 +139,39 @@ def delete_user(
 
     session.delete(db_user)
     session.commit()
+    invalidate_user_cache(db_user.username)
 
     return {"message": "User deleted successfully"}
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+@router.post("/me/change-password")
+def change_own_password(
+    payload: ChangePasswordRequest,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """Self-service password change. Clears must_change_password on success."""
+    db_user = session.get(User, current_user.id)
+    if not db_user or not verify_password(payload.current_password, db_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Current password is incorrect"
+        )
+    if len(payload.new_password) < 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be at least 8 characters"
+        )
+
+    db_user.hashed_password = get_password_hash(payload.new_password)
+    db_user.must_change_password = False
+    session.add(db_user)
+    session.commit()
+    invalidate_user_cache(db_user.username)
+
+    return {"message": "Password changed successfully"}
