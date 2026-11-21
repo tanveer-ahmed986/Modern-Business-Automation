@@ -12,7 +12,7 @@ def get_version_info():
     """
     return {
         "api_version": "v1",
-        "app_version": "2.1.0",
+        "app_version": "2.0.8",
         "app_name": "MBAS - Modern Business Automation System",
         "vendor": "Z&T Technologies",
         "website": "www.zttechnologies.org",

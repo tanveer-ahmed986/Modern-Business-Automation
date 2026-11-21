@@ -169,7 +169,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="MBAS API - Z&T Technologies",
-    version="2.1.0",  # PWA Update
+    version="2.0.8",
     description="Modern Business Automation System - A Product of Z&T Technologies | State-of-the-Art Business Solutions | www.zttechnologies.org | Now with PWA support for cross-platform compatibility",
     contact={
         "name": "Z&T Technologies",
@@ -236,7 +236,7 @@ def health_check():
                 "status": "healthy",
                 "timestamp": datetime.utcnow().isoformat(),
                 "database": "connected",
-                "version": "2.0.5",
+                "version": "2.0.8",
                 "vendor": "Z&T Technologies",
                 "website": "www.zttechnologies.org"
             }
@@ -249,7 +249,7 @@ def health_check():
                 "timestamp": datetime.utcnow().isoformat(),
                 "database": "disconnected",
                 "error": str(e),
-                "version": "2.0.5"
+                "version": "2.0.8"
             }
         )
 

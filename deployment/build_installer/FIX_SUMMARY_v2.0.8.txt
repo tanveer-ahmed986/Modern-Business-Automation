@@ -1,0 +1,110 @@
+================================================================================
+  MBAS Installer Fixes - Version 2.0.8
+  Z&T Technologies - State-of-the-Art Business Solutions
+================================================================================
+
+Date: November 21, 2026
+Build: v2.0.8
+Status: SYSTEM OVERHAUL + POS BUG FIXES
+
+================================================================================
+WHAT'S IN THIS RELEASE
+================================================================================
+
+This release packages the full Phase 1-4 system overhaul (see
+specs/system-overhaul/plan.md and history/prompts/system-overhaul/ for the
+full record) plus a live-use POS bug fix:
+
+1. Backend stability, data-correctness, and security/licensing hardening
+   - DB transaction integrity for stock/financial operations
+   - Business-local-day time handling, stock ledger service
+   - License/auth/RBAC hardening
+
+2. Professional UI overhaul
+   - Themeable app shell (TopBar, collapsible Sidebar, ErrorBoundary)
+   - Shared DataTable, RHF+zod product form, dashboard trend/payment charts
+   - Forced-password-change flow, reworked POS (cash-tendered/change-due
+     calculator, keyboard shortcuts), CSV export on sales history
+
+3. CRITICAL: Complete Sale button could stay disabled with items in cart
+   Problem:
+   - The "Cash Received" field defaulted to empty, which the checkout
+     guard treated as PKR 0 received - always less than the total - so
+     "Complete Sale" stayed disabled until the cashier typed in an exact
+     or larger cash amount.
+   Fix:
+   - An empty "Cash Received" field no longer blocks checkout. It only
+     blocks when the cashier has typed an amount that's actually short
+     of the total.
+   Files Modified:
+   - frontend/src/features/billing/BillingPage.tsx
+
+4. NEW: Hold Sale / Resume Sale
+   - A cashier can now park an in-progress cart ("Hold Sale") to start a
+     new sale for another customer, then resume the parked cart later
+     ("Held Sales" dialog: Resume / Delete). Held sales persist across a
+     page refresh.
+   Files Modified:
+   - frontend/src/features/billing/BillingPage.tsx
+   - frontend/src/features/billing/useCalculator.ts
+
+================================================================================
+VERSION STRINGS NORMALIZED
+================================================================================
+
+The running app previously reported three different, inconsistent version
+numbers in different places (title "2.1.0", /health "2.0.5", /version
+"2.1.0") left over from an abandoned PWA-branded experiment. All three now
+report "2.0.8" to match the installer:
+  - backend/src/main.py (FastAPI app title version, /health endpoint x2)
+  - backend/src/api/version.py (/version endpoint)
+
+================================================================================
+BUILD INSTRUCTIONS
+================================================================================
+
+Prerequisites:
+  - Inno Setup 6 installed
+  - Frontend built: cd frontend && npm run build
+  - All tests passing
+
+Build Command:
+  cd deployment/build_installer
+  REBUILD_INSTALLER_v2.0.8.bat
+
+Output:
+  output/MBAS_Professional_Setup_v2.0.8_ZT_Technologies.exe
+
+================================================================================
+VERSION HISTORY
+================================================================================
+
+v2.0.8 (November 21, 2026)
+  - Phase 1-4 system overhaul (stability, data-correctness, security,
+    professional UI)
+  - FIX: Complete Sale button could stay disabled with items in cart
+  - NEW: Hold Sale / Resume Sale
+  - Normalized app version strings (previously 2.0.5/2.1.0 conflicted)
+  - Removed superseded installer executables (v2.0.6, v2.0.7, and the
+    abandoned v2.1.0 PWA-branded installers) from output/
+
+v2.0.7 (July 4, 2026)
+  - FIX: Categories not created during installation
+  - FIX: CMD window flashing during operations
+
+v2.0.6 (July 4, 2026)
+  - FIX: Server runs in background using pythonw.exe
+
+v2.0.5 and earlier
+  - Various features and improvements
+
+================================================================================
+SUPPORT
+================================================================================
+
+Website: www.zttechnologies.org
+Email: zttechnologies12@gmail.com
+
+================================================================================
+END OF FIX SUMMARY
+================================================================================
